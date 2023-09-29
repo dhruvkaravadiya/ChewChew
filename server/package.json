@@ -10,14 +10,18 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "cloudinary": "^1.40.0",
     "config": "^3.3.9",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
     "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
     "joi": "^17.10.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.0",
+    "nodemailer": "^6.9.5",
     "nodemon": "^3.0.1"
   }
 }

@@ -1,21 +1,15 @@
 const mongoose = require("mongoose");
-const foodSchema = require("./Food");
 
 const restaurantSchema = mongoose.Schema(
   {
-    name: {
+    user_id: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "User",
+    },
+    phoneNumber: {
       type: String,
       required: true,
       unique: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    contactNumber: {
-      type: String,
-      required: true,
     },
     address: {
       city: {
@@ -26,6 +20,12 @@ const restaurantSchema = mongoose.Schema(
         type: String,
         required: true,
       },
+    },
+
+    restaurantName: {
+      type: String,
+      required: true,
+      unique: true,
     },
     imgUrl: {
       type: String,
@@ -40,15 +40,11 @@ const restaurantSchema = mongoose.Schema(
       min: 0,
       max: 5,
     },
-    password:{
-      type:String,
-      required:true,
-      min:8,
-      max:16,
-    },
     menu: [
       {
         type: mongoose.SchemaTypes.ObjectId,
+        ref: "Food",
+        default: [],
       },
     ],
   },

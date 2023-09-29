@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const roles = ["Restaurant", "DeliveryMan", "Customer"];
 const crypto = require('crypto');
-const { FORGOT_PASSWORD_EXPIRY } = require("../config/appConfig");
+const { FORGOT_PASSWORD_EXPIRY, TOKEN_EXPIRY, JWT_SECRET_KEY } = require("../config/appConfig");
 const bcrypt = require("bcrypt");
-
+const jwt = require("jsonwebtoken");
 const userSchema = mongoose.Schema({
     name: {
         type: String,
@@ -27,6 +27,16 @@ const userSchema = mongoose.Schema({
         minlength: [8, "Password should be atleast 8 characters"],
         select: false
     },
+    photo: {
+        id: {
+            type: String,
+           
+        },
+        photoUrl: { 
+            type: String, 
+            
+        }
+    },
     role: {
         type: String,
         enum: roles,
@@ -37,10 +47,7 @@ const userSchema = mongoose.Schema({
 }, { timestamps: true, versionKey: false });
 
 userSchema.methods.verifyPassword = async function (pass) {
-    await bcrypt.compare(pass, this.password);
-    if (!isCorrect) {
-        return res.status(400).send("Wrong Credentials");
-    }
+    return await bcrypt.compare(pass, this.password);
 }
 
 userSchema.methods.generateToken = function (user) {
@@ -50,7 +57,7 @@ userSchema.methods.generateToken = function (user) {
     return token;
 }
 
-userSchema.methods.createHashedPassword = function (pass) {
+userSchema.statics.createHashedPassword = function (pass) {
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(pass, salt);
     return hash;
@@ -59,13 +66,23 @@ userSchema.methods.createHashedPassword = function (pass) {
 userSchema.methods.getForgotPasswordToken = function () {
     const tokenString = crypto.randomBytes(25).toString('hex');
     this.forgotPasswordToken = crypto.createHash('sha256').update(tokenString).digest('hex');
-    this.forgotPasswordExpiry = Date.now() + FORGOT_PASSWORD_EXPIRY;
+    const expirationTime = new Date();
+    expirationTime.setMilliseconds(expirationTime.getMilliseconds() + FORGOT_PASSWORD_EXPIRY);
+    this.forgotPasswordExpiry = expirationTime;
     return tokenString;
 }
-
+const validateUser = (user) => {
+    const schema = Joi.object({
+        name: Joi.string().min(5).max(50).required(),
+        email: Joi.string().min(5).max(255).required().email(),
+        password: Joi.string().min(8).max(1024).required(),
+        role: Joi.any().valid(...roles)
+    });
+    schema.validate(user);
+}
 const User = mongoose.model("users", userSchema);
 
-// exports.validate = validateUser;
+exports.validate = validateUser;
 module.exports = User;
 
 /*
@@ -78,13 +95,3 @@ GET_FORGOT_PASSWORD_TOKEN
      we will compare with the hashed token we store
      then only allow the execution further for password change
 */
-
-// const validateUser = (user) =>{
-//     const schema = Joi.object({
-//         name : Joi.string().min(5).max(50).required(),
-//         email: Joi.string().min(5).max(255).required().email(),
-//         password: Joi.string().min(8).max(1024).required(),
-//         role: Joi.any().valid(...roles)
-//     });
-//     schema.validate(user);
-// }

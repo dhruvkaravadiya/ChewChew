@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>User Registration</title>
+</head>
+<body>
+  <form method="post" action="/api/auth/signup" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="name" class="form-control">User Name : </label>
+      <input type="text" class="form-control" id="name" name="name">
+    </div>
+    <div class="form-group">
+      <label for="email" class="form-control">Email address : </label>
+      <input type="email" class="form-control" id="email" name="email">
+    </div>
+    <div class="form-group">
+      <label for="pwd" class="form-control">Password : </label>
+      <input type="password" class="form-control" id="pwd" name="password">
+    </div>
+    <div class="form-group">
+      <label for="photo" class="form-control">File : </label>
+      <input type="file" multiple class="form-control" id="file" name="photo">
+    </div>
+    <button type="submit" class="btn btn-default">Submit</button>
+  </form>
+</body>
+</html>
