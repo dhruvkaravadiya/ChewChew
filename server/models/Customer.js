@@ -5,8 +5,14 @@ const customerSchema = new mongoose.Schema({
         type:mongoose.SchemaTypes.ObjectId,
         ref:"User",
     },
+    currentOrders:{
+
+    },
     favRestaurants: {
         type:Array,
         default:[]
     }
 });
+
+const Customer = mongoose.model("Customer" , customerSchema);
+module.exports = Customer;

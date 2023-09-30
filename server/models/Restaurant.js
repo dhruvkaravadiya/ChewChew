@@ -2,33 +2,55 @@ const mongoose = require("mongoose");
 
 const restaurantSchema = mongoose.Schema(
   {
+    restaurantName: {
+      type: String,
+      required: [true, "Please enter Restaurant Name"],
+      unique: true,
+    },
     user_id: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: "User",
+      type: mongoose.Schema.Types.ObjectId, // Use ObjectId type for references
+      ref: "User", // Assuming User is the model name for restaurant owners
+      required: [true, "Restaurant's Owner Id is required"],
     },
     phoneNumber: {
       type: String,
-      required: true,
+      required: [true, "Please enter Contact Number"],
+      minlength: 10,
       unique: true,
     },
     address: {
+      street: {
+        type: String,
+        required: [true, "Please enter Street"],
+      },
+      area: {
+        type: String,
+        required: [true, "Please enter Area"],
+      },
       city: {
         type: String,
-        required: true,
+        required: [true, "Please enter City"],
       },
       state: {
         type: String,
-        required: true,
+        required: [true, "Please enter State"],
       },
-    },
-
-    restaurantName: {
-      type: String,
-      required: true,
-      unique: true,
+      pincode: {
+        type: String,
+        required: [true, "Please enter Pincode"],
+      },
     },
     imgUrl: {
       type: String,
+      required: [true, "Please provide the Restaurant Image"],
+      validate: {
+        validator: function (value) {
+          const urlRegex =
+            /^(https?:\/\/)?([\w\d]+\.)?[\w\d]+\.\w{2,}\/?.*$/;
+          return urlRegex.test(value);
+        },
+        message: "Invalid Image Url",
+      },
     },
     totalRatings: {
       type: Number,
@@ -42,9 +64,8 @@ const restaurantSchema = mongoose.Schema(
     },
     menu: [
       {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "Food",
-        default: [],
+        type: mongoose.Schema.Types.ObjectId, // Use ObjectId type for references
+        ref: "Food", // Reference the Food model
       },
     ],
   },

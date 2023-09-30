@@ -18,6 +18,19 @@ mongoose
     console.log(err.message);
   });
 
+
+  // Body Parser Middleware to parse data from the body to JSON
+app.use(express.json());
+
+// Middleware to parse URL-encoded data
+app.use(express.urlencoded({ extended: true }));
+
+// Enable cross-origin resource sharing using cors() middleware
+app.use(cors());
+
+// Cookie-parser middleware to parse data from Cookie
+app.use(cookieparser());
+
 //configure the file upload
 app.use(fileUpload({
   useTempFiles : true,
@@ -26,18 +39,6 @@ app.use(fileUpload({
 
 // Setting the EJS view engine
 app.set("view engine", "ejs");
-
-// Enable cross-origin resource sharing using cors() middleware
-app.use(cors());
-
-// Cookie-parser middleware to parse data from Cookie
-app.use(cookieparser());
-
-// Body Parser Middleware to parse data from the body to JSON
-app.use(express.json());
-
-// Middleware to parse URL-encoded data
-app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/restaurants", restaurantsRoutes);

@@ -214,17 +214,7 @@ async function updateUser(req,res) {
   }
   res.status(200).json({success:true,updatedUser:updatedUser});
 }
-/*
-async function setRoleDeliveryMan(req,res){ 
-}
-async function getUser(){
 
-}
-
-async function updatePassword(){
-
-}
-*/
 module.exports = {
   userSignUp,
   userLogin,

@@ -12,6 +12,11 @@ const foodSchema = mongoose.Schema({
   },
   foodImgUrl: {
     type: String,
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ["Veg", "Non-Veg"],
   },
   totalRatings: {
     type: Number,
@@ -22,6 +27,17 @@ const foodSchema = mongoose.Schema({
     default: 0,
     min: 0,
     max: 5,
+  },
+  restaurant: {
+    resId: {
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Restaurant", 
+      required: true,
+    },
+    resName: {
+      type: String,
+      required: true,
+    },
   },
 });
 
