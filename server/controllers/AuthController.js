@@ -83,8 +83,9 @@ async function userLogin(req, res) {
   });
   const { password, ...otherProperties } = user._doc;
   console.log("Login Success");
+  console.log(req.cookies);
   res
-    .cookie("access_token", token, { httpOnly: true })
+    .cookie("access_token", token, { httpOnly: true})
     .status(200)
     .json(otherProperties);
 }

@@ -64,9 +64,15 @@ const restaurantSchema = mongoose.Schema(
     },
     menu: [
       {
-        type: mongoose.Schema.Types.ObjectId, // Use ObjectId type for references
-        ref: "Food", // Reference the Food model
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Food", 
       },
+    ],
+    orders:[
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order"
+      }
     ],
   },
   { timestamps: true, versionKey: false }

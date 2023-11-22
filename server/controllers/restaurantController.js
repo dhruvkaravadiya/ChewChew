@@ -106,6 +106,7 @@ async function deleteMenuItem(req, res) {
     }
     res.status(200).send("Menu Deleted Successfully");
 }
+
 module.exports = {
     createRestaurant,
     getAllRestaurants,

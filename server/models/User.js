@@ -3,6 +3,7 @@ const roles = ["Restaurant", "DeliveryMan", "Customer"];
 const crypto = require('crypto');
 const { FORGOT_PASSWORD_EXPIRY, TOKEN_EXPIRY, JWT_SECRET_KEY } = require("../config/appConfig");
 const bcrypt = require("bcrypt");
+
 const jwt = require("jsonwebtoken");
 const userSchema = mongoose.Schema({
     name: {

@@ -6,7 +6,7 @@ const orderSchema = mongoose.Schema({
             ref: "Customer",
             required: true
       },
-      restaurantId:{
+      restaurantId: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: "Restaurant",
             required: true
@@ -17,9 +17,11 @@ const orderSchema = mongoose.Schema({
       },
       items: [
             {
+                  _id: false,
                   foodId: {
-                        type: mongoose.Schema.Types.ObjectId, // Assuming foodId is an ObjectId
-                        ref: "Food" // Assuming "Food" is another mongoose model
+                        type: mongoose.SchemaTypes.ObjectId,
+                        ref: "Food",
+                        required: true
                   },
                   foodName: {
                         type: String,
@@ -52,15 +54,15 @@ const orderSchema = mongoose.Schema({
             enum: ["Placed", "Confirmed", "Prepared", "Delivered", "Completed", "Canceled"],
             default: 'Placed'
       },
-      placedAt: {
+      placedAt: { 
             type: Date,
             default: Date.now
       }
-});
+}, { versionKey: false });
 
 orderSchema.addItemToCart = async function () {
 
 }
 
-const Order = mongoose.model("Order", orderSchema); 
+const Order = mongoose.model("Order", orderSchema);
 module.exports = Order;

@@ -24,6 +24,7 @@
     "nodemailer": "^6.9.5",
     "nodemon": "^3.0.1",
     "redis": "^4.6.10",
+    "socket.io": "^4.7.2",
     "validator": "^13.11.0"
   }
 }

@@ -7,6 +7,6 @@ module.exports = cookieToken = async (user, res) => {
   });
   res
     .status(200)
-    .cookie("access_token", token, { expiresIn: new Date(Date.now() + TOKEN_EXPIRY) })
+    .cookie("access_token", token, { expiresIn: new Date(Date.now() + TOKEN_EXPIRY)})
     .json({ success: true, token, user });
 }

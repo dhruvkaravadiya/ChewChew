@@ -29,7 +29,7 @@ async function sendEmailToMailTrap(req,res){
 }
 async function sendEmailToGmail(options) {
     const transporter = nodemailer.createTransport({
-      service: 'Gmail', // Use the appropriate service (e.g., 'Gmail', 'SendGrid', etc.)
+      service: 'Gmail',
       auth: {
         user: GMAIL_EMAIL_ID,
         pass: GMAIL_APP_PASSWORD,
