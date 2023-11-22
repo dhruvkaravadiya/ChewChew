@@ -1,0 +1,61 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant</title>
+</head>
+
+<body>
+    <h1>Restaurant Page</h1>
+
+    <label for="orderId">Order ID:</label>
+    <input type="text" id="orderId" placeholder="Enter Order ID">
+
+    <label for="status">New Status:</label>
+    <select id="status">
+        <option value="Confirmed">Confirmed</option>
+        <option value="Prepared">Prepared</option>
+        <option value="Delivered">Delivered</option>
+        <option value="Completed">Completed</option>
+        <option value="Canceled">Canceled</option>
+    </select>
+
+    <button onclick="updateOrderStatus()">Update Order Status</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
+    <script>
+        const socket = io("http://localhost:8080");
+
+        function updateOrderStatus() {
+            const orderId = document.getElementById("orderId").value;
+            const newStatus = document.getElementById("status").value;
+
+            // Emit event to the server (for Socket.IO real-time update)
+            socket.emit("orderStatusUpdate", { orderId, newStatus });
+
+            fetch(`http://localhost:8080/api/restaurants/order/update/${orderId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', 
+                body: JSON.stringify({ orderStatus: newStatus }),
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success:', data);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>
