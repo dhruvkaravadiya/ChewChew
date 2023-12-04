@@ -87,36 +87,4 @@ The Food Ordering App allows users to browse and order food from various restaur
 
 <br>
 
-## Deployment 🌨️
-
-<br>
-<div align="left">
-<img src="https://www.vectorlogo.zone/logos/amazon_aws/amazon_aws-ar21.svg"  alt="AWS"/>
-</div>
-<br>
-
--   The web app is hosted on [Amazon EC2](https://aws.amazon.com/ec2/?nc2=h_ql_prod_fs_ec2) instance of [AWS](https://aws.amazon.com/) cloud.
--   MongoDB Atlas is used for database hosting.
--   [Nginx](https://www.nginx.com/) is used as a web server to serve the frontend.
-
-<br>
-
-# How to Use 🚀
-
-1. Clone the repository: `git clone https://github.com/yourusername/food-ordering-app.git`
-2. Navigate to the project directory: `cd food-ordering-app`
-3. Install dependencies: `npm install`
-4. Start the backend server: `npm run start-backend`
-5. Start the frontend development server: `npm run start-frontend`
-
-Open your web browser and go to `http://localhost:3000` to access the app locally.
-
-# FAQ
-
-#### How can I access the admin panel?
-
-The admin panel is accessible by visiting the following URL and logging in with admin credentials:
-- Admin Panel URL: `http://localhost:3000/admin`
-
-For admin credentials, please contact the project owner at [admin@foodorderingapp.com](mailto:admin@foodorderingapp.com).
 
