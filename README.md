@@ -2,12 +2,6 @@
 <p align="center">
     A modern food ordering web application built with Node.js, Express, MongoDB, and React.js
 </p>
-
-<br>
-
-<h3 align="center">⬇️ Live project link ⬇️
-<br>
-<a href="https://foodorderingapp.com" target="_blank">Live Demo 🔗</a>
 </h3>
 
 <br>
