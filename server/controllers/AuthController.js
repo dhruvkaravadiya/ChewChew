@@ -1,7 +1,19 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+<<<<<<< HEAD
 const cookieToken = require("../helpers/utils/cookieToken");
 const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, IPINFO_API_URL,IPINFO_API_TOKEN } = require("../config/appConfig");
+=======
+const cookieToken = require("../helpers/utilis/cookieToken");
+const {
+  JWT_SECRET_KEY,
+  JWT_EXPIRY,
+  TOKEN_EXPIRY,
+  CLOUDINARY_NAME,
+  CLOUDINARY_API,
+  CLOUDINARY_API_SECRET,
+} = require("../config/appConfig");
+>>>>>>> 651ae9e98011389ed5eea1b98254255943556925
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
@@ -11,7 +23,7 @@ const path = require("path");
 cloudinary.v2.config({
   cloud_name: CLOUDINARY_NAME,
   api_key: CLOUDINARY_API,
-  api_secret: CLOUDINARY_API_SECRET
+  api_secret: CLOUDINARY_API_SECRET,
 });
 
 async function userSignUp(req, res) {
@@ -29,7 +41,7 @@ async function userSignUp(req, res) {
       // Step 3: Extract Cloudinary photo ID and URL
       const photoId = result.public_id;
       const photoUrl = result.secure_url;
-      
+
       // Step 4: Create or update the user's data with the Cloudinary photo details
       const { name, email, password } = req.body;
       const hashedPassword = User.createHashedPassword(password);
@@ -48,22 +60,27 @@ async function userSignUp(req, res) {
       await user.save();
 
       // Step 5: Continue with the rest of the registration process
-      const htmlFilePath = path.join(__dirname, "../helpers/mailer/welcome_mail.html");
-      const signUpTemplate = fs.readFileSync(htmlFilePath,"utf-8");
+      const htmlFilePath = path.join(
+        __dirname,
+        "../helpers/mailer/welcome_mail.html"
+      );
+      const signUpTemplate = fs.readFileSync(htmlFilePath, "utf-8");
       await sendEmailToGmail({
         email: user.email,
         subject: "Welcome to our food ordering app!!!",
-        html : signUpTemplate,
+        html: signUpTemplate,
       });
-    // Set cookie and respond
-    await cookieToken(user,res);
+      // Set cookie and respond
+      await cookieToken(user, res);
     } else {
       // Handle the case where no photo was uploaded
       return res.status(400).send("Photo is required");
     }
   } catch (error) {
     console.error("Error during User SignUp:", error);
-    return res.status(500).json({ success: false, message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
   }
 }
 
@@ -85,17 +102,20 @@ async function userLogin(req, res) {
   console.log("Login Success");
 
   res
+<<<<<<< HEAD
     .cookie("access_token", token, { httpOnly: true, secure:true , sameSite: "none" })
+=======
+    .cookie("access_token", token, { httpOnly: true })
+>>>>>>> 651ae9e98011389ed5eea1b98254255943556925
     .status(200)
     .json(otherProperties);
 }
 
 async function userLogout(req, res) {
-  res
-    .cookie("access_token", null, {
-      expires: new Date(Date.now()),
-      httpOnly: true
-    })
+  res.cookie("access_token", null, {
+    expires: new Date(Date.now()),
+    httpOnly: true,
+  });
   res.status(200).json({ success: true, message: "Successful Logout" });
 }
 
@@ -108,12 +128,14 @@ async function forgotPassword(req, res) {
   }
 
   const forgotPasswordToken = user.getForgotPasswordToken();
-  //temporarily turning off the { required : true } as we want to 
-  //just save the forgotPasswordToken and forgotPasswordExpiry 
+  //temporarily turning off the { required : true } as we want to
+  //just save the forgotPasswordToken and forgotPasswordExpiry
   //from the method getForgotPasswordToken
   user.save({ validateBeforeSave: false });
 
-  const url = `${req.protocol}://${req.get("host")}/password/reset/${forgotPasswordToken}`;
+  const url = `${req.protocol}://${req.get(
+    "host"
+  )}/password/reset/${forgotPasswordToken}`;
   const message = `Follow this link \n\n ${url}`;
   //handle the case when there is error in sending the email ,as we also need
   // to make the two forgotPasswordToken and forgotPasswordExpiry to be undefined
@@ -122,7 +144,7 @@ async function forgotPassword(req, res) {
     await sendEmailToGmail({
       email: user.email,
       subject: "Forgot Password",
-      message
+      message,
     });
     res.status(200).json({ success: true, message: "Email Sent Successfully" });
   } catch (error) {
@@ -135,7 +157,10 @@ async function forgotPassword(req, res) {
 
 async function resetPassword(req, res) {
   const token = req.params.token;
-  const encryptedToken = crypto.createHash('sha256').update(token).digest('hex');
+  const encryptedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
 
   const user = await User.findOne({
     forgotPasswordToken: encryptedToken,
@@ -157,7 +182,10 @@ async function resetPassword(req, res) {
   await user.save();
 
   res
-    .cookie("access_token", token, { httpOnly: true, expiresIn: new Date(Date.now() + TOKEN_EXPIRY) })
+    .cookie("access_token", token, {
+      httpOnly: true,
+      expiresIn: new Date(Date.now() + TOKEN_EXPIRY),
+    })
     .status(200)
     .json({ success: true, message: "Password Reset Successfull" });
 }
@@ -166,8 +194,7 @@ async function getLoggedInUserDetails(req, res) {
   try {
     const user = await User.findById(req.user.id);
     res.status(200).json({ success: true, user: user });
-  }
-  catch (error) {
+  } catch (error) {
     return res.status(500).send(error.message);
   }
 }
@@ -181,38 +208,41 @@ async function updateLoggedInUserPassword(req, res) {
   }
   user.password = await User.createHashedPassword(newPassword);
   await user.save();
-  await cookieToken(user,res);
+  await cookieToken(user, res);
 }
 
-async function updateUser(req,res) {
+async function updateUser(req, res) {
   const newData = {
-    name:req.body.name,
-    email:req.body.email
+    name: req.body.name,
+    email: req.body.email,
   };
   const userId = req.user.id;
-  if(req.files){
+  if (req.files) {
     const user = await User.findById(req.user.id);
     const imageId = user.photo.id;
     const response = await cloudinary.v2.uploader.destroy(imageId);
-    console.log("Destroyed Image : ",response);
-    const result = await cloudinary.v2.uploader.upload(req.files.photo.tempFilePath , {
-      folder:"users",
-      width: 150,
-      crop:"scale"
-    });
-    console.log("New Image : ",result);
-    newData.photo.id = result.public_id,
-    newData.photo.secure_url = result.secure_url
+    console.log("Destroyed Image : ", response);
+    const result = await cloudinary.v2.uploader.upload(
+      req.files.photo.tempFilePath,
+      {
+        folder: "users",
+        width: 150,
+        crop: "scale",
+      }
+    );
+    console.log("New Image : ", result);
+    (newData.photo.id = result.public_id),
+      (newData.photo.secure_url = result.secure_url);
   }
   console.log(req.user.id);
   const updatedUser = await User.findByIdAndUpdate(userId, newData, {
     new: true,
-    runValidators: true
+    runValidators: true,
   });
   if (!updatedUser) {
-    return res.status(404).json({ success: false, message: 'User not found' });
+    return res.status(404).json({ success: false, message: "User not found" });
   }
-  res.status(200).json({success:true,updatedUser:updatedUser});
+  res.status(200).json({ success: true, updatedUser: updatedUser });
 }
 
 async function changeRole(req,res){
@@ -242,5 +272,9 @@ module.exports = {
   getLoggedInUserDetails,
   updateLoggedInUserPassword,
   updateUser,
+<<<<<<< HEAD
   changeRole
 };
+=======
+};
+>>>>>>> 651ae9e98011389ed5eea1b98254255943556925
