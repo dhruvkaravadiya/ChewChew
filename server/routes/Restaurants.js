@@ -9,7 +9,7 @@ const Order = require("../models/Order");
 //create restaurant
 router.post("/create", isLoggedIn, asyncErrorHandler(restaurantController.createRestaurant));
 //delete restaurant
-router.delete("/delete/:id", isLoggedIn, asyncErrorHandler(restaurantController.deleteRestaurant));
+router.delete("/delete/:id", isLoggedIn , verifyRole("Restaurant"), asyncErrorHandler(restaurantController.deleteRestaurant));
 //get all restaurants
 router.get('/', asyncErrorHandler(restaurantController.getAllRestaurants));
 //get restaurants by id

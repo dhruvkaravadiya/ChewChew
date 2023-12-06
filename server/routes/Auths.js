@@ -20,7 +20,8 @@ router.post('/user',isLoggedIn,asyncErrorHandler(AuthController.getLoggedInUserD
 router.post('/password/update',isLoggedIn,asyncErrorHandler(AuthController.updateLoggedInUserPassword));
 // # update user details
 router.post('/user/update',isLoggedIn,asyncErrorHandler(AuthController.updateUser));
-
+// # update role 
+router.put('/user/role', isLoggedIn,asyncErrorHandler(AuthController.changeRole));
 /*
     /userSignUp
     /login
