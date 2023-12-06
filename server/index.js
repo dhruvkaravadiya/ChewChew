@@ -6,6 +6,7 @@ const cors = require("cors");
 const { DB_CONNECTION_STRING, PORT } = require("./config/appConfig"); 
 const authRoutes = require('./routes/Auths');
 const restaurantsRoutes = require("./routes/Restaurants");
+const deliveryManRoutes = require("./routes/DeliveryMan");
 const fileUpload = require("express-fileupload");
 const http = require("http");
 const path = require("path");
@@ -17,6 +18,7 @@ const server = http.createServer(app);
 // Create a new instance of Socket.io and pass the server instance
 const io = socketIo(server);
 
+// io object configuration 
 io.on("connection", (socket)=>{
   console.log("A user connected");
   socket.on("orderStatusUpdate", (data) => {
@@ -25,6 +27,19 @@ io.on("connection", (socket)=>{
   });
   socket.on("disconnect", ()=>{console.log("A user disconnected")});
 });
+
+// temperory code
+// const DeliveryMan = require("./models/DeliveryMan");
+// //attach io to model
+// DeliveryMan.io = io;
+
+
+// middleware to attach io object to request handlers
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 mongoose
   .connect(DB_CONNECTION_STRING, { useUnifiedTopology: true })
   .then(() => {
@@ -58,6 +73,9 @@ app.use(fileUpload({
   tempFileDir: '/tmp/'
 }));
 
+// set real ip proxy trust settings
+app.set('trust proxy', true);
+
 // Set the views directory
 app.set('views', path.join(__dirname, 'views'));
 
@@ -67,6 +85,7 @@ app.set("view engine", "ejs");
 // Routes
 app.use("/api/restaurants", restaurantsRoutes);
 app.use("/api/auth", authRoutes);
+app.use('/api/deliveryman', deliveryManRoutes);
 
 app.get('/resboard', (req,res)=>(
   res.render('resupdate')
@@ -76,10 +95,10 @@ app.get('/cusboard', (req,res)=>(
   res.render('cusview')
 ));
 
-// // Signup form ejs
-// app.get('/api/auth/signup', (req, res) => {
-//   res.render("signupForm");
-// });
+// Signup form ejs
+app.get('/api/auth/signup', (req, res) => {
+  res.render("signupForm");
+});
 
 // // Update food status ejs
 // app.get('/updatestatus/:id', (req, res) => {
