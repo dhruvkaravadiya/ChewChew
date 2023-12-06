@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-const cookieToken = require("../helpers/utilis/cookieToken");
-const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET } = require("../config/appConfig");
+const cookieToken = require("../helpers/utils/cookieToken");
+const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, IPINFO_API_URL,IPINFO_API_TOKEN } = require("../config/appConfig");
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
@@ -83,9 +83,9 @@ async function userLogin(req, res) {
   });
   const { password, ...otherProperties } = user._doc;
   console.log("Login Success");
-  console.log(req.cookies);
+
   res
-    .cookie("access_token", token, { httpOnly: true})
+    .cookie("access_token", token, { httpOnly: true, secure:true , sameSite: "none" })
     .status(200)
     .json(otherProperties);
 }
@@ -170,7 +170,6 @@ async function getLoggedInUserDetails(req, res) {
   catch (error) {
     return res.status(500).send(error.message);
   }
-
 }
 
 async function updateLoggedInUserPassword(req, res) {
@@ -216,6 +215,24 @@ async function updateUser(req,res) {
   res.status(200).json({success:true,updatedUser:updatedUser});
 }
 
+async function changeRole(req,res){
+  const roles = ["Customer", "Restaurant","DeliveryMan"];
+  const { newRole } = req.body;
+  console.log(newRole);
+  if (!roles.includes(newRole)) {
+    return res.status(400).json({ error: 'Invalid role' });
+  }
+  const userId = req.user.id;
+  const user = await User.findByIdAndUpdate(userId, 
+    { role : newRole } ,
+    {new : true, runValidators : true} 
+  );
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  res.status(200).json({ message: 'Role updated successfully', user });
+}
+
 module.exports = {
   userSignUp,
   userLogin,
@@ -224,5 +241,6 @@ module.exports = {
   resetPassword,
   getLoggedInUserDetails,
   updateLoggedInUserPassword,
-  updateUser
+  updateUser,
+  changeRole
 };
