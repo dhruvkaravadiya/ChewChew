@@ -31,11 +31,9 @@ const userSchema = mongoose.Schema({
     photo: {
         id: {
             type: String,
-           
         },
         photoUrl: { 
             type: String, 
-            
         }
     },
     role: {

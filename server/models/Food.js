@@ -30,7 +30,7 @@ const foodSchema = mongoose.Schema({
   },
   restaurant: {
     resId: {
-      type: mongoose.Schema.Types.ObjectId, 
+      type: mongoose.SchemaTypes.ObjectId, 
       ref: "Restaurant", 
       required: true,
     },
@@ -39,7 +39,7 @@ const foodSchema = mongoose.Schema({
       required: true,
     },
   },
-});
+},{versionKey: false});
 
 const Food = mongoose.model("Food", foodSchema);
 
