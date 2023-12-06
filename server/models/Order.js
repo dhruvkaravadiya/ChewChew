@@ -1,19 +1,31 @@
 const mongoose = require("mongoose");
 
 const orderSchema = mongoose.Schema({
-      customerId: {
-            type: mongoose.SchemaTypes.ObjectId,
-            ref: "Customer",
-            required: true
+      customer: {
+            id: {
+                  type: mongoose.SchemaTypes.ObjectId,
+                  ref: "Customer",
+                  required: true
+            },
+            name: {
+                  type: String,
+                  required: true
+            }
       },
-      restaurantId: {
-            type: mongoose.SchemaTypes.ObjectId,
-            ref: "Restaurant",
-            required: true
+      restaurant: {
+            id: {
+                  type: mongoose.SchemaTypes.ObjectId,
+                  ref: "Restaurant",
+                  required: true
+            },
+            name: {
+                  type: String,
+                  required: true
+            },
       },
-      customerName: {
-            type: String,
-            required: true
+      deliveryLocation: {
+            latitude: Number,
+            longitude: Number
       },
       items: [
             {
@@ -51,14 +63,14 @@ const orderSchema = mongoose.Schema({
       },
       orderStatus: {
             type: String,
-            enum: ["Placed", "Confirmed", "Prepared", "Delivered", "Completed", "Canceled"],
+            enum: ["Placed", "Picked", "Prepared", "Delivered", "Completed", "Canceled"],
             default: 'Placed'
       },
-      placedAt: { 
+      placedAt: {
             type: Date,
             default: Date.now
       }
-}, { versionKey: false });
+}, { versionKey: false, timeStamps: false });
 
 orderSchema.addItemToCart = async function () {
 
