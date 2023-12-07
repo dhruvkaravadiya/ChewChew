@@ -1,19 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
-<<<<<<< HEAD
 const cookieToken = require("../helpers/utils/cookieToken");
 const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, IPINFO_API_URL,IPINFO_API_TOKEN } = require("../config/appConfig");
-=======
-const cookieToken = require("../helpers/utilis/cookieToken");
-const {
-  JWT_SECRET_KEY,
-  JWT_EXPIRY,
-  TOKEN_EXPIRY,
-  CLOUDINARY_NAME,
-  CLOUDINARY_API,
-  CLOUDINARY_API_SECRET,
-} = require("../config/appConfig");
->>>>>>> 651ae9e98011389ed5eea1b98254255943556925
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
@@ -100,13 +88,8 @@ async function userLogin(req, res) {
   });
   const { password, ...otherProperties } = user._doc;
   console.log("Login Success");
-
   res
-<<<<<<< HEAD
-    .cookie("access_token", token, { httpOnly: true, secure:true , sameSite: "none" })
-=======
     .cookie("access_token", token, { httpOnly: true })
->>>>>>> 651ae9e98011389ed5eea1b98254255943556925
     .status(200)
     .json(otherProperties);
 }
@@ -272,9 +255,5 @@ module.exports = {
   getLoggedInUserDetails,
   updateLoggedInUserPassword,
   updateUser,
-<<<<<<< HEAD
   changeRole
 };
-=======
-};
->>>>>>> 651ae9e98011389ed5eea1b98254255943556925
