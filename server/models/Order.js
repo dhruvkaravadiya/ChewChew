@@ -69,12 +69,9 @@ const orderSchema = mongoose.Schema({
       placedAt: {
             type: Date,
             default: Date.now
-      }
+      },
+      opt: String,
 }, { versionKey: false, timeStamps: false });
-
-orderSchema.addItemToCart = async function () {
-
-}
 
 const Order = mongoose.model("Order", orderSchema);
 module.exports = Order;

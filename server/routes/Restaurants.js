@@ -13,15 +13,11 @@ router.post(
   asyncErrorHandler(restaurantController.createRestaurant)
 );
 //delete restaurant
-<<<<<<< HEAD
-router.delete("/delete/:id", isLoggedIn , verifyRole("Restaurant"), asyncErrorHandler(restaurantController.deleteRestaurant));
-=======
 router.delete(
   "/delete/:id",
   isLoggedIn,
   asyncErrorHandler(restaurantController.deleteRestaurant)
 );
->>>>>>> 651ae9e98011389ed5eea1b98254255943556925
 //get all restaurants
 router.get("/", asyncErrorHandler(restaurantController.getAllRestaurants));
 //get restaurants by id
