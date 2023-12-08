@@ -3,10 +3,12 @@ const app = express();
 const mongoose = require("mongoose");
 const cookieparser = require('cookie-parser');
 const cors = require("cors");
-const { DB_CONNECTION_STRING, PORT } = require("./config/appConfig"); 
+const { DB_CONNECTION_STRING, PORT } = require("./config/appConfig");
 const authRoutes = require('./routes/Auths');
 const restaurantsRoutes = require("./routes/Restaurants");
 const deliveryManRoutes = require("./routes/DeliveryMan");
+const customerRoutes = require("./routes/Customer");
+const orderRoutes = require("./routes/Order");
 const fileUpload = require("express-fileupload");
 const http = require("http");
 const path = require("path");
@@ -19,13 +21,13 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 // io object configuration 
-io.on("connection", (socket)=>{
+io.on("connection", (socket) => {
   console.log("A user connected");
   socket.on("orderStatusUpdate", (data) => {
     // Broadcast the order status update to all connected clients
     io.emit("updateOrderStatus", data);
   });
-  socket.on("disconnect", ()=>{console.log("A user disconnected")});
+  socket.on("disconnect", () => { console.log("A user disconnected") });
 });
 
 // temperory code
@@ -58,7 +60,7 @@ app.use(express.urlencoded({ extended: true }));
 // Enable cross-origin resource sharing using cors() middleware
 app.use(cors(
   {
-    origin:"http://localhost:8080",
+    origin: "http://localhost:8080",
     credentials: true,
     methods: "GET,POST",
   }
@@ -83,15 +85,17 @@ app.set('views', path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
 
 // Routes
-app.use("/api/restaurants", restaurantsRoutes);
-app.use("/api/auth", authRoutes);
+app.use('/api/restaurants', restaurantsRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/deliveryman', deliveryManRoutes);
+app.use('/api/customer', customerRoutes);
+app.use('/api/order', orderRoutes);
 
-app.get('/resboard', (req,res)=>(
+app.get('/resboard', (req, res) => (
   res.render('resupdate')
 ));
 
-app.get('/cusboard', (req,res)=>(
+app.get('/cusboard', (req, res) => (
   res.render('cusview')
 ));
 
