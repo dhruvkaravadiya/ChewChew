@@ -17,5 +17,6 @@ module.exports = {
     CLOUDINARY_API: process.env.CLOUDINARY_API,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
     IP_INFO_URL: process.env.IP_INFO_URL,
-    IPINFO_API_TOKEN: process.env.IPINFO_API_TOKEN
+    IPINFO_API_TOKEN: process.env.IPINFO_API_TOKEN,
+    OTP_EXPIRY : process.env.OTP_EXPIRY,
 }
