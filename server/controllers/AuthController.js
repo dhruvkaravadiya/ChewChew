@@ -29,7 +29,6 @@ async function userSignUp(req, res) {
       // Step 3: Extract Cloudinary photo ID and URL
       const photoId = result.public_id;
       const photoUrl = result.secure_url;
-
       // Step 4: Create or update the user's data with the Cloudinary photo details
       const { name, email, password } = req.body;
       const hashedPassword = User.createHashedPassword(password);
