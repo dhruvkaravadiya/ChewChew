@@ -39,10 +39,8 @@ const deliveryManSchema = new mongoose.Schema({
     ],
     deliveryHistory: [
         {
-            orderId: {
-                type: mongoose.SchemaTypes.ObjectId,
-                ref: "Order"
-            },
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: "Order"
         }
     ],
 }, { versionKey: false });

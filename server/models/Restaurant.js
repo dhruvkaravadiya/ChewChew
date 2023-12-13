@@ -68,15 +68,24 @@ const restaurantSchema = mongoose.Schema(
         ref: "Food", 
       },
     ],
-    orders:[
+    currentOrders:[
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Order"
       }
     ],
+    pastOrders:[
+      {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order"
+      }
+    ]
   },
   { timestamps: true, versionKey: false }
 );
+
+restaurantSchema.path("currentOrders").default([]);
+restaurantSchema.path("pastOrders").default([]);
 
 const Restaurant = mongoose.model("restaurants", restaurantSchema);
 

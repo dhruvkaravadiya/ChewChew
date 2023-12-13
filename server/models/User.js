@@ -39,7 +39,7 @@ const userSchema = mongoose.Schema({
     role: {
         type: String,
         enum: roles,
-        default: 'Customer'
+        default: undefined
     },
     forgotPasswordToken: String,
     forgotPasswordExpiry: Date

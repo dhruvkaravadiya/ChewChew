@@ -1,5 +1,7 @@
 const Order = require('../models/Order');
 const DeliveryMan = require('../models/DeliveryMan');
+const Restaurant = require('../models/Restaurant');
+const Customer = require('../models/Customer');
 const { getCoordinates } = require('../helpers/utils/getCordinates');
 const { calculateDistance } = require("../helpers/utils/calculateDistance");
 
@@ -7,7 +9,6 @@ async function createDeliveryMan(req, res) {
       if (!req.body) {
             return res.status(400).send("Please Enter Necessary Details");
       }
-      console.log(req.user);
       const cordinates = await getCoordinates();
       const newDeliveryMan = new DeliveryMan(
             {
@@ -66,61 +67,6 @@ const updateLocation = async (req, res) => {
       return res.status(200).send({ success: true, message: 'Delivery updated successfully' });
 };
 
-const pickOrder = async (req, res) => {
-      const { id } = req.params;
-      // Find the order
-      const order = await Order.findById(id);
-      if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-      }
-      // Find the delivery man
-      const deliveryMan = await DeliveryMan.findOne({ user_id: req.user.id });
-      if (!deliveryMan) {
-            return res.status(404).json({ error: 'Delivery Man not found' });
-      }
-
-      console.log("Order : ", order);
-      console.log("DeliveryMan : ", deliveryMan);
-
-      // Check if the order status is "Prepared"
-      if (order.orderStatus === "Prepared") {
-            // Update the delivery man's currentOrders and the order's status
-            await DeliveryMan.updateOne(
-                  { _id: deliveryMan.id },
-                  {
-                        $push: {
-                              currentOrders: {
-                                    orderId: order._id,
-                                    assignedTime: order.placedAt,
-                                    restaurant: {
-                                          id: order.restaurant.id,
-                                          name: order.restaurant.name
-                                    },
-                                    orderStatus: "Picked",
-                                    deliveryLocation: {
-                                          latitude: order.deliveryLocation.latitude,
-                                          longitude: order.deliveryLocation.longitude
-                                    }
-                              }
-                        }
-                  }
-            );
-            await Order.updateOne({ _id: order._id }, { $set: { orderStatus: "Picked" } });
-            // Send a success response
-            return res.status(201).json({ message: "Order Picked" });
-      } else {
-            // If the order status is not "Prepared", send an appropriate response
-            return res.status(400).json({ error: 'Order is not prepared for picking' });
-      }
-};
-
-
-const verifyOrder = async (req, res) => {
-}
-
-const getPastOrders = async (req, res) => {
-
-}
 module.exports = {
       createDeliveryMan,
       deleteDeliveryMan,
@@ -128,7 +74,4 @@ module.exports = {
       getDeliveryManById,
       updateDeliveryManDetails,
       updateLocation,
-      pickOrder,
-      verifyOrder,
-      getPastOrders
 };

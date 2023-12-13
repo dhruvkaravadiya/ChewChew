@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const restaurantController = require("../controllers/restaurantController");
-const orderController = require("../controllers/orderController");
 const asyncErrorHandler = require("../middlewares/asyncErrorHandler");
 const isLoggedIn = require("../middlewares/isLoggedIn");
 const verifyRole = require("../middlewares/verifyRole");
@@ -46,27 +45,14 @@ router.put(
   verifyRole("Restaurant"),
   asyncErrorHandler(restaurantController.updateMenuItem)
 );
-//delte menu item
-router.put(
+//remove menu item
+router.delete(
   "/menu/delete/:id",
   isLoggedIn,
   verifyRole("Restaurant"),
   asyncErrorHandler(restaurantController.deleteMenuItem)
 );
-//place order
-router.post(
-  "/placeorder/:id",
-  isLoggedIn,
-  verifyRole("Customer"),
-  asyncErrorHandler(orderController.createOrder)
-);
-//update order status
-router.put(
-  "/order/update/:id",
-  isLoggedIn,
-  verifyRole("Restaurant"),
-  asyncErrorHandler(orderController.updateOrderStatus)
-);
+
 // ejs render
 router.get("/order/update/:id", (req, res) => {
   try {
