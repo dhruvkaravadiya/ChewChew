@@ -99,12 +99,21 @@ async function updateMenuItem(req, res) {
 }
 
 async function deleteMenuItem(req, res) {
-
-    const deletedRestaurant = await Food.findByIdAndDelete(req.params.id);
-    if(!deletedRestaurant){
+    console.log("Delete method called");
+    const orderId = req.params.id;
+    const deletedRestaurant = await Restaurant.findOneAndUpdate(
+        { user_id: req.user._id },
+        { $pull: { menu: orderId } },
+        { new: true }
+    );
+    if (!deletedRestaurant) {
         return res.status(404).send("Restaurant Not Found");
     }
-    res.status(200).send("Menu Deleted Successfully");
+    const deletedOrder = await Food.findByIdAndDelete(req.params.id);
+    if(!deletedOrder){
+        return res.status(404).send("Order Not Found");
+    }
+    res.status(200).send("Menu Item Removed Successfully");
 }
 
 module.exports = {
