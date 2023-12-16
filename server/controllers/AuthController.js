@@ -78,7 +78,7 @@ async function userSignUp(req, res) {
         html: signUpTemplate,
       });
       // Set cookie and respond
-      await cookieToken(user, res, "Account Created Successfully");
+      await cookieToken(user, res, "Cookie set");
       res.status(201).send({ success: true, message: "Account Created Successfully", user });
     } else {
       // Handle the case where no photo was uploaded
@@ -209,7 +209,7 @@ async function updateLoggedInUserPassword(req, res) {
   }
   user.password = await User.createHashedPassword(newPassword);
   await user.save();
-  await cookieToken(user, res);
+  await cookieToken(user, res, "Cookie set");
   res.status(202).send({ success: true, message: "Password Update Successful" });
 }
 

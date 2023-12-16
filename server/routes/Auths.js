@@ -13,13 +13,13 @@ router.post("/logout", asyncErrorHandler(AuthController.userLogout));
 // # forgotpassword
 router.post("/forgotpassword", asyncErrorHandler(AuthController.forgotPassword));
 // # reset password
-router.post("/password/reset/:token", asyncErrorHandler(AuthController.resetPassword));
+router.put("/password/reset/:token", asyncErrorHandler(AuthController.resetPassword));
 // # get logged in user details
-router.post("/user", isLoggedIn, asyncErrorHandler(AuthController.getLoggedInUserDetails));
+router.get("/user", isLoggedIn, asyncErrorHandler(AuthController.getLoggedInUserDetails));
 // # update password
-router.post("/password/update", isLoggedIn, asyncErrorHandler(AuthController.updateLoggedInUserPassword));
+router.put("/password/update", isLoggedIn, asyncErrorHandler(AuthController.updateLoggedInUserPassword));
 // # update user details
-router.post('/user/update', isLoggedIn, asyncErrorHandler(AuthController.updateUser));
+router.put('/user/update', isLoggedIn, asyncErrorHandler(AuthController.updateUser));
 // # update role 
 router.put('/user/role', isLoggedIn, asyncErrorHandler(AuthController.changeRole));
 
