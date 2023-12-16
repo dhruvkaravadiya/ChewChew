@@ -79,7 +79,7 @@ async function userSignUp(req, res) {
       });
       // Set cookie and respond
       await cookieToken(user, res, "Cookie set");
-      res.status(201).send({ success: true, message: "Account Created Successfully", user });
+      res.status(201).send({ success: true, message: "Account Created Successfully", data : user });
     } else {
       // Handle the case where no photo was uploaded
       return res.status(400).send({ success: false, error: "Photo is required" });
