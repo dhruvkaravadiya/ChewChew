@@ -14,13 +14,13 @@ async function createOrder(req, res) {
   try {
     const customer = await Customer.findOne({ user_id: req.user.id });
     if (!customer) {
-      return res.status(404).send("User not found");
+      return res.status(404).send({ success: false, error: "User not found" });
     }
 
     const restaurantId = req.params.id;
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) {
-      return res.status(404).send("Restaurant not found!");
+      return res.status(404).send({ success: true, message: "Restaurant not found!" });
     }
 
     const cordinates = await getCordinates();
@@ -29,7 +29,7 @@ async function createOrder(req, res) {
     items.forEach((item) => {
       orderTotal += item.count * item.foodPrice;
     });
-    
+
     const order = new Order({
       customer: {
         id: customer._id,
@@ -58,10 +58,10 @@ async function createOrder(req, res) {
     // Add order to Customer's Current orders
     await Customer.findByIdAndUpdate(customer._id, { $push: { currentOrders: savedOrder._id } });
 
-    return res.status(201).send({ "success": true, "order": order, "message": "Order Placed Successfully" });
+    return res.status(201).send({ success: true, data: order, message: "Order Placed Successfully" });
   } catch (error) {
     console.error('Error creating order:', error.message);
-    return res.status(500).send('Internal Server Error');
+    return res.status(500).send({ success: false, error: "Internal Server Error" });
   }
 }
 
@@ -92,21 +92,21 @@ async function updateOrderStatus(req, res) {
   const userId = req.user.id;
   const user = await User.findById(userId);
   if (!user) {
-    return res.status(404).send("Restaurant Not Found");
+    return res.status(404).send({ success: false, error: "Restaurant Not Found" });
   }
   const { orderStatus } = req.body;
   const orderId = req.params.id;
 
   const isValidOrderStatus = Order.schema.path("orderStatus").enumValues.includes(orderStatus);
   if (!isValidOrderStatus) {
-    return res.status(400).send("Invalid Order Status Value");
+    return res.status(400).send({ success: false, error: "Invalid Order Status Value" });
   }
   const updatedOrder = await Order.findByIdAndUpdate(orderId, { $set: { orderStatus } }, { new: true });
 
   if (!updatedOrder) {
-    return res.status(404).send("Order Not Found");
+    return res.status(404).send({ success: false, error: "Order Not Found" });
   }
-  return res.status(201).json({ "success": true, "orderstatus": updatedOrder.orderStatus });
+  return res.status(221).json({ success: true, message : "Order Status Updated" ,orderstatus: updatedOrder.orderStatus });
 }
 
 const pickOrder = async (req, res) => {
@@ -115,13 +115,13 @@ const pickOrder = async (req, res) => {
   // Find the order
   const order = await Order.findById(id);
   if (!order) {
-    return res.status(404).json({ error: 'Order not found' });
+    return res.status(404).json({success: false, error: 'Order not found' });
   }
   // const customer = Customer.findById(order.customer.id);
   // Find the delivery man
   const deliveryMan = await DeliveryMan.findOne({ user_id: user.id });
   if (!deliveryMan) {
-    return res.status(404).json({ error: 'Delivery Man not found' });
+    return res.status(404).json({success : false, error: 'Delivery Man not found' });
   }
   // Check if the order status is "Prepared"
   if (order.orderStatus === "Prepared") {
@@ -161,9 +161,9 @@ const pickOrder = async (req, res) => {
       html: otpTemplate.replace('{{otp}}', OTP)
     });
     await Order.updateOne({ _id: order._id }, { $set: { orderStatus: "Picked" } });
-    return res.status(201).json({ message: "Order Picked" });
+    return res.status(201).json({ success : true, message: "Order Picked" });
   } else {
-    return res.status(400).json({ error: 'Order is not prepared for picking' });
+    return res.status(400).json({ success : false,error: 'Order is not prepared for picking' });
   }
 };
 
@@ -176,14 +176,14 @@ const completeOrder = async (req, res) => {
     const order = await Order.findById(orderId);
 
     if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ success : false , error: 'Order not found' });
     }
 
     // Verify OTP
     const isOTPVerified = await order.verifyOTP(OTP);
 
     if (!isOTPVerified) {
-      return res.status(400).json({ error: 'Invalid OTP' });
+      return res.status(400).json({ success : false , error: 'Invalid OTP' });
     }
 
     // Update order status to "Completed"
@@ -212,10 +212,10 @@ const completeOrder = async (req, res) => {
       }
     );
     // Return success response
-    return res.status(200).json({ message: 'Order completed successfully' });
+    return res.status(200).json({ success  : true , message: 'Order completed successfully' });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ success : false ,error: 'Internal Server Error' });
   }
 };
 
@@ -223,18 +223,18 @@ const getPastOrders = async (req, res) => {
   const deliveryManId = req.user._id;
   const deliveryMan = await DeliveryMan.findOne({ user_id: deliveryManId });
   if (!deliveryMan) {
-    return res.status(404).json({ 'error': 'Delivery Peron Not Found' });
+    return res.status(404).json({ success : false , error: 'Delivery Peron Not Found' });
   }
-  return res.status(200).json({ 'success': true, 'pastOrders': deliveryMan.deliveryHistory });
+  return res.status(200).json({ success: true, data: deliveryMan.deliveryHistory });
 }
 
 const getCurrentOrders = async (req, res) => {
   const deliveryManId = req.user._id;
   const deliveryMan = await DeliveryMan.findOne({ user_id: deliveryManId });
   if (!deliveryMan) {
-    return res.status(404).json({ 'error': 'Delivery Peron Not Found' });
+    return res.status(404).json({ success : false,error: 'Delivery Peron Not Found' });
   }
-  return res.status(200).json({ 'success': true, 'currentOrders': deliveryMan.currentOrders });
+  return res.status(200).json({ success: true, data: deliveryMan.currentOrders });
 }
 
 module.exports = {
