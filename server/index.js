@@ -3,7 +3,7 @@ const app = express();
 const mongoose = require("mongoose");
 const cookieparser = require('cookie-parser');
 const cors = require("cors");
-const { DB_CONNECTION_STRING, PORT } = require("./config/appConfig");
+const { DB_CONNECTION_STRING, PORT,LOCALHOST_ORIGIN_URL } = require("./config/appConfig");
 const authRoutes = require('./routes/Auths');
 const restaurantsRoutes = require("./routes/Restaurants");
 const deliveryManRoutes = require("./routes/DeliveryMen");
@@ -60,7 +60,7 @@ app.use(express.urlencoded({ extended: true }));
 // Enable cross-origin resource sharing using cors() middleware
 app.use(cors(
   {
-    origin: "http://localhost:8080",
+    origin: LOCALHOST_ORIGIN_URL,
     credentials: true,
     methods: "GET,POST",
   }

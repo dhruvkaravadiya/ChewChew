@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const cookieToken = require("../helpers/utils/cookieToken");
-const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, IPINFO_API_URL,IPINFO_API_TOKEN } = require("../config/appConfig");
+const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, IPINFO_API_URL, IPINFO_API_TOKEN } = require("../config/appConfig");
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
@@ -15,6 +15,26 @@ cloudinary.v2.config({
 });
 
 async function userSignUp(req, res) {
+  const { name, email, password } = req.body;
+
+  //check if data is there, if not throw error message
+  if (!name || !email || !password) {
+    return res.status(200).send({
+      status: false,
+      message: "All Fields Are Required"
+    })
+  }
+
+  //check if user exists wit provided email
+  const userExists = await User.findOne({ email });
+
+  //if user with email doesn't exists, throw the error
+  if (!userExists) {
+    return res.status(404).send({
+      status: false,
+      message: "User does not exist, Try Sign Up"
+    });
+  }
   try {
     // Step 1: Check if a file (photo) was uploaded
     if (req.files && req.files.photo) {
@@ -58,7 +78,7 @@ async function userSignUp(req, res) {
         html: signUpTemplate,
       });
       // Set cookie and respond
-      await cookieToken(user, res);
+      await cookieToken(user, res, "Account Created Successfully");
     } else {
       // Handle the case where no photo was uploaded
       return res.status(400).send("Photo is required");
@@ -109,26 +129,26 @@ async function forgotPassword(req, res) {
     return res.status(404).send("Email was not registered");
   }
 
-  const forgotPasswordToken = user.getForgotPasswordToken();
+  const forgotPasswordToken = await user.getForgotPasswordToken();
   //temporarily turning off the { required : true } as we want to
   //just save the forgotPasswordToken and forgotPasswordExpiry
   //from the method getForgotPasswordToken
-  user.save({ validateBeforeSave: false });
+  await user.save({ validateBeforeSave: false });
 
   const url = `${req.protocol}://${req.get(
     "host"
   )}/password/reset/${forgotPasswordToken}`;
   const message = `Follow this link \n\n ${url}`;
-  //handle the case when there is error in sending the email ,as we also need
-  // to make the two forgotPasswordToken and forgotPasswordExpiry to be undefined
-
+  
   try {
     await sendEmailToGmail({
       email: user.email,
       subject: "Forgot Password",
-      message,
+      content : message,
     });
     res.status(200).json({ success: true, message: "Email Sent Successfully" });
+  //handle the case when there is error in sending the email ,as we also need
+  // to make the two forgotPasswordToken and forgotPasswordExpiry to be undefined
   } catch (error) {
     user.forgotPasswordToken = undefined;
     user.forgotPasswordExpiry = undefined;
@@ -227,17 +247,17 @@ async function updateUser(req, res) {
   res.status(200).json({ success: true, updatedUser: updatedUser });
 }
 
-async function changeRole(req,res){
-  const roles = ["Customer", "Restaurant","DeliveryMan"];
+async function changeRole(req, res) {
+  const roles = ["Customer", "Restaurant", "DeliveryMan"];
   const { newRole } = req.body;
   console.log(newRole);
   if (!roles.includes(newRole)) {
     return res.status(400).json({ error: 'Invalid role' });
   }
   const userId = req.user.id;
-  const user = await User.findByIdAndUpdate(userId, 
-    { role : newRole } ,
-    {new : true, runValidators : true} 
+  const user = await User.findByIdAndUpdate(userId,
+    { role: newRole },
+    { new: true, runValidators: true }
   );
   if (!user) {
     return res.status(404).json({ error: 'User not found' });

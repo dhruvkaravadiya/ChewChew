@@ -19,4 +19,5 @@ module.exports = {
     IP_INFO_URL: process.env.IP_INFO_URL,
     IPINFO_API_TOKEN: process.env.IPINFO_API_TOKEN,
     OTP_EXPIRY : process.env.OTP_EXPIRY,
+    LOCALHOST_ORIGIN_URL : process.env.LOCALHOST_ORIGIN_URL,
 }

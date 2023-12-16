@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
-const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS,GMAIL_APP_PASSWORD,GMAIL_EMAIL_ID } = require("../../config/appConfig");
+const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, GMAIL_APP_PASSWORD, GMAIL_EMAIL_ID } = require("../../config/appConfig");
 
-async function sendEmailToMailTrap(req,res){
+async function sendEmailToMailTrap(req, res) {
   try {
     const transporter = nodemailer.createTransport({
       host: SMTP_HOST,
@@ -28,20 +28,31 @@ async function sendEmailToMailTrap(req,res){
   }
 }
 async function sendEmailToGmail(options) {
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-        user: GMAIL_EMAIL_ID,
-        pass: GMAIL_APP_PASSWORD,
-      },
-    });
-    const message = {
-      from: 'karavadiadhruv22@gmail.com',
-      to: options.email,
-      subject: options.subject,
-      html: options.html,
-    };
-    await transporter.sendMail(message);
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: GMAIL_EMAIL_ID,
+      pass: GMAIL_APP_PASSWORD,
+    },
+  });
+  const message = {
+    from: 'karavadiadhruv22@gmail.com',
+    to: options.email,
+    subject: options.subject,
+    html: options.html,
+  };
+  // Check if the options object has an html property
+  if (options.html) {
+    message.html = options.html;
+  } else if (options.content) {
+    // Check if the options object has a content property
+    message.text = options.content;
+  } else {
+    // Handle the case when neither html nor content is provided
+    throw new Error('Either html or content must be provided in the options.');
+  }
+
+  await transporter.sendMail(message);
 }
 
 module.exports = {
