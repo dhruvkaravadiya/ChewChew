@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const cookieToken = require("../helpers/utils/cookieToken");
-const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, IPINFO_API_URL, IPINFO_API_TOKEN } = require("../config/appConfig");
+const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, LOCALHOST_ORIGIN } = require("../config/appConfig");
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
@@ -20,8 +20,8 @@ async function userSignUp(req, res) {
   //check if data is there, if not throw error message
   if (!name || !email || !password) {
     return res.status(200).send({
-      status: false,
-      message: "All Fields Are Required"
+      success: false,
+      error: "All Fields Are Required"
     })
   }
 
@@ -32,7 +32,7 @@ async function userSignUp(req, res) {
   if (!userExists) {
     return res.status(404).send({
       status: false,
-      message: "User does not exist, Try Sign Up"
+      error: "User does not exist, Try Sign Up"
     });
   }
   try {
@@ -79,9 +79,10 @@ async function userSignUp(req, res) {
       });
       // Set cookie and respond
       await cookieToken(user, res, "Account Created Successfully");
+      res.status(201).send({ success: true, message: "Account Created Successfully", user });
     } else {
       // Handle the case where no photo was uploaded
-      return res.status(400).send("Photo is required");
+      return res.status(400).send({ success: false, error: "Photo is required" });
     }
   } catch (error) {
     console.error("Error during User SignUp:", error);
@@ -96,11 +97,11 @@ async function userLogin(req, res) {
     $or: [{ name: req.body.name }, { email: req.body.email }],
   }).select("+password");
   if (!user) {
-    return res.status(404).send("User Not Found");
+    return res.status(404).send({ success: false, error: "User Not Found" });
   }
   const isPasswordCorrect = await user.verifyPassword(req.body.password);
   if (!isPasswordCorrect) {
-    return res.status(400).send("Password is incorrect");
+    return res.status(400).send({ succes: false, error: "Password is incorrect" });
   }
   const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY, {
     expiresIn: JWT_EXPIRY,
@@ -110,7 +111,7 @@ async function userLogin(req, res) {
   res
     .cookie("access_token", token, { httpOnly: true })
     .status(200)
-    .json(otherProperties);
+    .json({ success: true, message: "Login Successful", data: otherProperties });
 }
 
 async function userLogout(req, res) {
@@ -126,7 +127,7 @@ async function forgotPassword(req, res) {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).send("Email was not registered");
+    return res.status(404).send({ success: false, error: "Email was not registered" });
   }
 
   const forgotPasswordToken = await user.getForgotPasswordToken();
@@ -135,25 +136,23 @@ async function forgotPassword(req, res) {
   //from the method getForgotPasswordToken
   await user.save({ validateBeforeSave: false });
 
-  const url = `${req.protocol}://${req.get(
-    "host"
-  )}/password/reset/${forgotPasswordToken}`;
+  const url = `${req.protocol}://${LOCALHOST_ORIGIN}/password/reset/${forgotPasswordToken}`;
   const message = `Follow this link \n\n ${url}`;
-  
+
   try {
     await sendEmailToGmail({
       email: user.email,
       subject: "Forgot Password",
-      content : message,
+      content: message,
     });
     res.status(200).json({ success: true, message: "Email Sent Successfully" });
-  //handle the case when there is error in sending the email ,as we also need
-  // to make the two forgotPasswordToken and forgotPasswordExpiry to be undefined
+    //handle the case when there is error in sending the email ,as we also need
+    // to make the two forgotPasswordToken and forgotPasswordExpiry to be undefined
   } catch (error) {
     user.forgotPasswordToken = undefined;
     user.forgotPasswordExpiry = undefined;
     await user.save({ validateBeforeSave: false });
-    return res.status(500).send(error.message);
+    return res.status(500).send({ success: false, error: error.message });
   }
 }
 
@@ -170,15 +169,15 @@ async function resetPassword(req, res) {
   });
 
   if (!user) {
-    return res.status(400).send("Token invalid or expired");
+    return res.status(400).send({ success: false, error: "Token invalid or expired" });
   }
 
   if (req.body.password !== req.body.confirmPassword) {
-    return res.status(400).send("Password and Confirm Password do not match");
+    return res.status(400).send({ success: false, error: "Password and Confirm Password do not match" });
   }
 
   // Update the user's password
-  user.password = user.createHashedPassword(req.body.password);
+  user.password = User.createHashedPassword(req.body.password);
   user.forgotPasswordToken = undefined;
   user.forgotPasswordExpiry = undefined;
   await user.save();
@@ -188,16 +187,16 @@ async function resetPassword(req, res) {
       httpOnly: true,
       expiresIn: new Date(Date.now() + TOKEN_EXPIRY),
     })
-    .status(200)
+    .status(202)
     .json({ success: true, message: "Password Reset Successfull" });
 }
 
 async function getLoggedInUserDetails(req, res) {
   try {
     const user = await User.findById(req.user.id);
-    res.status(200).json({ success: true, user: user });
+    res.status(200).json({ success: true, data: user });
   } catch (error) {
-    return res.status(500).send(error.message);
+    return res.status(500).send({ success: false, error: error.message });
   }
 }
 
@@ -206,11 +205,12 @@ async function updateLoggedInUserPassword(req, res) {
   const user = await User.findById(req.user.id).select("+password");
   const isPasswordCorrect = await user.verifyPassword(oldPassword);
   if (!isPasswordCorrect) {
-    return res.status(400).send("Password is incorrect");
+    return res.status(400).send({ success: false, error: "Password is incorrect" });
   }
   user.password = await User.createHashedPassword(newPassword);
   await user.save();
   await cookieToken(user, res);
+  res.status(202).send({ success: true, message: "Password Update Successful" });
 }
 
 async function updateUser(req, res) {
@@ -242,9 +242,9 @@ async function updateUser(req, res) {
     runValidators: true,
   });
   if (!updatedUser) {
-    return res.status(404).json({ success: false, message: "User not found" });
+    return res.status(404).json({ success: false, error: "User not found" });
   }
-  res.status(200).json({ success: true, updatedUser: updatedUser });
+  res.status(202).json({ success: true, message: "User Details Updated", data: updatedUser });
 }
 
 async function changeRole(req, res) {
@@ -252,7 +252,7 @@ async function changeRole(req, res) {
   const { newRole } = req.body;
   console.log(newRole);
   if (!roles.includes(newRole)) {
-    return res.status(400).json({ error: 'Invalid role' });
+    return res.status(400).json({ success : false , error: 'Invalid role' });
   }
   const userId = req.user.id;
   const user = await User.findByIdAndUpdate(userId,
@@ -260,9 +260,9 @@ async function changeRole(req, res) {
     { new: true, runValidators: true }
   );
   if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    return res.status(404).json({success : false ,  error: 'User not found' });
   }
-  res.status(200).json({ message: 'Role updated successfully', user });
+  res.status(202).json({ success: true, message: 'Role updated successfully', data: user });
 }
 
 module.exports = {
