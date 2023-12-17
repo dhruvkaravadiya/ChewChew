@@ -15,10 +15,10 @@ cloudinary.v2.config({
 });
 
 async function userSignUp(req, res) {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   // Check if data is there, if not throw error message
-  if (!name || !email || !password) {
+  if (!name || !email || !password || !role) {
     return res.status(200).send({
       success: false,
       error: "All Fields Are Required"
@@ -33,7 +33,7 @@ async function userSignUp(req, res) {
   // If user with email doesn't exist, throw the error
   if (userExists) {
     return res.status(404).send({
-      status: false,
+      success: false,
       error: "User already exist, Try different email"
     });
   }
@@ -57,6 +57,7 @@ async function userSignUp(req, res) {
       const user = new User({
         name,
         email,
+        role,
         password: hashedPassword,
         // Add Cloudinary photo details to the user model
         photo: {
@@ -95,21 +96,21 @@ async function userSignUp(req, res) {
 
 
 async function userLogin(req, res) {
-  const user = await User.findOne({
-    $or: [{ name: req.body.name }, { email: req.body.email }],
-  }).select("+password");
+  const user = await User.findOne(
+    { email: req.body.email }
+  ).select("+password");
   if (!user) {
     return res.status(404).send({ success: false, error: "User Not Found" });
   }
   const isPasswordCorrect = await user.verifyPassword(req.body.password);
   if (!isPasswordCorrect) {
-    return res.status(400).send({ succes: false, error: "Password is incorrect" });
+    return res.status(400).send({ success: false, error: "Password is incorrect" });
   }
   const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY, {
     expiresIn: JWT_EXPIRY,
   });
   const { password, ...otherProperties } = user._doc;
-  console.log("Login Success");
+  console.log("Login Success : ", user.role);
   res
     .cookie("access_token", token, { httpOnly: true })
     .status(200)
@@ -138,7 +139,7 @@ async function forgotPassword(req, res) {
   //from the method getForgotPasswordToken
   await user.save({ validateBeforeSave: false });
 
-  const url = `${req.protocol}://${LOCALHOST_ORIGIN}/password/reset/${forgotPasswordToken}`;
+  const url = `${LOCALHOST_ORIGIN}/password/reset/${forgotPasswordToken}`;
   const message = `Follow this link \n\n ${url}`;
 
   try {
@@ -254,7 +255,7 @@ async function changeRole(req, res) {
   const { newRole } = req.body;
   console.log(newRole);
   if (!roles.includes(newRole)) {
-    return res.status(400).json({ success : false , error: 'Invalid role' });
+    return res.status(400).json({ success: false, error: 'Invalid role' });
   }
   const userId = req.user.id;
   const user = await User.findByIdAndUpdate(userId,
@@ -262,7 +263,7 @@ async function changeRole(req, res) {
     { new: true, runValidators: true }
   );
   if (!user) {
-    return res.status(404).json({success : false ,  error: 'User not found' });
+    return res.status(404).json({ success: false, error: 'User not found' });
   }
   res.status(202).json({ success: true, message: 'Role updated successfully', data: user });
 }
