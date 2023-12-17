@@ -17,7 +17,7 @@ cloudinary.v2.config({
 async function userSignUp(req, res) {
   const { name, email, password } = req.body;
 
-  //check if data is there, if not throw error message
+  // Check if data is there, if not throw error message
   if (!name || !email || !password) {
     return res.status(200).send({
       success: false,
@@ -25,16 +25,19 @@ async function userSignUp(req, res) {
     })
   }
 
-  //check if user exists wit provided email
+  let hashedPassword; // Declare the password variable here
+
+  // Check if user exists with provided email
   const userExists = await User.findOne({ email });
 
-  //if user with email doesn't exists, throw the error
-  if (!userExists) {
+  // If user with email doesn't exist, throw the error
+  if (userExists) {
     return res.status(404).send({
       status: false,
-      error: "User does not exist, Try Sign Up"
+      error: "User already exist, Try different email"
     });
   }
+
   try {
     // Step 1: Check if a file (photo) was uploaded
     if (req.files && req.files.photo) {
@@ -50,8 +53,7 @@ async function userSignUp(req, res) {
       const photoId = result.public_id;
       const photoUrl = result.secure_url;
       // Step 4: Create or update the user's data with the Cloudinary photo details
-      const { name, email, password } = req.body;
-      const hashedPassword = User.createHashedPassword(password);
+      hashedPassword = User.createHashedPassword(password); // Move this line here
       const user = new User({
         name,
         email,
@@ -78,7 +80,7 @@ async function userSignUp(req, res) {
         html: signUpTemplate,
       });
       // Set cookie and respond
-      await cookieToken(user, res, "User Created Succesfully");
+      await cookieToken(user, res, "User Created Successfully");
     } else {
       // Handle the case where no photo was uploaded
       return res.status(400).send({ success: false, error: "Photo is required" });
@@ -90,6 +92,7 @@ async function userSignUp(req, res) {
       .json({ success: false, message: "Internal Server Error" });
   }
 }
+
 
 async function userLogin(req, res) {
   const user = await User.findOne({
