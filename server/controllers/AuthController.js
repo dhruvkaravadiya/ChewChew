@@ -204,17 +204,25 @@ async function getLoggedInUserDetails(req, res) {
 }
 
 async function updateLoggedInUserPassword(req, res) {
-  const { oldPassword, newPassword } = req.body;
-  const user = await User.findById(req.user.id).select("+password");
-  const isPasswordCorrect = await user.verifyPassword(oldPassword);
-  if (!isPasswordCorrect) {
-    return res.status(400).send({ success: false, error: "Password is incorrect" });
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(req.user.id).select("+password");
+    const isPasswordCorrect = await user.verifyPassword(oldPassword);
+
+    if (!isPasswordCorrect) {
+      return res.status(400).send({ success: false, error: "Password is incorrect" });
+    }
+
+    user.password = await User.createHashedPassword(newPassword);
+    await user.save();
+
+    await cookieToken(user, res, "Password Update Successfully");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ success: false, error: "Internal Server Error" });
   }
-  user.password = await User.createHashedPassword(newPassword);
-  await user.save();
-  await cookieToken(user, res, "Cookie set");
-  res.status(202).send({ success: true, message: "Password Update Successful" });
 }
+
 
 async function updateUser(req, res) {
   const newData = {
