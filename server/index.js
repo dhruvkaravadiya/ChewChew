@@ -62,7 +62,7 @@ app.use(cors(
   {
     origin: LOCALHOST_ORIGIN,
     credentials: true,
-    methods: "GET,POST",
+    methods: "GET,POST,DELETE,PUT",
   }
 ));
 
