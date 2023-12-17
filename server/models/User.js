@@ -9,7 +9,8 @@ const userSchema = mongoose.Schema({
     name: {
         type: String,
         required: [true, "Please enter name"],
-        maxlength: [40, "Name should be under 40 characters"]
+        maxlength: [40, "Name should be under 40 characters"],
+        unique:true
     },
     email: {
         type: String,
@@ -32,8 +33,8 @@ const userSchema = mongoose.Schema({
         id: {
             type: String,
         },
-        photoUrl: { 
-            type: String, 
+        photoUrl: {
+            type: String,
         }
     },
     role: {

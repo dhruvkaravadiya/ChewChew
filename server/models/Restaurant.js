@@ -40,17 +40,17 @@ const restaurantSchema = mongoose.Schema(
         required: [true, "Please enter Pincode"],
       },
     },
-    imgUrl: {
-      type: String,
-      required: [true, "Please provide the Restaurant Image"],
-      validate: {
-        validator: function (value) {
-          const urlRegex =
-            /^(https?:\/\/)?([\w\d]+\.)?[\w\d]+\.\w{2,}\/?.*$/;
-          return urlRegex.test(value);
-        },
-        message: "Invalid Image Url",
+    location:{
+      latitude:String,
+      longitude:String
+    },
+    photo: {
+      id: {
+          type: String,
       },
+      photoUrl: {
+          type: String,
+      }
     },
     totalRatings: {
       type: Number,
