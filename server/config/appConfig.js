@@ -20,4 +20,5 @@ module.exports = {
     IPINFO_API_TOKEN: process.env.IPINFO_API_TOKEN,
     OTP_EXPIRY : process.env.OTP_EXPIRY,
     LOCALHOST_ORIGIN : process.env.LOCALHOST_ORIGIN,
+    MAILING_EMAIL_ID : process.env.MAILING_EMAIL_ID,
 }
