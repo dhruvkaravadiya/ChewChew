@@ -141,7 +141,6 @@ async function updateMenuItem(req, res) {
 }
 
 async function deleteMenuItem(req, res) {
-    console.log("Delete method called");
     const orderId = req.params.id;
     const deletedRestaurant = await Restaurant.findOneAndUpdate(
         { user_id: req.user._id },

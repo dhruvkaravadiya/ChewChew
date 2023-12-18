@@ -8,6 +8,7 @@ const { getCordinates } = require("../helpers/utils/getCordinates");
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const fs = require("fs");
 const path = require("path");
+const { startSession } = require('mongoose');
 
 //create a new Order
 async function createOrder(req, res) {
@@ -88,6 +89,7 @@ function initializeSocket(server) {
 }
 
 async function updateOrderStatus(req, res) {
+
   console.log('controller update order function called');
   const userId = req.user.id;
   const user = await User.findById(userId);
@@ -96,6 +98,13 @@ async function updateOrderStatus(req, res) {
   }
   const { orderStatus } = req.body;
   const orderId = req.params.id;
+  const order = await Order.findById(orderId);
+  if (!order) {
+    return res.status(400).json({ success: false, error: "Order Not Found" });
+  }
+  if (order.orderStatus != "Placed") {
+    return res.status(400).json({ success: false, error: "Order Status must be Placed" });
+  }
   const allowedOrderStatuses = ["Prepared", "Preparing"];
   const isValidOrderStatus = allowedOrderStatuses.includes(orderStatus);
   if (!isValidOrderStatus) {
@@ -114,7 +123,7 @@ const pickOrder = async (req, res) => {
   const { id } = req.params;
   // Find the order
   const order = await Order.findById(id);
-  if (!order) {
+  if (!order || order.orderStatus != "Prepared") {
     return res.status(404).json({ success: false, error: 'Order not found' });
   }
   // const customer = Customer.findById(order.customer.id);
@@ -168,95 +177,129 @@ const pickOrder = async (req, res) => {
 };
 
 const completeOrder = async (req, res) => {
-  const orderId = req.params.id;
-  const OTP = req.body.OTP;
+  const session = await Order.startSession();
 
-  // Find the order
-  const order = await Order.findById(orderId);
+  try {
+    await session.withTransaction(async () => {
+      const orderId = req.params.id;
+      const OTP = req.body.OTP;
 
-  if (!order) {
-    return res.status(404).json({ success: false, error: 'Order not found' });
+      // Find the order
+      const order = await Order.findById(orderId);
+
+      if (!order) {
+        throw new Error('Order not found');
+      }
+
+      // Verify OTP
+      const isOTPVerified = await order.verifyOTP(OTP);
+
+      if (!isOTPVerified) {
+        throw new Error('Invalid OTP');
+      }
+
+      // Update order status to "Completed"
+      order.orderStatus = 'Completed';
+      order.OTP = undefined;
+      order.OTPExpiry = undefined;
+      await order.save();
+
+      // Move order from current orders to past orders for customer
+      const updatedCustomer = await Customer.findByIdAndUpdate(order.customer.id, {
+        $pull: { currentOrders: order._id },
+        $push: { pastOrders: order._id },
+      });
+      if (!updatedCustomer) {
+        throw new Error('Customer not updated');
+      }
+
+      // Move order from current orders to past orders for restaurant
+      const updatedRestaurant = await Restaurant.findByIdAndUpdate(order.restaurant.id, {
+        $pull: { currentOrders: order._id },
+        $push: { pastOrders: order._id },
+      });
+      if (!updatedRestaurant) {
+        throw new Error('Restaurant not updated');
+      }
+
+      // Move order from current orders to delivery history for delivery man
+      const updatedDeliveryMan = await DeliveryMan.findOneAndUpdate(
+        { 'currentOrders.orderId': order._id },
+        {
+          $pull: { 'currentOrders': { orderId: order._id } },
+          $push: { deliveryHistory: orderId },
+        }
+      );
+      if (!updatedDeliveryMan) {
+        throw new Error('Delivery Man not updated');
+      }
+
+      await session.commitTransaction();
+    });
+
+    // Return success response
+    return res.status(200).json({ success: true, message: 'Order completed successfully' });
+  } catch (error) {
+    // An error occurred, abort the transaction
+    await session.abortTransaction();
+    console.error('Error completing order:', error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  } finally {
+    // End the session
+    session.endSession();
   }
-
-  // Verify OTP
-  const isOTPVerified = await order.verifyOTP(OTP);
-
-  if (!isOTPVerified) {
-    return res.status(400).json({ success: false, error: 'Invalid OTP' });
-  }
-
-  // Update order status to "Completed"
-  order.orderStatus = 'Completed';
-  order.OTP = undefined;
-  order.OTPExpiry = undefined;
-  await order.save();
-
-  // Move order from current orders to past orders for customer
-  await Customer.findByIdAndUpdate(order.customer.id, {
-    $pull: { currentOrders: order._id },
-    $push: { pastOrders: order._id },
-  });
-
-  // Move order from current orders to past orders for restaurant
-  await Restaurant.findByIdAndUpdate(order.restaurant.id, {
-    $pull: { currentOrders: order._id },
-    $push: { pastOrders: order._id },
-  });
-  // Move order from current orders to delivery history for delivery man
-  await DeliveryMan.findOneAndUpdate(
-    { 'currentOrders.orderId': order._id },
-    {
-      $pull: { 'currentOrders': { orderId: order._id } },
-      $push: { deliveryHistory: orderId },
-    }
-  );
-  // Return success response
-  return res.status(200).json({ success: true, message: 'Order completed successfully' });
 };
 
 const cancelOrder = async (req, res) => {
-  const orderId = req.params.id;
-  const order = await Order.findOne(orderId);
-  if (!order) {
-    return res.status(404).json({ success: false, error: 'Order not found' });
-  }
-  if (order.orderStatus != 'Placed') {
-    return res.status(404).json({success : false, error: ''});
-  }
-  const cancelStatus = req.body.orderStatus;
-  if (!cancelStatus) {
-    return res.status(400).json({ success: false, error: "Please enter the status" });
-  }
-  if (cancelStatus != "Canceled") {
-    return res.status(400).json({ success: false, error: "Provide correct status" });
-  }
-  const updatedRestaurant = await Restaurant.findOneAndUpdate(order.restaurant.id, {
-    $pull: { currentOrders: order._id }
-  });
-  if(!updatedRestaurant){
-    return res.status(404).json({ success: false, error: "Restaurant not found"});
-  }
-  const updatedCustomer = await Customer.findOneAndUpdate(order.customer.id, {
-    $pull: { currentOrders: order._id }
-  });
-  if(!updatedCustomer){
-    return res.status(404).json({success : false, error : "Customer not found"});
-  }
-  const updatedDeliveryMan = await DeliveryMan.findOneAndUpdate(
-    { 'currentOrders.orderId': order._id },
-    {
-      $pull: { 'currentOrders': { orderId: order._id } }
-    });
-    if(!updatedDeliveryMan){
-      return res.status(404).json({success : false, error: "Delivery Man not found"});
-    }
+  const session = await Order.startSession();
 
-  const deletedOrder = await Order.findByIdAndDelete(orderId);
-  if(!deletedOrder){
-    return res.status(404).json({success:false, error : "Order not deleted"});
+  try {
+    await session.withTransaction(async () => {
+      const orderId = req.params.id;
+      const order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ success: false, error: 'Order not found' });
+      }
+      if (order.orderStatus !== 'Placed') {
+        return res.status(400).json({ success: false, error: 'Order cannot be canceled' });
+      }
+
+      const updatedRestaurant = await Restaurant.findByIdAndUpdate(order.restaurant.id, {
+        $pull: { currentOrders: order._id }
+      });
+      if (!updatedRestaurant) {
+        return res.status(404).json({ success: false, error: "Restaurant not found" });
+      }
+
+      const updatedCustomer = await Customer.findByIdAndUpdate(order.customer.id, {
+        $pull: { currentOrders: order._id }
+      });
+      if (!updatedCustomer) {
+        return res.status(404).json({ success: false, error: "Customer not found" });
+      }
+
+      const deletedOrder = await Order.findByIdAndDelete(orderId);
+      if (!deletedOrder) {
+        return res.status(404).json({ success: false, error: "Order not deleted" });
+      }
+
+      // Commit the transaction here after successful deletion
+      await session.commitTransaction();
+
+      // Return success response after successful deletion
+      return res.status(200).json({ success: true, message: "Order deleted successfully" });
+    });
+  } catch (error) {
+    // An error occurred, abort the transaction
+    await session.abortTransaction();
+    console.error('Error canceling order:', error.message);
+    return res.status(500).json({ success: false, error: error.message });
+  } finally {
+    // End the session
+    session.endSession();
   }
-  res.status(204).json({success : true , message : "Order deleted successfully"});
 }
+
 
 const getPastOrders = async (req, res) => {
   const deliveryManId = req.user._id;
@@ -279,10 +322,11 @@ const getCurrentOrders = async (req, res) => {
 const getPreparedOrders = async (req, res) => {
   const preparedOrders = await Order.find({ orderStatus: "Prepared" });
   if (preparedOrders.length == 0) {
-    return res.status(204).json({ success: false, error: 'No Prepared Orders' });
+    return res.status(404).json({ success: false, error: 'No Prepared Orders' });
   }
   return res.status(200).json({ success: true, data: preparedOrders });
 }
+
 module.exports = {
   initializeSocket,
   createOrder,

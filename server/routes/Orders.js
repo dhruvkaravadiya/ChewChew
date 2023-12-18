@@ -35,15 +35,29 @@ router.put(
 router.get(
       '/past', 
       isLoggedIn, 
-      verifyRole(["DeliveryMan", "Restaurant"]), 
+      verifyRole(["DeliveryMan", "Restaurant","Customer"]), 
       asyncErrorHandler(orderController.getPastOrders)
 );
 // # get current orders
 router.get(
       '/current', 
       isLoggedIn, 
-      verifyRole("DeliveryMan"), 
+      verifyRole(["DeliveryMan","Restaurant","Customer"]), 
       asyncErrorHandler(orderController.getCurrentOrders)
+);
+//get prepared orders 
+router.get(
+      '/prepared', 
+      isLoggedIn,
+      verifyRole('DeliveryMan'),
+      asyncErrorHandler(orderController.getPreparedOrders)
+);
+// cancel order
+router.put(
+      '/cancel/:id',
+      isLoggedIn,
+      verifyRole('Customer'),
+      asyncErrorHandler(orderController.cancelOrder)
 );
 
 module.exports = router;

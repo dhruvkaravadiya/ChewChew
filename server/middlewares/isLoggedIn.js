@@ -4,7 +4,6 @@ const User = require('../models/User');
 
 module.exports = isLoggedIn = async (req, res, next) => {
   try {
-    console.log(req);
     const token = req.cookies.access_token || (req.header("Authorization") || "").replace("Bearer ", "");
     if (!token) {
       return res.status(401).json({success : false, error :"First Login to access this page"});
