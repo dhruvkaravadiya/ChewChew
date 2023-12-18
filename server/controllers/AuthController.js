@@ -97,25 +97,26 @@ async function userSignUp(req, res) {
   }
 }
 
-
 async function userLogin(req, res) {
   const user = await User.findOne(
     { email: req.body.email }
   ).select("+password");
   if (!user) {
-    return res.status(404).send({ success: false, error: "User Not Found" });
+    return res.status(404).json({ success: false, error: "User Not Found" });
   }
   const isPasswordCorrect = await user.verifyPassword(req.body.password);
   if (!isPasswordCorrect) {
-    return res.status(400).send({ success: false, error: "Password is incorrect" });
+    return res.status(400).json({ success: false, error: "Password is incorrect" });
   }
   const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY, {
     expiresIn: JWT_EXPIRY,
   });
   const { password, ...otherProperties } = user._doc;
   console.log("Login Success : ", user.role);
+  res.cookie("access_token", token, { httpOnly: true });
+  console.log('Token : ', req.headers['access_token']);
+  console.log(req);
   res
-    .cookie("access_token", token, { httpOnly: true })
     .status(200)
     .json({ success: true, message: "Login Successful", data: otherProperties });
 }
@@ -133,7 +134,7 @@ async function forgotPassword(req, res) {
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(404).send({ success: false, error: "Email was not registered" });
+    return res.status(404).json({ success: false, error: "Email was not registered" });
   }
 
   const forgotPasswordToken = await user.getForgotPasswordToken();
