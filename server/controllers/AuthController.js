@@ -15,10 +15,10 @@ cloudinary.v2.config({
 });
 
 async function userSignUp(req, res) {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
 
   // Check if data is there, if not throw error message
-  if (!name || !email || !password || !role) {
+  if (!name || !email || !password) {
     return res.status(200).send({
       success: false,
       error: "All Fields Are Required"
@@ -57,7 +57,7 @@ async function userSignUp(req, res) {
       const user = new User({
         name,
         email,
-        role,
+       
         password: hashedPassword,
         // Add Cloudinary photo details to the user model
         photo: {
@@ -66,6 +66,9 @@ async function userSignUp(req, res) {
         },
       });
 
+      if(req.body.role){
+        user.role = req.body.role;
+      }
       // Save user data to MongoDB
       await user.save();
 
