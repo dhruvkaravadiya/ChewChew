@@ -19,7 +19,7 @@ async function userSignUp(req, res) {
 
   // Check if data is there, if not throw error message
   if (!name || !email || !password) {
-    return res.status(200).send({
+    return res.status(200).json({
       success: false,
       error: "All Fields Are Required"
     })
@@ -32,7 +32,7 @@ async function userSignUp(req, res) {
 
   // If user with email doesn't exist, throw the error
   if (userExists) {
-    return res.status(404).send({
+    return res.status(404).json({
       success: false,
       error: "User already exist, Try different email"
     });
@@ -57,7 +57,6 @@ async function userSignUp(req, res) {
       const user = new User({
         name,
         email,
-       
         password: hashedPassword,
         // Add Cloudinary photo details to the user model
         photo: {
@@ -87,7 +86,7 @@ async function userSignUp(req, res) {
       await cookieToken(user, res, "User Created Successfully");
     } else {
       // Handle the case where no photo was uploaded
-      return res.status(400).send({ success: false, error: "Photo is required" });
+      return res.status(400).json({ success: false, error: "Photo is required" });
     }
   } catch (error) {
     console.error("Error during User SignUp:", error);
@@ -112,10 +111,8 @@ async function userLogin(req, res) {
     expiresIn: JWT_EXPIRY,
   });
   const { password, ...otherProperties } = user._doc;
-  console.log("Login Success : ", user.role);
+  console.log("Login successful");
   res.cookie("access_token", token, { httpOnly: true });
-  console.log('Token : ', req.headers['access_token']);
-  console.log(req);
   res
     .status(200)
     .json({ success: true, message: "Login Successful", data: otherProperties });
@@ -159,7 +156,7 @@ async function forgotPassword(req, res) {
     user.forgotPasswordToken = undefined;
     user.forgotPasswordExpiry = undefined;
     await user.save({ validateBeforeSave: false });
-    return res.status(500).send({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 }
 
@@ -176,11 +173,11 @@ async function resetPassword(req, res) {
   });
 
   if (!user) {
-    return res.status(400).send({ success: false, error: "Token invalid or expired" });
+    return res.status(400).json({ success: false, error: "Token invalid or expired" });
   }
 
   if (req.body.password !== req.body.confirmPassword) {
-    return res.status(400).send({ success: false, error: "Password and Confirm Password do not match" });
+    return res.status(400).json({ success: false, error: "Password and Confirm Password do not match" });
   }
 
   // Update the user's password
@@ -203,7 +200,7 @@ async function getLoggedInUserDetails(req, res) {
     const user = await User.findById(req.user.id);
     res.status(200).json({ success: true, data: user });
   } catch (error) {
-    return res.status(500).send({ success: false, error: error.message });
+    return res.status(500).json({ success: false, error: error.message });
   }
 }
 
@@ -214,7 +211,7 @@ async function updateLoggedInUserPassword(req, res) {
     const isPasswordCorrect = await user.verifyPassword(oldPassword);
 
     if (!isPasswordCorrect) {
-      return res.status(400).send({ success: false, error: "Password is incorrect" });
+      return res.status(400).json({ success: false, error: "Password is incorrect" });
     }
 
     user.password = await User.createHashedPassword(newPassword);
@@ -223,7 +220,7 @@ async function updateLoggedInUserPassword(req, res) {
     await cookieToken(user, res, "Password Update Successfully");
   } catch (error) {
     console.error(error);
-    return res.status(500).send({ success: false, error: "Internal Server Error" });
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 }
 
@@ -238,7 +235,6 @@ async function updateUser(req, res) {
     const user = await User.findById(req.user.id);
     const imageId = user.photo.id;
     const response = await cloudinary.v2.uploader.destroy(imageId);
-    console.log("Destroyed Image : ", response);
     const result = await cloudinary.v2.uploader.upload(
       req.files.photo.tempFilePath,
       {
@@ -247,11 +243,9 @@ async function updateUser(req, res) {
         crop: "scale",
       }
     );
-    console.log("New Image : ", result);
     (newData.photo.id = result.public_id),
       (newData.photo.secure_url = result.secure_url);
   }
-  console.log(req.user.id);
   const updatedUser = await User.findByIdAndUpdate(userId, newData, {
     new: true,
     runValidators: true,
@@ -265,7 +259,6 @@ async function updateUser(req, res) {
 async function changeRole(req, res) {
   const roles = ["Customer", "Restaurant", "DeliveryMan"];
   const { newRole } = req.body;
-  console.log(newRole);
   if (!roles.includes(newRole)) {
     return res.status(400).json({ success: false, error: 'Invalid role' });
   }
