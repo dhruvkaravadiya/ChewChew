@@ -69,7 +69,7 @@ async function getAllRestaurants(req, res) {
     res.status(200).json({ success: true, data: restaurants });
 }
 
-async function getRestaurantById(req, res) {
+async function getRestaurantById(req, res) { 
     const restaurant = await Restaurant.findById(req.params.id);
     if (!restaurant) {
         return res.status(404).send({ success: false, error: "Restaurant not found" });
