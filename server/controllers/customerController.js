@@ -22,7 +22,7 @@ async function updateCustomerDetails(req, res) {
             { new: true }
       );
       if (!updatedCustomer) {
-            return res.status(404).send({success : false, error : "Customer not found"});
+            return res.status(404).json({success : false, error : "Customer not found"});
       }
       res.status(202).json({ success: true, message: "Customer Update Successfully", updatedCustomer : updatedCustomer });
 }
