@@ -224,37 +224,55 @@ async function updateLoggedInUserPassword(req, res) {
   }
 }
 
-
 async function updateUser(req, res) {
   const newData = {
     name: req.body.name,
     email: req.body.email,
   };
+
+  // Check if req.user exists and has an id property
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ success: false, error: "Unauthorized" });
+  }
+
   const userId = req.user.id;
+
   if (req.files) {
     const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
     const imageId = user.photo.id;
     const response = await cloudinary.v2.uploader.destroy(imageId);
     const result = await cloudinary.v2.uploader.upload(
       req.files.photo.tempFilePath,
       {
-        folder: "users",
+        folder: "FOA_users",
         width: 150,
         crop: "scale",
       }
     );
-    (newData.photo.id = result.public_id),
-      (newData.photo.secure_url = result.secure_url);
+      console.log(result);
+    newData.photo = {
+      id: result.public_id,
+      photoUrl: result.secure_url,
+    };
   }
+
   const updatedUser = await User.findByIdAndUpdate(userId, newData, {
     new: true,
     runValidators: true,
   });
+
   if (!updatedUser) {
     return res.status(404).json({ success: false, error: "User not found" });
   }
+
   res.status(202).json({ success: true, message: "User Details Updated", data: updatedUser });
 }
+
 
 async function changeRole(req, res) {
   const roles = ["Customer", "Restaurant", "DeliveryMan"];
@@ -262,6 +280,7 @@ async function changeRole(req, res) {
   if (!roles.includes(newRole)) {
     return res.status(400).json({ success: false, error: 'Invalid role' });
   }
+  console.log(req.user);
   const userId = req.user.id;
   const user = await User.findByIdAndUpdate(userId,
     { role: newRole },
