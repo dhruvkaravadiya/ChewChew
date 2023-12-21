@@ -9,7 +9,9 @@ const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const fs = require("fs");
 const path = require("path");
 const { startSession } = require('mongoose');
-
+const { STRIPE_TEST_SECRET_KEY, LOCALHOST_ORIGIN } = require('../config/appConfig');
+const { calculateOrderTotal } = require('../helpers/utils/calculateOrderTotal');
+const stripe = require("stripe")(STRIPE_TEST_SECRET_KEY);
 //create a new Order
 async function createOrder(req, res) {
   try {
@@ -50,7 +52,25 @@ async function createOrder(req, res) {
       orderStatus,
       placedAt: new Date(),
     });
+    const line_items = items.map((item) => ({
+      price_data: {
+        currency: "inr",
+        product_data: {
+          name: item.foodName
+        },
+        unit_amount: item.foodPrice * 100
+      },
+      quantity: item.count
+    }));
 
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: line_items,
+      mode: "payment",
+      success_url: LOCALHOST_ORIGIN,
+      cancel_url: LOCALHOST_ORIGIN
+    });
+    order.payment.sessionId = session.id
     const savedOrder = await order.save();
 
     // Add order to restaurant's orders
@@ -59,33 +79,15 @@ async function createOrder(req, res) {
     // Add order to Customer's Current orders
     await Customer.findByIdAndUpdate(customer._id, { $push: { currentOrders: savedOrder._id } });
 
-    return res.status(201).json({ success: true, data: order, message: "Order Placed Successfully" });
+    return res.status(201).json({
+      success: true, 
+      data: { order: order, payementSessionId: session.id, paymentUrl : session.url }, 
+      message: "Order Placed Successfully" 
+    });
   } catch (error) {
     console.error('Error creating order:', error.message);
     return res.status(500).json({ success: false, error: "Internal Server Error" });
   }
-}
-
-// Controller agrees to implement the function called "initializeSocket"
-function initializeSocket(server) {
-  const io = new Server(server);
-
-  io.on('connection', (socket) => {
-    console.log('a user connected');
-
-    socket.on('updatedStatus', (newStatus) => {
-      try {
-        io.emit('updatedStatus', newStatus);
-        updateOrderStatus();
-      } catch (error) {
-        console.error('Error emitting updatedStatus event:', error.message);
-      }
-    });
-
-    socket.on('disconnect', () => {
-      console.log('A user disconnected');
-    });
-  });
 }
 
 async function updateOrderStatus(req, res) {
@@ -328,7 +330,6 @@ const getPreparedOrders = async (req, res) => {
 }
 
 module.exports = {
-  initializeSocket,
   createOrder,
   updateOrderStatus,
   pickOrder,

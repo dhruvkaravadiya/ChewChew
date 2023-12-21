@@ -54,8 +54,9 @@ const orderSchema = mongoose.Schema({
             required: true,
             default: 0
       },
-      paymentMethod: String,
-      transactionId: String,
+      payment : {
+            sessionId : String
+      },
       paymentStatus: {
             type: String,
             enum: ["Pending", "Paid", "Failed"],
