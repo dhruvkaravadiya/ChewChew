@@ -9,12 +9,14 @@ const Order = require("../models/Order");
 router.post(
   "/create",
   isLoggedIn,
+  verifyRole("Restaurant"),
   asyncErrorHandler(restaurantController.createRestaurant)
 );
 //delete restaurant
 router.delete(
   "/delete/:id",
   isLoggedIn,
+  verifyRole("Restaurant"),
   asyncErrorHandler(restaurantController.deleteRestaurant)
 );
 //get all restaurants
@@ -62,7 +64,7 @@ router.get("/order/update/:id", (req, res) => {
     res.render("updateFoodStatus", { orderId, orderStatus });
   } catch (err) {
     console.log(err);
-  }
+  }99
 });
 
 module.exports = router;
