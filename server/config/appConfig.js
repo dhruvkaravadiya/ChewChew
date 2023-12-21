@@ -21,4 +21,5 @@ module.exports = {
     OTP_EXPIRY : process.env.OTP_EXPIRY,
     LOCALHOST_ORIGIN : process.env.LOCALHOST_ORIGIN,
     MAILING_EMAIL_ID : process.env.MAILING_EMAIL_ID,
+    COOKIE_MAX_AGE : process.env.COOKIE_MAX_AGE,
 }

@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const cookieToken = require("../helpers/utils/cookieToken");
-const { JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, LOCALHOST_ORIGIN } = require("../config/appConfig");
+const { COOKIE_MAX_AGE, JWT_SECRET_KEY, JWT_EXPIRY, TOKEN_EXPIRY, CLOUDINARY_NAME, CLOUDINARY_API, CLOUDINARY_API_SECRET, LOCALHOST_ORIGIN } = require("../config/appConfig");
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
@@ -115,8 +115,17 @@ async function userLogin(req, res) {
   // Emit event when user logs in
   io.emit("userLoggedIn", "User Logged In");
 
-  res.cookie("access_token", token, { httpOnly: true });
-  res.status(200).json({ success: true, message: "Login Successful", data: otherProperties });
+  res.cookie("access_token", token, { 
+    maxAge : COOKIE_MAX_AGE,
+    httpOnly: true ,
+    sameSite:"none",
+    secure: true
+  });
+  res.status(200).json({ 
+    success: true, 
+    message: "Login Successful", 
+    data: otherProperties 
+  });
 }
 
 async function userLogout(req, res) {
