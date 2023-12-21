@@ -15,7 +15,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       // Distance in kilometers  
       const distance = R * c;
-      return distance.toFixed(3);
+      return distance;
 }
 
 function toRadians(degrees) {

@@ -1,5 +1,3 @@
-const express = require("express");
-const app = express();
 const mongoose = require("mongoose");
 const cookieparser = require('cookie-parser');
 const cors = require("cors");
@@ -10,37 +8,31 @@ const deliveryManRoutes = require("./routes/DeliveryMen");
 const customerRoutes = require("./routes/Customers");
 const orderRoutes = require("./routes/Orders");
 const fileUpload = require("express-fileupload");
-const http = require("http");
 const path = require("path");
-const socketIo = require("socket.io");
 
-// Create an HTTP server
-const server = http.createServer(app);
+const {io, app, server, express} = require("./startup/io");
 
-// Create a new instance of Socket.io and pass the server instance
-const io = socketIo(server);
+// // io object configuration 
+// io.on("connection", (socket) => {
+//   console.log("A user connected");
 
-// io object configuration 
-io.on("connection", (socket) => {
-  console.log("A user connected");
-  socket.on("orderStatusUpdate", (data) => {
-    // Broadcast the order status update to all connected clients
-    io.emit("updateOrderStatus", data);
-  });
-  socket.on("disconnect", () => { console.log("A user disconnected") });
-});
+//   // Emit event when a user connects
+//   io.emit("userConnected");
 
-// temperory code
-// const DeliveryMan = require("./models/DeliveryMan");
-// //attach io to model
-// DeliveryMan.io = io;
+//   socket.on("orderStatusUpdate", (data) => {
+//     // Broadcast the order status update to all connected clients
+//     io.emit("updateOrderStatus", data);
+//   });
 
+//   socket.on("userLogin", (loginMessage) => {
+//     io.emit("userLogin",loginMessage);
+//   })
 
-// middleware to attach io object to request handlers
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
+//   socket.on("disconnect", () => { 
+//     console.log("A user disconnected");
+//   });
+// });
+
 
 mongoose
   .connect(DB_CONNECTION_STRING, { useUnifiedTopology: true })
@@ -104,6 +96,11 @@ app.get('/api/auth/signup', (req, res) => {
   res.render("signupForm");
 });
 
+// Render the test.ejs template
+app.get("/test", (req, res) => {
+  res.render("test");
+});
+
 // // Update food status ejs
 // app.get('/updatestatus/:id', (req, res) => {
 //   console.log("index get method called for render");
@@ -132,3 +129,5 @@ app.get('/api/auth/signup', (req, res) => {
 server.listen(PORT, () => {
   console.log(`Server running at port: ${PORT}`);
 });
+
+module.exports = io;

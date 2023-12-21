@@ -7,7 +7,8 @@ const crypto = require("crypto");
 const cloudinary = require("cloudinary");
 const fs = require("fs");
 const path = require("path");
-
+// const io = require("io");
+const {io} = require('../startup/io');
 cloudinary.v2.config({
   cloud_name: CLOUDINARY_NAME,
   api_key: CLOUDINARY_API,
@@ -97,9 +98,7 @@ async function userSignUp(req, res) {
 }
 
 async function userLogin(req, res) {
-  const user = await User.findOne(
-    { email: req.body.email }
-  ).select("+password");
+  const user = await User.findOne({ email: req.body.email }).select("+password");
   if (!user) {
     return res.status(404).json({ success: false, error: "User Not Found" });
   }
@@ -112,10 +111,12 @@ async function userLogin(req, res) {
   });
   const { password, ...otherProperties } = user._doc;
   console.log("Login successful");
+  
+  // Emit event when user logs in
+  io.emit("userLoggedIn", "User Logged In");
+
   res.cookie("access_token", token, { httpOnly: true });
-  res
-    .status(200)
-    .json({ success: true, message: "Login Successful", data: otherProperties });
+  res.status(200).json({ success: true, message: "Login Successful", data: otherProperties });
 }
 
 async function userLogout(req, res) {
