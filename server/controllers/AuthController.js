@@ -235,53 +235,64 @@ async function updateLoggedInUserPassword(req, res) {
 }
 
 async function updateUser(req, res) {
-  const newData = {
-    name: req.body.name,
-    email: req.body.email,
-  };
+  try {
+    // Check if req.user exists and has an id property
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
+    }
 
-  // Check if req.user exists and has an id property
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({ success: false, error: "Unauthorized" });
-  }
+    const userId = req.user.id;
+    const newData = {
+      name: req.body.name,
+      email: req.body.email,
+    };
 
-  const userId = req.user.id;
+    if (req.files && req.files.photo) {
+      const user = await User.findById(userId);
 
-  if (req.files) {
-    const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ success: false, error: "User not found" });
+      }
 
-    if (!user) {
+      // Destroy the previous Cloudinary image
+      const imageId = user.photo.id;
+      if (imageId) {
+        await cloudinary.v2.uploader.destroy(imageId);
+      }
+
+      // Upload the new photo to Cloudinary
+      const result = await cloudinary.v2.uploader.upload(
+        req.files.photo.tempFilePath,
+        {
+          folder: "FOA_users",
+          width: 150,
+          crop: "scale",
+        }
+      );
+
+      newData.photo = {
+        id: result.public_id,
+        photoUrl: result.secure_url,
+      };
+    }
+
+    // Update the user in the database
+    const updatedUser = await User.findByIdAndUpdate(userId, newData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedUser) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    const imageId = user.photo.id;
-    const response = await cloudinary.v2.uploader.destroy(imageId);
-    const result = await cloudinary.v2.uploader.upload(
-      req.files.photo.tempFilePath,
-      {
-        folder: "FOA_users",
-        width: 150,
-        crop: "scale",
-      }
-    );
-      console.log(result);
-    newData.photo = {
-      id: result.public_id,
-      photoUrl: result.secure_url,
-    };
+    res.status(202).json({ success: true, message: "User Details Updated", data: updatedUser });
+  } catch (error) {
+    console.error("Error during User Update:", error);
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
   }
-
-  const updatedUser = await User.findByIdAndUpdate(userId, newData, {
-    new: true,
-    runValidators: true,
-  });
-
-  if (!updatedUser) {
-    return res.status(404).json({ success: false, error: "User not found" });
-  }
-
-  res.status(202).json({ success: true, message: "User Details Updated", data: updatedUser });
 }
+
 
 
 async function changeRole(req, res) {
