@@ -1,5 +1,12 @@
 const mongoose = require("mongoose");
 
+// Custom validator function for time format
+const validateTime = (time) => {
+  // Regular expression to validate HH:MM format
+  const timeRegex = /^(?:2[0-3]|[01][0-9]):[0-5][0-9]$/;
+  return timeRegex.test(time);
+};
+
 const restaurantSchema = mongoose.Schema(
   {
     restaurantName: {
@@ -18,38 +25,36 @@ const restaurantSchema = mongoose.Schema(
       minlength: 10,
       unique: true,
     },
-    address: {
-      street: {
-        type: String,
-        required: [true, "Please enter Street"],
-      },
-      area: {
-        type: String,
-        required: [true, "Please enter Area"],
-      },
-      city: {
-        type: String,
-        required: [true, "Please enter City"],
-      },
-      state: {
-        type: String,
-        required: [true, "Please enter State"],
-      },
-      pincode: {
-        type: String,
-        required: [true, "Please enter Pincode"],
-      },
+    quickDescription: {
+      type: String,
+      required: [true, "Please enter Quick Description"],
+      maxlength: 30,
+      minlength: 10
     },
-    location:{
-      latitude:String,
-      longitude:String
+    detailedDescription: {
+      type: String,
+      required: [true, "Please enter Description"],
+      maxlength: 400,
+      minlength: 100
+    },
+    cuisines: {
+      type: [String],
+      default: [],
+    },
+    address: {
+      type: String,
+      required: [true, "Please enter Address"],
+    },
+    location: {
+      latitude: String,
+      longitude: String
     },
     photo: {
       id: {
-          type: String,
+        type: String,
       },
       photoUrl: {
-          type: String,
+        type: String,
       }
     },
     totalRatings: {
@@ -64,22 +69,39 @@ const restaurantSchema = mongoose.Schema(
     },
     menu: [
       {
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Food", 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Food",
       },
     ],
-    currentOrders:[
+    openingHours: {
+      type: String,
+      required: true,
+      validate: [validateTime, 'Invalid time format. Use HH:MM format.']
+    },
+    closingHours: {
+      type: String,
+      required: true,
+      validate: [validateTime, 'Invalid time format. Use HH:MM format.']
+    },
+    currentOrders: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Order"
       }
     ],
-    pastOrders:[
+    pastOrders: [
       {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Order"
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order"
       }
-    ]
+    ],
+    deliveryCharges: {
+      type: Number,
+      required : [true, "Please add delivery charges"],
+    },
+    promotions :{
+      type : String
+    },
   },
   { timestamps: true, versionKey: false }
 );

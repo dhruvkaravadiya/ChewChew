@@ -11,8 +11,21 @@ cloudinary.v2.config({
 });
 
 async function createRestaurant(req, res) {
-    const { address, restaurantName, phoneNumber } = req.body;
-    if (!address || !restaurantName || !phoneNumber) {
+    const { 
+        address, 
+        restaurantName, 
+        phoneNumber, 
+        cuisines, 
+        quickDescription, 
+        detailedDescription, 
+        openingHours, 
+        closingHours,
+        
+        deliveryCharges 
+            } = req.body;
+    if (!address || !restaurantName || !phoneNumber ||
+        !cuisines || !quickDescription || !detailedDescription ||
+        !openingHours  || !closingHours || !deliveryCharges) {
         return res.status(200).send({
             success: false,
             error: "Please Enter Necessary Details"
@@ -30,15 +43,23 @@ async function createRestaurant(req, res) {
         });
         const photoId = result.public_id;
         const photoUrl = result.secure_url;
+        const cuisinesList = cuisines.split(",");
         const newRes = new Restaurant({
+            user_id: req.user._id,
             restaurantName,
             phoneNumber,
             address,
+            cuisines : cuisinesList,
+            quickDescription, 
+            detailedDescription, 
+            openingHours,
+            closingHours,
+            deliveryCharges, 
+            
             photo: {
                 id : photoId,
                 photoUrl : photoUrl
             },
-            user_id: req.user._id
         });
         const savedRestaurant = await newRes.save();
         res.status(201).json({ 
