@@ -27,7 +27,7 @@ async function createRestaurant(req, res) {
     if (!address || !restaurantName || !phoneNumber ||
         !cuisines || !quickDescription || !detailedDescription ||
         !openingHours  || !closingHours || !deliveryCharges) {
-        return res.status(200).send({
+        return res.status(200).json({
             success: false,
             error: "Please Enter Necessary Details"
         });
