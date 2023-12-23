@@ -31,6 +31,10 @@ const restaurantSchema = mongoose.Schema(
       maxlength: 30,
       minlength: 10
     },
+    address: {
+      type: String,
+      required: [true, "Please enter the address"]
+    },
     detailedDescription: {
       type: String,
       required: [true, "Please enter Description"],

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev":"nodemon index.js"
+    "dev": "nodemon index.js"
   },
   "author": "Dhruv Karavadiya",
   "license": "ISC",
@@ -27,6 +27,7 @@
     "nodemon": "^3.0.1",
     "redis": "^4.6.10",
     "socket.io": "^4.7.2",
+    "stripe": "^14.9.0",
     "validator": "^13.11.0"
   }
 }

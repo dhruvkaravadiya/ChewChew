@@ -11,6 +11,7 @@ cloudinary.v2.config({
 });
 
 async function createRestaurant(req, res) {
+
     const { 
         address, 
         restaurantName, 
@@ -55,45 +56,44 @@ async function createRestaurant(req, res) {
             openingHours,
             closingHours,
             deliveryCharges, 
-            
             photo: {
-                id : photoId,
-                photoUrl : photoUrl
+                id: photoId,
+                photoUrl: photoUrl
             },
         });
         const savedRestaurant = await newRes.save();
-        res.status(201).json({ 
-            success: true, 
-            message: "New Restaurant Created", 
-            data: savedRestaurant 
+        res.status(201).json({
+            success: true,
+            message: "New Restaurant Created",
+            data: savedRestaurant
         });
     }
     else {
         // Handle the case where no photo was uploaded
-        return res.status(400).send({ success: false, error: "Photo is required" });
+        return res.status(400).json({ success: false, error: "Photo is required" });
     }
 }
 
 async function deleteRestaurant(req, res) {
     const deletedRestaurant = await Restaurant.findByIdAndDelete(req.params.id);
     if (!deletedRestaurant) {
-        return res.status(404).send({ success: false, error: "Restaurant not found" });
+        return res.status(404).json({ success: false, error: "Restaurant not found" });
     }
-    res.status(200).send({ success: true, message: "Restaurant Deleted Successfully" });
+    res.status(200).json({ success: true, message: "Restaurant Deleted Successfully" });
 }
 
 async function getAllRestaurants(req, res) {
     const restaurants = await Restaurant.find({});
     if (!restaurants || restaurants.length === 0) {
-        return res.status(404).send({ success: false, error: "No Restaurants found" });
+        return res.status(404).json({ success: false, error: "No Restaurants found" });
     }
     res.status(200).json({ success: true, data: restaurants });
 }
 
-async function getRestaurantById(req, res) { 
+async function getRestaurantById(req, res) {
     const restaurant = await Restaurant.findById(req.params.id);
     if (!restaurant) {
-        return res.status(404).send({ success: false, error: "Restaurant not found" });
+        return res.status(404).json({ success: false, error: "Restaurant not found" });
     }
     res.status(200).json({ success: true, data: restaurant });
 }
@@ -101,63 +101,110 @@ async function getRestaurantById(req, res) {
 async function updateRestaurantDetails(req, res) {
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
     if (!updatedRestaurant) {
-        return res.status(404).send({ success: false, error: "Restaurant not found" });
+        return res.status(404).json({ success: false, error: "Restaurant not found" });
     }
-    res.status(202).send({ success: true, data: updatedRestaurant, message: "Restaurant Update Successfully" });
+    res.status(202).json({ success: true, data: updatedRestaurant, message: "Restaurant Update Successfully" });
 }
 
 async function addMenuItem(req, res) {
     const currRes = await Restaurant.findOne({ user_id: req.user._id });
     if (!currRes) {
-        return res.status(404).send({ success: false, error: "Restaurant Not found" });
+        return res.status(404).json({ success: false, error: "Restaurant Not found" });
     }
-    const { name, price, foodImgUrl, type } = req.body;
-    if (!name || !price || !foodImgUrl || !type) {
-        return res.status.send("Please enter necesarry details");
+
+    const { name, price, type } = req.body;
+    if (!name || !price || !type) {
+        return res.status.json("Please enter necesarry details");
     }
-    const newItem = new Food({
-        name, price, foodImgUrl, type,
-        restaurant: {
-            resId: req.user._id,
-            resName: currRes.restaurantName
-        }
-    });
-    const response = await newItem.save();
-    await Restaurant.findByIdAndUpdate(currRes._id, { $push: { menu: response._id } });
-    res.status(200).json({ success: true, message: "New Menu Item Created", newItem: response });
+    if (req.files && req.files.photo) {
+        const foodImg = req.files.photo;
+        const result = await cloudinary.v2.uploader.upload(foodImg.tempFilePath, {
+            folder: "FOA_Food_Items",
+            width: 150,
+            public_id: foodImg.name
+        });
+        const newItem = new Food({
+            name,
+            price,
+            foodImg: {
+                id: result.public_id,
+                url: result.secure_url
+            },
+            type,
+            restaurant: {
+                resId: req.user._id,
+                resName: currRes.restaurantName
+            }
+        });
+        const response = await newItem.save();
+        await Restaurant.findByIdAndUpdate(currRes._id, { $push: { menu: response._id } });
+        res.status(200).json({ success: true, message: "New Menu Item Created", newItem: response });
+    }
+    else {
+        return res.status(400).json({ success: false, error: "Provide the food image" });
+    }
 }
 
 async function updateMenuItem(req, res) {
+    const foodId = req.params.id;
+    if (!foodId) {
+        return res.status(400).json({ success: false, error: "Provide the food id" });
+    }
+    const food = await Food.findById(foodId);
+    if (!food) {
+        return res.status(404).json({ success: false, error: "Food Item not found" });
+    }
     const currUserId = req.user._id;
     if (!currUserId) {
-        return res.status(404).send({ success: false, error: "User not found" });
+        return res.status(404).json({ success: false, error: "User not found" });
     }
-
     const currRes = await Restaurant.findOne({ user_id: currUserId });
     if (!currRes) {
-        return res.status(404).send({ succes: false, error: "Restaurant not Found" });
+        return res.status(404).json({ succes: false, error: "Restaurant not Found" });
     }
 
-    const { name, price, foodImgUrl, type } = req.body;
-    if (!name & !price & !foodImgUrl & !type) {
-        return res.status(400).send({ success: false, error: "Please provide necessary details" });
+    const { name, price, type } = req.body;
+    if (!name || !price || !type) {
+        return res.status(400).json({ success: false, error: "Please provide necessary details" });
+    }
+    const newFood = {
+        name,
+        price,
+        type,
+    }
+    if (req.files && req.files.photo) {
+        const foodImgId = food.foodImg.id;
+        if(foodImgId){
+            await cloudinary.v2.uploader.destroy(foodImgId);
+        }
+        const result = await cloudinary.v2.uploader.upload(
+            req.files.photo.tempFilePath,   
+            {
+                folder : "FOA_Food_Items",
+                width : 150,
+                crop: "scale"
+            }
+        );
+
+        newFood.foodImg = {
+                id : result.public_id,
+                url : result.secure_url 
+        };
+    }
+    else {
+        return res.status(404).json({ succes: false, error: "Please provide food image" });
     }
 
     const updatedMenuItem = await Food.findByIdAndUpdate(
         req.params.id,
         {
-            $set: {
-                name,
-                price,
-                foodImgUrl,
-                type
-            },
+            $set: newFood
         },
+        {new:true}
     );
     if (!updatedMenuItem) {
-        return res.status(404).send({ success: false, error: "Menu item not found" });
+        return res.status(404).json({ success: false, error: "Menu item not found" });
     }
-
     res.status(202).json({ success: true, message: "Menu Item Updated", data: updatedMenuItem });
 }
 
@@ -169,13 +216,13 @@ async function deleteMenuItem(req, res) {
         { new: true }
     );
     if (!deletedRestaurant) {
-        return res.status(404).send({ success: false, error: "Restaurant Not Found" });
+        return res.status(404).json({ success: false, error: "Restaurant Not Found" });
     }
     const deletedOrder = await Food.findByIdAndDelete(req.params.id);
     if (!deletedOrder) {
-        return res.status(404).send({ success: false, error: "Order Not Found" });
+        return res.status(404).json({ success: false, error: "Order Not Found" });
     }
-    res.status(200).send({ success: true, message: "Menu Item Removed" });
+    res.status(200).json({ success: true, message: "Menu Item Removed" });
 }
 
 module.exports = {
