@@ -19,26 +19,8 @@ const restaurantSchema = mongoose.Schema(
       unique: true,
     },
     address: {
-      street: {
-        type: String,
-        required: [true, "Please enter Street"],
-      },
-      area: {
-        type: String,
-        required: [true, "Please enter Area"],
-      },
-      city: {
-        type: String,
-        required: [true, "Please enter City"],
-      },
-      state: {
-        type: String,
-        required: [true, "Please enter State"],
-      },
-      pincode: {
-        type: String,
-        required: [true, "Please enter Pincode"],
-      },
+      type: String,
+      required: [true, "Please enter the address"]
     },
     location:{
       latitude:String,

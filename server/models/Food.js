@@ -10,9 +10,16 @@ const foodSchema = mongoose.Schema({
     required: true,
     default: 0,
   },
-  foodImgUrl: {
-    type: String,
-    required: true,
+  foodImg: {
+    id: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    }
+
   },
   type: {
     type: String,
@@ -30,8 +37,8 @@ const foodSchema = mongoose.Schema({
   },
   restaurant: {
     resId: {
-      type: mongoose.SchemaTypes.ObjectId, 
-      ref: "Restaurant", 
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "Restaurant",
       required: true,
     },
     resName: {
@@ -39,7 +46,7 @@ const foodSchema = mongoose.Schema({
       required: true,
     },
   },
-},{versionKey: false});
+}, { versionKey: false });
 
 const Food = mongoose.model("Food", foodSchema);
 
