@@ -112,7 +112,7 @@ export const getProfile = createAsyncThunk("/auth/user/profile", async () => {
     const res = await axiosInstance.get("/auth/user");
     return res?.data;
   } catch (error) {
-    toast.error(error?.response?.data?.error, { id: loadingMessage });
+    toast.error(error?.response?.data?.error);
     throw error;
   }
 });
@@ -156,7 +156,7 @@ const authSlice = createSlice({
         state.role = action?.payload?.data?.role;
         state.data = action?.payload?.data;
       })
-      .addCase(logout.fulfilled, (state, action) => {
+      .addCase(logout.fulfilled, (state) => {
         localStorage.clear();
         state.isLoggedIn = false;
         state.role = "";
@@ -173,6 +173,6 @@ const authSlice = createSlice({
   },
 });
 
-export const {} = authSlice.actions;
+// export const {} = authSlice.actions;
 
 export default authSlice.reducer;

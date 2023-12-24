@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { BsArrowRight } from "react-icons/bs";
 import { Link, useNavigate } from "react-router-dom";
 import LoginImage from "../Assets/Login.jpeg";
@@ -32,7 +32,6 @@ function Login() {
     }
 
     const response = await dispatch(login(loginData));
-
 
     if (response?.payload?.success) {
       navigate("/");
