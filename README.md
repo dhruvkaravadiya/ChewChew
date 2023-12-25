@@ -1,3 +1,4 @@
+
 <h1 align="center">Food Ordering App Demo README 🍔 (UNDER PRODUCTION)</h1>
 <p align="center">
     A modern food ordering web application built with Node.js, Express, MongoDB, and React.js
@@ -16,28 +17,28 @@ The Food Ordering App allows users to browse and order food from various restaur
 
 ## Customer Features 🪄
 
-   :white_check_mark: Browse and search for restaurants
-   :white_check_mark: View restaurant menus and food items
-   :white_check_mark: Place food orders with customizations
-   :white_check_mark: Track order status and delivery time
-   :white_check_mark: View order history and receipts
-   :white_check_mark: Leave restaurant reviews and ratings
+ - Browse and search for restaurants 
+ - View restaurant menus and food items
+ - Place food orders with customizations
+ - Track order status and delivery time
+ - View order history and receipts
+ - Leave restaurant reviews and ratings
 
 ## Restaurant Owner Features ⚙️
 
-   :white_check_mark: Manage restaurant menus and items
-   :white_check_mark: Accept and manage incoming food orders
-   :white_check_mark: Update order status and delivery details
-   :white_check_mark: View order history and sales analytics
-   :white_check_mark: Respond to customer reviews and ratings
+- Manage restaurant menus and items
+- Accept and manage incoming food orders
+- Update order status and delivery details
+- View order history and sales analytics
+- Respond to customer reviews and ratings
 
 ## Common Features
 
-   :white_check_mark: User registration and authentication
-   :white_check_mark: User profile management
-   :white_check_mark: Secure payment processing
-   :white_check_mark: Real-time order tracking
-   :white_check_mark: Email notifications for orders and updates
+- User registration and authentication
+- User profile management
+- Secure payment processing
+- Real-time order tracking
+- Email notifications for orders and updates
 
 <br>
 <br>
