@@ -16,28 +16,28 @@ The Food Ordering App allows users to browse and order food from various restaur
 
 ## Customer Features 🪄
 
--   [x] Browse and search for restaurants
--   [x] View restaurant menus and food items
--   [x] Place food orders with customizations
--   [x] Track order status and delivery time
--   [x] View order history and receipts
--   [x] Leave restaurant reviews and ratings
+-   :white_check_mark: Browse and search for restaurants
+-   :white_check_mark: View restaurant menus and food items
+-   :white_check_mark: Place food orders with customizations
+-   :white_check_mark: Track order status and delivery time
+-   :white_check_mark: View order history and receipts
+-   :white_check_mark: Leave restaurant reviews and ratings
 
 ## Restaurant Owner Features ⚙️
 
--   [x] Manage restaurant menus and items
--   [x] Accept and manage incoming food orders
--   [x] Update order status and delivery details
--   [x] View order history and sales analytics
--   [x] Respond to customer reviews and ratings
+-   :white_check_mark: Manage restaurant menus and items
+-   :white_check_mark: Accept and manage incoming food orders
+-   :white_check_mark: Update order status and delivery details
+-   :white_check_mark: View order history and sales analytics
+-   :white_check_mark: Respond to customer reviews and ratings
 
 ## Common Features
 
--   [x] User registration and authentication
--   [x] User profile management
--   [x] Secure payment processing
--   [x] Real-time order tracking
--   [x] Email notifications for orders and updates
+-   :white_check_mark: User registration and authentication
+-   :white_check_mark: User profile management
+-   :white_check_mark: Secure payment processing
+-   :white_check_mark: Real-time order tracking
+-   :white_check_mark: Email notifications for orders and updates
 
 <br>
 <br>
