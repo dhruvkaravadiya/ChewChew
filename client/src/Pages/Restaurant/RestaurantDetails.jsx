@@ -38,7 +38,7 @@ const RestaurantDetails = () => {
             className="w-60 h-36 rounded-md sm:w-40 sm:h-24"
           />
         </div>
-        <AddFoodItem />
+        {role === "Restaurant" && <AddFoodItem />}
       </div>
       {/* <div className="m-10 rounded-lg">
         <div className="mb-4">
