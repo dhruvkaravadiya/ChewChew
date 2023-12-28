@@ -238,7 +238,7 @@ const fetchmenuItems = async (req, res) => {
     // Fetch menu items using the object IDs stored in the menuItems array
     const menuItems = await Food.find({ _id: { $in: restaurant.menu } });
 
-    res.status(200).json(menuItems);
+    res.status(200).json({succcess : true ,message : "Menu Item Fetched successfully", data : menuItems});
 
 }
 
