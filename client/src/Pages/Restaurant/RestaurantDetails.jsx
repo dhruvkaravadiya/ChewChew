@@ -15,7 +15,7 @@ const RestaurantDetails = () => {
 
   const { role, data } = useSelector((state) => state?.auth);
 
-  const [menuItems, setMenuItems] = useState([]);
+  const [menuItems, setMenuItems] = useState(null);
 
   const dispatch = useDispatch();
 
@@ -37,8 +37,7 @@ const RestaurantDetails = () => {
   async function handleDeleteItem(FoodId) {
     await dispatch(DeleteMenuItem(FoodId));
     const res = await dispatch(fetchMenuItems(state?._id));
-    console.log("res", res);
-    setMenuItems(res?.payload);
+    setMenuItems(res?.payload?.data);
   }
 
   return (
