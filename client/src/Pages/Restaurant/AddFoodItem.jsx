@@ -1,13 +1,13 @@
 // PopupForm.js
 import React, { useState } from "react";
-import AppLayout from "../../Layout/AppLayout";
-import { BsPersonCircle } from "react-icons/bs";
 import { MdPhotoSizeSelectActual } from "react-icons/md";
-import { addMenuItem } from "../../Redux/Slices/restaurantSlice";
+import {
+  addMenuItem,
+  fetchMenuItems,
+} from "../../Redux/Slices/restaurantSlice";
 import { useDispatch } from "react-redux";
-import { FaPersonWalkingDashedLineArrowRight } from "react-icons/fa6";
 
-const AddFoodItem = () => {
+const AddFoodItem = ({ resId }) => {
   const [foodItemData, setFoodItemData] = useState({
     photo: "",
     previewImage: "",
@@ -66,7 +66,6 @@ const AddFoodItem = () => {
           price: "",
           type: "veg",
         });
-        // navigate("/");
       }
     }
   }

@@ -16,7 +16,7 @@ export const getAllRestaurants = createAsyncThunk(
       toast.success("All restaurants", { id: loadingMessage });
       return res?.data;
     } catch (error) {
-      toast.error(error?.message, { id: loadingMessage });
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
     }
   }
 );
@@ -30,7 +30,7 @@ export const createRestaurant = createAsyncThunk(
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
     } catch (error) {
-      toast.error(error?.message, { id: loadingMessage });
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
     }
   }
 );
@@ -44,7 +44,7 @@ export const deleteRestaurant = createAsyncThunk(
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
     } catch (error) {
-      toast.error(error?.message, { id: loadingMessage });
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
     }
   }
 );
@@ -61,7 +61,7 @@ export const updateRestaurant = createAsyncThunk(
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
     } catch (error) {
-      toast.error(error?.message, { id: loadingMessage });
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
     }
   }
 );
@@ -75,7 +75,7 @@ export const selectRestaurant = createAsyncThunk(
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
     } catch (error) {
-      toast.error(error?.message, { id: loadingMessage });
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
     }
   }
 );
@@ -89,7 +89,21 @@ export const addMenuItem = createAsyncThunk(
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
     } catch (error) {
-      toast.error(error?.message, { id: loadingMessage });
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
+    }
+  }
+);
+
+export const fetchMenuItems = createAsyncThunk(
+  "/fetch/menuItems",
+  async (resId) => {
+    const loadingMessage = toast.loading("Wait Adding fetching menuItems...!");
+    try {
+      const res = await axiosInstance.get(`/restaurants/menu/items/${resId}`);
+      toast.success(res?.data?.message, { id: loadingMessage });
+      return res?.data;
+    } catch (error) {
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
     }
   }
 );
@@ -106,21 +120,23 @@ export const updateMenuItem = createAsyncThunk(
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
     } catch (error) {
-      toast.error(error?.message, { id: loadingMessage });
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
     }
   }
 );
 
 export const DeleteMenuItem = createAsyncThunk(
   "/delete/menuItem",
-  async ([id, formData]) => {
+  async (foodId) => {
     const loadingMessage = toast.loading("Wait deleting MenuItem...!");
     try {
-      const res = await axiosInstance.delete(`/restaurants/menu/delete/${id}`);
+      const res = await axiosInstance.delete(
+        `/restaurants/menu/delete/${foodId}`
+      );
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
     } catch (error) {
-      toast.error(error?.message, { id: loadingMessage });
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
     }
   }
 );
