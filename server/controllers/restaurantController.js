@@ -11,22 +11,25 @@ cloudinary.v2.config({
 });
 
 async function createRestaurant(req, res) {
-
-    const { 
-        address, 
-        restaurantName, 
-        phoneNumber, 
-        cuisines, 
-        quickDescription, 
-        detailedDescription, 
-        openingHours, 
+    const existingUser = await Restaurant.findOne({ user_id: req.user._id });
+    if (existingUser) {
+        return res.stattus(400).json({ success: false, error: "Restaurant already exists for current User " });
+    }
+    const {
+        address,
+        restaurantName,
+        phoneNumber,
+        cuisines,
+        quickDescription,
+        detailedDescription,
+        openingHours,
         closingHours,
-        
-        deliveryCharges 
-            } = req.body;
+
+        deliveryCharges
+    } = req.body;
     if (!address || !restaurantName || !phoneNumber ||
         !cuisines || !quickDescription || !detailedDescription ||
-        !openingHours  || !closingHours || !deliveryCharges) {
+        !openingHours || !closingHours || !deliveryCharges) {
         return res.status(200).json({
             success: false,
             error: "Please Enter Necessary Details"
@@ -50,12 +53,12 @@ async function createRestaurant(req, res) {
             restaurantName,
             phoneNumber,
             address,
-            cuisines : cuisinesList,
-            quickDescription, 
-            detailedDescription, 
+            cuisines: cuisinesList,
+            quickDescription,
+            detailedDescription,
             openingHours,
             closingHours,
-            deliveryCharges, 
+            deliveryCharges,
             photo: {
                 id: photoId,
                 photoUrl: photoUrl
@@ -107,6 +110,7 @@ async function updateRestaurantDetails(req, res) {
 }
 
 async function addMenuItem(req, res) {
+
     const currRes = await Restaurant.findOne({ user_id: req.user._id });
     if (!currRes) {
         return res.status(404).json({ success: false, error: "Restaurant Not found" });
@@ -114,7 +118,7 @@ async function addMenuItem(req, res) {
 
     const { name, price, type } = req.body;
     if (!name || !price || !type) {
-        return res.status.json("Please enter necesarry details");
+        return res.status(400).json("Please enter necesarry details");
     }
     if (req.files && req.files.photo) {
         const foodImg = req.files.photo;
@@ -174,21 +178,21 @@ async function updateMenuItem(req, res) {
     }
     if (req.files && req.files.photo) {
         const foodImgId = food.foodImg.id;
-        if(foodImgId){
+        if (foodImgId) {
             await cloudinary.v2.uploader.destroy(foodImgId);
         }
         const result = await cloudinary.v2.uploader.upload(
-            req.files.photo.tempFilePath,   
+            req.files.photo.tempFilePath,
             {
-                folder : "FOA_Food_Items",
-                width : 150,
+                folder: "FOA_Food_Items",
+                width: 150,
                 crop: "scale"
             }
         );
 
         newFood.foodImg = {
-                id : result.public_id,
-                url : result.secure_url 
+            id: result.public_id,
+            url: result.secure_url
         };
     }
     else {
@@ -200,7 +204,7 @@ async function updateMenuItem(req, res) {
         {
             $set: newFood
         },
-        {new:true}
+        { new: true }
     );
     if (!updatedMenuItem) {
         return res.status(404).json({ success: false, error: "Menu item not found" });
@@ -225,6 +229,20 @@ async function deleteMenuItem(req, res) {
     res.status(200).json({ success: true, message: "Menu Item Removed" });
 }
 
+const fetchmenuItems = async (req, res) => {
+    const restaurantId = req.params.id;
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+        return res.status(404).json({ message: 'Restaurant not found' });
+    }
+    // Fetch menu items using the object IDs stored in the menuItems array
+    const menuItems = await Food.find({ _id: { $in: restaurant.menu } });
+
+    res.status(200).json(menuItems);
+
+}
+
+
 module.exports = {
     createRestaurant,
     getAllRestaurants,
@@ -233,5 +251,6 @@ module.exports = {
     deleteRestaurant,
     addMenuItem,
     updateMenuItem,
-    deleteMenuItem
+    deleteMenuItem,
+    fetchmenuItems
 };

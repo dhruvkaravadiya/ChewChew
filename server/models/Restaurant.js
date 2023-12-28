@@ -18,6 +18,7 @@ const restaurantSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId, // Use ObjectId type for references
       ref: "User", // Assuming User is the model name for restaurant owners
       required: [true, "Restaurant's Owner Id is required"],
+      unique: true,
     },
     phoneNumber: {
       type: String,
