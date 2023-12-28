@@ -13,7 +13,7 @@ const AddFoodItem = () => {
     previewImage: "",
     name: "",
     price: "",
-    type: "veg",
+    type: "Veg",
   });
 
   const dispatch = useDispatch();
