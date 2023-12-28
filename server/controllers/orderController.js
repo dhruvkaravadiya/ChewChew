@@ -12,114 +12,143 @@ const { startSession } = require('mongoose');
 const { STRIPE_TEST_SECRET_KEY, LOCALHOST_ORIGIN } = require('../config/appConfig');
 const { calculateOrderTotal } = require('../helpers/utils/calculateOrderTotal');
 const stripe = require("stripe")(STRIPE_TEST_SECRET_KEY);
-//create a new Order
+
+// PLACE A ORDER
 async function createOrder(req, res) {
+  const session = await Order.startSession();
   try {
-    const customer = await Customer.findOne({ user_id: req.user.id });
-    if (!customer) {
-      return res.status(404).json({ success: false, error: "User not found" });
-    }
+    await session.withTransaction(async () => {
+      const customer = await Customer.findOne({ user_id: req.user.id });
+      if (!customer) {
+        return res.status(404).json({ success: false, error: "User not found" });
+      }
 
-    const restaurantId = req.params.id;
-    const restaurant = await Restaurant.findById(restaurantId);
-    if (!restaurant) {
-      return res.status(404).json({ success: true, message: "Restaurant not found!" });
-    }
+      const restaurantId = req.params.id;
+      const restaurant = await Restaurant.findById(restaurantId);
+      if (!restaurant) {
+        return res.status(404).json({ success: true, message: "Restaurant not found!" });
+      }
 
-    const cordinates = await getCordinates();
-    const { items, paymentMethod, orderStatus } = req.body;
-    let orderTotal = 0;
-    items.forEach((item) => {
-      orderTotal += item.count * item.foodPrice;
-    });
+      const cordinates = await getCordinates();
+      const { items, paymentMethod, orderStatus } = req.body;
+      let orderTotal = 0;
+      items.forEach((item) => {
+        orderTotal += item.count * item.foodPrice;
+      });
 
-    const order = new Order({
-      customer: {
-        id: customer._id,
-        name: req.user.name,
-      },
-      restaurant: {
-        id: restaurant._id,
-        name: restaurant.restaurantName,
-      },
-      deliveryLocation: {
-        latitude: cordinates.latitude,
-        longitude: cordinates.longitude,
-      },
-      items,
-      orderTotal,
-      paymentMethod,
-      orderStatus,
-      placedAt: new Date(),
-    });
-    const line_items = items.map((item) => ({
-      price_data: {
-        currency: "inr",
-        product_data: {
-          name: item.foodName
+      const order = new Order({
+        customer: {
+          id: customer._id,
+          name: req.user.name,
         },
-        unit_amount: item.foodPrice * 100
-      },
-      quantity: item.count
-    }));
+        restaurant: {
+          id: restaurant._id,
+          name: restaurant.restaurantName,
+        },
+        deliveryLocation: {
+          latitude: cordinates.latitude,
+          longitude: cordinates.longitude,
+        },
+        items,
+        orderTotal,
+        paymentMethod,
+        orderStatus,
+        placedAt: new Date(),
+      });
+      const line_items = items.map((item) => ({
+        price_data: {
+          currency: "inr",
+          product_data: {
+            name: item.foodName
+          },
+          unit_amount: item.foodPrice * 100
+        },
+        quantity: item.count
+      }));
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: line_items,
-      mode: "payment",
-      success_url: LOCALHOST_ORIGIN,
-      cancel_url: LOCALHOST_ORIGIN
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: line_items,
+        mode: "payment",
+        success_url: LOCALHOST_ORIGIN,
+        cancel_url: LOCALHOST_ORIGIN
+      });
+      order.payment.sessionId = session.id
+      const savedOrder = await order.save();
+
+      // Add order to restaurant's orders
+      await Restaurant.findByIdAndUpdate(restaurantId, { $push: { currentOrders: savedOrder._id } });
+
+      // Add order to Customer's Current orders
+      await Customer.findByIdAndUpdate(customer._id, { $push: { currentOrders: savedOrder._id } });
+      //commit corrent transaction
+      await session.commitTransaction();
     });
-    order.payment.sessionId = session.id
-    const savedOrder = await order.save();
 
-    // Add order to restaurant's orders
-    await Restaurant.findByIdAndUpdate(restaurantId, { $push: { currentOrders: savedOrder._id } });
-
-    // Add order to Customer's Current orders
-    await Customer.findByIdAndUpdate(customer._id, { $push: { currentOrders: savedOrder._id } });
 
     return res.status(201).json({
-      success: true, 
-      data: { order: order, payementSessionId: session.id, paymentUrl : session.url }, 
-      message: "Order Placed Successfully" 
+      success: true,
+      data: { order: order, payementSessionId: session.id, paymentUrl: session.url },
+      message: "Order Placed Successfully"
     });
   } catch (error) {
+    // An error occurred, abort the transaction
+    await session.abortTransaction();
     console.error('Error creating order:', error.message);
     return res.status(500).json({ success: false, error: "Internal Server Error" });
   }
+  finally {
+    // End the session
+    session.endSession();
+  }
 }
 
+// UPDATE ORDER STATUS
 async function updateOrderStatus(req, res) {
+  const session = await Order.startSession();
 
-  console.log('controller update order function called');
-  const userId = req.user.id;
-  const user = await User.findById(userId);
-  if (!user) {
-    return res.status(404).json({ success: false, error: "Restaurant Not Found" });
-  }
-  const { orderStatus } = req.body;
-  const orderId = req.params.id;
-  const order = await Order.findById(orderId);
-  if (!order) {
-    return res.status(400).json({ success: false, error: "Order Not Found" });
-  }
-  if (order.orderStatus != "Placed") {
-    return res.status(400).json({ success: false, error: "Order Status must be Placed" });
-  }
-  const allowedOrderStatuses = ["Prepared", "Preparing"];
-  const isValidOrderStatus = allowedOrderStatuses.includes(orderStatus);
-  if (!isValidOrderStatus) {
-    return res.status(400).json({ success: false, error: "Invalid Order Status Value" });
-  }
-  const updatedOrder = await Order.findByIdAndUpdate(orderId, { $set: { orderStatus } }, { new: true });
+  try {
+    await session.withTransaction(async () => {
+      const userId = req.user.id;
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ success: false, error: "Restaurant Not Found" });
+      }
+      const { orderStatus } = req.body;
+      const orderId = req.params.id;
+      const order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(400).json({ success: false, error: "Order Not Found" });
+      }
+      if (order.orderStatus != "Placed") {
+        return res.status(400).json({ success: false, error: "Order Status must be Placed" });
+      }
+      const allowedOrderStatuses = ["Prepared", "Preparing"];
+      const isValidOrderStatus = allowedOrderStatuses.includes(orderStatus);
+      if (!isValidOrderStatus) {
+        return res.status(400).json({ success: false, error: "Invalid Order Status Value" });
+      }
+      const updatedOrder = await Order.findByIdAndUpdate(orderId, { $set: { orderStatus } }, { new: true });
 
-  if (!updatedOrder) {
-    return res.status(404).json({ success: false, error: "Order Not Found" });
+      if (!updatedOrder) {
+        return res.status(404).json({ success: false, error: "Order Not Found" });
+      }
+      await session.commitTransaction();
+    });
+    return res.status(221).json({ success: true, message: "Order Status Updated", orderstatus: updatedOrder.orderStatus });
   }
-  return res.status(221).json({ success: true, message: "Order Status Updated", orderstatus: updatedOrder.orderStatus });
+  catch (error) {
+    await session.abortTransaction();
+    console.error('Error Updating Order Status:', error.message);
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+  finally {
+    // End the session
+    session.endSession();
+  }
 }
 
+// PICK THE ORDER
 const pickOrder = async (req, res) => {
   const user = req.user;
   const { id } = req.params;
@@ -178,6 +207,7 @@ const pickOrder = async (req, res) => {
   }
 };
 
+// COMPLETE / VERIFY THE ORDER
 const completeOrder = async (req, res) => {
   const session = await Order.startSession();
 
@@ -219,6 +249,7 @@ const completeOrder = async (req, res) => {
       const updatedRestaurant = await Restaurant.findByIdAndUpdate(order.restaurant.id, {
         $pull: { currentOrders: order._id },
         $push: { pastOrders: order._id },
+        $inc: { income: (order.orderTotal - order.orderTotal / 10) }
       });
       if (!updatedRestaurant) {
         throw new Error('Restaurant not updated');
@@ -230,6 +261,7 @@ const completeOrder = async (req, res) => {
         {
           $pull: { 'currentOrders': { orderId: order._id } },
           $push: { deliveryHistory: orderId },
+          $inc: { earnings: order.orderTotal / 10 }
         }
       );
       if (!updatedDeliveryMan) {
@@ -252,6 +284,7 @@ const completeOrder = async (req, res) => {
   }
 };
 
+// CANCEL THE ORDER
 const cancelOrder = async (req, res) => {
   const session = await Order.startSession();
 
@@ -302,7 +335,7 @@ const cancelOrder = async (req, res) => {
   }
 }
 
-
+// GET PAST ORDERS
 const getPastOrders = async (req, res) => {
   const deliveryManId = req.user._id;
   const deliveryMan = await DeliveryMan.findOne({ user_id: deliveryManId });
@@ -312,6 +345,7 @@ const getPastOrders = async (req, res) => {
   return res.status(200).json({ success: true, data: deliveryMan.deliveryHistory });
 }
 
+// GET CURRENT ORDERS
 const getCurrentOrders = async (req, res) => {
   const deliveryManId = req.user._id;
   const deliveryMan = await DeliveryMan.findOne({ user_id: deliveryManId });
@@ -321,6 +355,7 @@ const getCurrentOrders = async (req, res) => {
   return res.status(200).json({ success: true, data: deliveryMan.currentOrders });
 }
 
+// GET PREPARED ORDERS
 const getPreparedOrders = async (req, res) => {
   const preparedOrders = await Order.find({ orderStatus: "Prepared" });
   if (preparedOrders.length == 0) {

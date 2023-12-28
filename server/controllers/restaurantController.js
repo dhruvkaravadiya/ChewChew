@@ -13,7 +13,7 @@ cloudinary.v2.config({
 async function createRestaurant(req, res) {
     const existingUser = await Restaurant.findOne({ user_id: req.user._id });
     if (existingUser) {
-        return res.stattus(400).json({ success: false, error: "Restaurant already exists for current User " });
+        return res.status(400).json({ success: false, error: "Restaurant already exists for current User " });
     }
     const {
         address,
@@ -118,7 +118,7 @@ async function addMenuItem(req, res) {
 
     const { name, price, type } = req.body;
     if (!name || !price || !type) {
-        return res.status(400).json("Please enter necesarry details");
+        return res.status(400).json({success  : false , error : "Please enter necesarry details"});
     }
     if (req.files && req.files.photo) {
         const foodImg = req.files.photo;

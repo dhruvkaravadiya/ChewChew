@@ -43,6 +43,10 @@ const deliveryManSchema = new mongoose.Schema({
             ref: "Order"
         }
     ],
+    earnings : {
+        type: Number , 
+        default : 0
+    }
 }, { versionKey: false });
 
 //set the schema property array empty
