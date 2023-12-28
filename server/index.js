@@ -77,11 +77,11 @@ app.set('views', path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
 
 // Routes
-app.use('/api/restaurants', restaurantsRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/deliveryman', deliveryManRoutes);
-app.use('/api/customer', customerRoutes);
-app.use('/api/order', orderRoutes);
+app.use('/api/v1/restaurants', restaurantsRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/deliveryman', deliveryManRoutes);
+app.use('/api/v1/customer', customerRoutes);
+app.use('/api/v1/order', orderRoutes);
 
 app.get('/resboard', (req, res) => (
   res.render('resupdate')

@@ -1,9 +1,7 @@
-
 <h1 align="center">Food Ordering App Demo README 🍔 (UNDER PRODUCTION)</h1>
 <p align="center">
-    A modern food ordering web application built with Node.js, Express, MongoDB, and React.js
+    A modern food ordering web application built with **Node.js**, **Express**, **MongoDB**, and **React.js**
 </p>
-</h3>
 
 <br>
 
@@ -49,37 +47,39 @@ The Food Ordering App allows users to browse and order food from various restaur
 
 <br>
 
-<div align="left">
-<img src="https://www.vectorlogo.zone/logos/nodejs/nodejs-ar21.svg" alt="Node.js"/> 
-<img src="https://www.vectorlogo.zone/logos/mongodb/mongodb-ar21.svg" alt="Mongodb"/>
-<img src="https://www.vectorlogo.zone/logos/expressjs/expressjs-ar21.svg" alt="Express.js"/>
-</div>
-<br>
-
--   [Node.js](https://nodejs.org/) for building backend & web server.
--   [Express.js](https://expressjs.com/) for building REST API.
--   [MongoDB](https://www.mongodb.com/docs/) as a database to store user information, menus, and orders.
+-   **Node.js** for building backend & web server.
+-   **Express.js** for building REST API.
+-   **MongoDB** as a database to store user information, menus, and orders.
+-   **Bcrypt** for password hashing.
+-   **Stripe** for payment processing integration.
+-   **Joi** for data validation.
+-   **Jsonwebtoken** for JWT-based authentication.
+-   **Mongoose** as MongoDB ODM.
+-   **Nodemailer** for email sending functionality.
+-   **Redis** as an in-memory data store for caching.
+-   **Socket.io** for real-time communication.
+-   **Express-Fileupload** middleware for file uploads.
+-   **Cloudinary** for cloud-based storage of images and media.
 
 ## Frontend
 
 <br>
-<div align="left">
-<img src="https://www.vectorlogo.zone/logos/reactjs/reactjs-ar21.svg"  alt="React.js"/> 
-<img src="https://www.vectorlogo.zone/logos/tailwindcss/tailwindcss-ar21.svg" alt="Tailwind.css" /> 
-<img src="https://www.vectorlogo.zone/logos/axios/axios-ar21.svg" alt="axios" />
 
-</div>
-<br>
-
--   [React.js](https://reactjs.org/) for user interface.
--   [Context API](https://reactjs.org/docs/context.html) to manage state of application.
--   [Axios](https://axios-http.com/) for client-side data fetching & API handling.
--   [Tailwind CSS](https://tailwindcss.com/) to give custom styling to all components.
+-   **React.js** for user interface.
+-   **Vite.js** for fast bundling.
+-   **Babel.js** for JavaScript transpilation.
+-   **Redux** for predictable state management.
+-   **Tailwind CSS** for custom styling.
+-   **Socket.io** for real-time updates.
+-   **Axios** for client-side data fetching & API handling.
+-   **Stripe** for payment integration.
+-   **React Router Dom** for routing in React.
+-   **React-Hot-Toast** for toast notifications.
+-   **Jest** for testing.
+-   **Shimmer UI** for improved user experience.
 
 ## Database
 
--   [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) for cloud-hosted MongoDB database.
+-   **MongoDB Atlas** for cloud-hosted MongoDB database.
 
 <br>
-
-

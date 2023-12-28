@@ -64,7 +64,10 @@ router.get("/order/update/:id", (req, res) => {
     res.render("updateFoodStatus", { orderId, orderStatus });
   } catch (err) {
     console.log(err);
-  }99
+  }
 });
+
+// get menu items
+router.get('/menu/items/:id', asyncErrorHandler(restaurantController.fetchmenuItems));
 
 module.exports = router;
