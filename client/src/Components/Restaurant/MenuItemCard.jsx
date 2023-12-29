@@ -5,10 +5,13 @@ import {
   DeleteMenuItem,
   fetchMenuItems,
 } from "../../Redux/Slices/restaurantSlice";
+import { FaEdit, FaShoppingCart } from "react-icons/fa";
+import { MdDeleteOutline } from "react-icons/md";
 
 const MenuItemCard = ({ menuItem }) => {
   const dispatch = useDispatch();
 
+  const { role, data } = useSelector((state) => state?.auth);
   const { currentRestaurant } = useSelector((state) => state?.restaurant);
 
   async function handleDeleteItem(FoodId) {
@@ -16,61 +19,61 @@ const MenuItemCard = ({ menuItem }) => {
     await dispatch(fetchMenuItems(currentRestaurant?._id));
   }
   return (
-    <div key={menuItem?._id}>
-      <div>
-        <div className="flex justify-between px-7 my-6 border-black bottom-1 font-Poppins sm:px-5 sm:w-full sm:gap-6 sm:items-center sm:text-xs">
-          <div className="flex flex-col gap-2 md:gap-5">
-            <h1 className="text-base font-semibold sm:font-medium  sm:text-xs ">
-              {menuItem?.name}
-            </h1>
-            <h2 className="text-base flex items-center">
-              {menuItem?.price} <FaIndianRupeeSign className="text-xs" />
-            </h2>
-            {/* <p className="text-xs text-[#535665] sm:hidden">
-          {recRes?.card?.info?.description}
-        </p> */}
-          </div>
-          <div className="text-center flex flex-col gap-2  items-center justify-center sm:justify-start">
-            <img
-              src={menuItem?.foodImg?.url}
-              alt="Food Image"
-              className="w-32 h-20 rounded-xl"
-            />
-            {/* {(result = checkItemInCart(recRes?.card?.info?.id))} */}
-            {/* {checkItemInCart(recRes?.card?.info?.id) ? (
-          <button
-            className="h-7 w-28 rounded-sm font-semibold shadow-lg text-xs bg-red-400 flex items-center justify-center gap-2 transition-all"
-            // onClick={() => handleRemove(recRes?.card?.info?.id)}
-          >
-            <FaShoppingCart /> Remove
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              // handleAdd(recRes?.card?.info);
-            }}
-            className="h-7 w-28 rounded-sm font-semibold shadow-lg text-xs bg-green-300  flex items-center justify-center gap-1 transition-all"
-          >
-            <FaShoppingCart /> ADD TO CART
-          </button>
-        )} */}
+    // <div className="w-1/2 rounded-lg">
+    <div className="w-[550px] bg-red-50 font-custom p-3 m-3 rounded-lg flex items-center justify-between">
+      <div className="flex items-center justify-center gap-4">
+        <img
+          src={menuItem?.foodImg?.url}
+          alt="Food Image"
+          className="rounded-md w-200 h-100"
+        />
+        <div className="flex flex-col items-start justify-center gap-1">
+          {menuItem?.type === "Veg" ? (
+            <p className="flex items-center w-6 h-6 justify-center border-2 border-green-600">
+              <span className="w-3 h-3 bg-green-600 rounded-full"></span>
+            </p>
+          ) : (
+            <p className="flex items-center w-6 h-6 justify-center border-2 border-red-600">
+              <span className="w-3 h-3 bg-red-600 rounded-full"></span>
+            </p>
+          )}
+
+          <h1 className="text-base text-gray-800 font-semibold">
+            {menuItem?.name}
+          </h1>
+          <h2 className="text-sm text-gray-600 flex items-center">
+            <FaIndianRupeeSign className="text-xs" /> {menuItem?.price}
+          </h2>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={(e) => handleDeleteItem(menuItem?._id)}
+          className="bg-orange-300 p-1 flex items-center gap-1 rounded-md hover:bg-orange-400"
+        >
+          <FaShoppingCart /> Add To Cart
+        </button>
+
+        {role === "Restaurant" && data?._id === currentRestaurant?.user_id && (
+          <div className="flex gap-2">
             <button
               onClick={(e) => handleDeleteItem(menuItem?._id)}
-              className="bg-red-300 p-3 rounded-md hover:bg-red-400"
+              className="bg-red-300 p-1 rounded-md hover:bg-red-400"
             >
-              Delete Item
+              <MdDeleteOutline />
             </button>
             <button
               onClick={(e) => handleDeleteItem()}
-              className="bg-red-300 p-3 rounded-md hover:bg-red-400"
+              className="bg-green-300 p-1 rounded-md hover:bg-red-400"
             >
-              update Item
+              <FaEdit />
             </button>
           </div>
-        </div>
-        <hr className="mx-8" />
+        )}
       </div>
     </div>
+    // </div>
   );
 };
 

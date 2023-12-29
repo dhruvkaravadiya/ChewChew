@@ -62,7 +62,7 @@ const RestaurantDetails = () => {
         {role === "Restaurant" && data?._id === currentRestaurant?.user_id && (
           <AddFoodItem resId={currentRestaurant?._id} />
         )}
-        <div>
+        <div className="flex flex-wrap items-center justify-evenly">
           {menuItems?.length > 0 &&
             menuItems?.map((item) => {
               return <MenuItemCard key={item?._id} menuItem={item} />;
