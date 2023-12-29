@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getAllRestaurants } from "../../Redux/Slices/restaurantSlice.js";
-import RestaurantCard from "./RestaurantCard.jsx";
+import RestaurantCard from "../../Components/Restaurant/RestaurantCard.jsx";
 import RestaurantListShimmer from "../Shimmer/RestaurantListShimmer.jsx";
 
 const RestaurantList = () => {
@@ -15,8 +15,6 @@ const RestaurantList = () => {
     if (restaurantData.length == 0) {
       await dispatch(getAllRestaurants());
     }
-
-    console.log("restaurantData", restaurantData);
   }
 
   useEffect(() => {

@@ -4,7 +4,8 @@ import toast from "react-hot-toast";
 
 const initialState = {
   restaurantData: [],
-  selectedRestaurant: null,
+  currentRestaurant: null,
+  menuItems: [],
 };
 
 export const getAllRestaurants = createAsyncThunk(
@@ -86,6 +87,7 @@ export const addMenuItem = createAsyncThunk(
     const loadingMessage = toast.loading("Wait Adding MenuItem...!");
     try {
       const res = await axiosInstance.post(`/restaurants/menu/add`, formData);
+      console.log("res", res);
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
     } catch (error) {
@@ -144,12 +146,26 @@ export const DeleteMenuItem = createAsyncThunk(
 const restaurantSlice = createSlice({
   name: "restaurant",
   initialState,
-  reducers: {},
+  reducers: {
+    updateCurrentRestaurant: (state, action) => {
+      state.currentRestaurant = action.payload;
+    },
+  },
   extraReducers: (builder) => {
-    builder.addCase(getAllRestaurants.fulfilled, (state, action) => {
-      state.restaurantData = action?.payload.data;
-    });
+    builder
+      .addCase(getAllRestaurants.fulfilled, (state, action) => {
+        state.restaurantData = action?.payload.data;
+      })
+      .addCase(fetchMenuItems.fulfilled, (state, action) => {
+        state.menuItems = action?.payload?.data;
+      })
+      .addCase(addMenuItem.fulfilled, (state, action) => {
+        console.log("payload in add menu",action?.payload);
+        state.menuItems = [...state.menuItems, action?.payload?.newItem];
+      });
   },
 });
+
+export const { updateCurrentRestaurant } = restaurantSlice.actions;
 
 export default restaurantSlice.reducer;

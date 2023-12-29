@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { BsArrowRight } from "react-icons/bs";
 import { Link, useNavigate } from "react-router-dom";
-import LoginImage from "../Assets/Login.jpeg";
+import LoginImage from "../../Assets/Login.jpeg";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
-import { login } from "../Redux/Slices/authSlice.js";
+import { login } from "../../Redux/Slices/authSlice.js";
 
 function Login() {
   const dispatch = useDispatch();

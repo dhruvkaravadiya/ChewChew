@@ -54,19 +54,17 @@ const AddFoodItem = ({ resId }) => {
 
     const response = await dispatch(addMenuItem(formData));
 
-    console.log(response);
-
     if (response?.payload?.success) {
-      // const res = await dispatch(());
       if (response?.payload?.success) {
         setFoodItemData({
           photo: "",
           previewImage: "",
           name: "",
           price: "",
-          type: "veg",
+          type: "Veg",
         });
       }
+      // await dispatch(fetchMenuItems(resId));
     }
   }
 

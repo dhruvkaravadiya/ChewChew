@@ -1,16 +1,21 @@
 import React, { useEffect } from "react";
 import { MdOutlineStar } from "react-icons/md";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { updateCurrentRestaurant } from "../../Redux/Slices/restaurantSlice.js";
 
 const RestaurantCard = ({ resdata }) => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  useEffect(() => {
-    console.log(resdata);
-  }, []);
+
+  function onCardClick(e) {
+    dispatch(updateCurrentRestaurant(resdata));
+    navigate("/restaurant/details");
+  }
 
   return (
     <div
-      onClick={() => navigate("/restaurant/details", { state: { ...resdata } })}
+      onClick={onCardClick}
       className="w-96 h-auto flex flex-col gap-2 cursor-pointer rounded-lg font-custom hover:shadow-xl bg-gray-50 p-4"
     >
       <img

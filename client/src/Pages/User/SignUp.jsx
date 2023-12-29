@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import AppLayout from "../Layout/AppLayout";
+import AppLayout from "../../Layout/AppLayout.jsx";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { BsArrowRight, BsPersonCircle } from "react-icons/bs";
 import { toast } from "react-hot-toast";
-import { isPassword, isEmail } from "../Helpers/regxMatcher.js";
-import { createAccount } from "../Redux/Slices/authSlice.js";
-import SignUpImage from "../Assets/signUp.jpg";
+import { isPassword, isEmail } from "../../Helpers/regxMatcher.js";
+import { createAccount } from "../../Redux/Slices/authSlice.js";
+import SignUpImage from "../../Assets/signup.jpg";
 
 const signUp = () => {
   const dispatch = useDispatch();
