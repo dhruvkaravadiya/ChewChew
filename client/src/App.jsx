@@ -12,6 +12,7 @@ import RestaurantList from "./Pages/Restaurant/RestaurantList";
 import RequireAuth from "./Components/Auth/RequireAuth";
 import CreateRestaurant from "./Pages/Restaurant/CreateRestaurant";
 import RestaurantDetails from "./Pages/Restaurant/RestaurantDetails";
+import Cart from "./Pages/User/Cart";
 
 const App = () => {
   return (
@@ -25,6 +26,8 @@ const App = () => {
 
         <Route path="/restaurant" element={<RestaurantList />} />
         <Route path="/restaurant/details" element={<RestaurantDetails />} />
+
+        <Route path="/cart" element={<Cart />} />
 
         <Route
           element={

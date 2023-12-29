@@ -7,12 +7,14 @@ import {
 } from "../../Redux/Slices/restaurantSlice";
 import { FaEdit, FaShoppingCart } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
+import { addItem } from "../../Redux/Slices/cartSlice";
 
 const MenuItemCard = ({ menuItem }) => {
   const dispatch = useDispatch();
 
   const { role, data } = useSelector((state) => state?.auth);
   const { currentRestaurant } = useSelector((state) => state?.restaurant);
+  const { cartItems } = useSelector((state) => state?.cart);
 
   async function handleDeleteItem(FoodId) {
     await dispatch(DeleteMenuItem(FoodId));
@@ -49,7 +51,10 @@ const MenuItemCard = ({ menuItem }) => {
 
       <div className="flex gap-2">
         <button
-          onClick={(e) => handleDeleteItem(menuItem?._id)}
+          onClick={() => {
+            dispatch(addItem(menuItem));
+            localStorage.setItem("cart", JSON.stringify(cartItems));
+          }}
           className="bg-orange-300 p-1 flex items-center gap-1 rounded-md hover:bg-orange-400"
         >
           <FaShoppingCart /> Add To Cart
