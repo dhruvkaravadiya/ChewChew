@@ -13,9 +13,11 @@ const { STRIPE_TEST_SECRET_KEY, LOCALHOST_ORIGIN } = require('../config/appConfi
 const { calculateOrderTotal } = require('../helpers/utils/calculateOrderTotal');
 const stripe = require("stripe")(STRIPE_TEST_SECRET_KEY);
 
+
 // PLACE A ORDER
 async function createOrder(req, res) {
   const session = await Order.startSession();
+  let result;
   try {
     await session.withTransaction(async () => {
       const customer = await Customer.findOne({ user_id: req.user.id });
@@ -30,6 +32,11 @@ async function createOrder(req, res) {
       }
 
       const cordinates = await getCordinates();
+      // Validate req.body using the validation module
+      const validationResult = validateOrder(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ success: false, errors: validationResult.errors });
+      }
       const { items, paymentMethod, orderStatus } = req.body;
       let orderTotal = 0;
       items.forEach((item) => {
@@ -83,12 +90,13 @@ async function createOrder(req, res) {
       await Customer.findByIdAndUpdate(customer._id, { $push: { currentOrders: savedOrder._id } });
       //commit corrent transaction
       await session.commitTransaction();
+      result = order;
     });
 
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
-      data: { order: order, payementSessionId: session.id, paymentUrl: session.url },
+      data: { order: result, payementSessionId: session.id, paymentUrl: session.url },
       message: "Order Placed Successfully"
     });
   } catch (error) {
@@ -135,7 +143,7 @@ async function updateOrderStatus(req, res) {
       }
       await session.commitTransaction();
     });
-    return res.status(221).json({ success: true, message: "Order Status Updated", orderstatus: updatedOrder.orderStatus });
+    res.status(221).json({ success: true, message: "Order Status Updated", orderstatus: updatedOrder.orderStatus });
   }
   catch (error) {
     await session.abortTransaction();
@@ -150,60 +158,76 @@ async function updateOrderStatus(req, res) {
 
 // PICK THE ORDER
 const pickOrder = async (req, res) => {
-  const user = req.user;
-  const { id } = req.params;
-  // Find the order
-  const order = await Order.findById(id);
-  if (!order || order.orderStatus != "Prepared") {
-    return res.status(404).json({ success: false, error: 'Order not found' });
-  }
-  // const customer = Customer.findById(order.customer.id);
-  // Find the delivery man
-  const deliveryMan = await DeliveryMan.findOne({ user_id: user.id });
-  if (!deliveryMan) {
-    return res.status(404).json({ success: false, error: 'Delivery Man not found' });
-  }
-  // Check if the order status is "Prepared"
-  if (order.orderStatus === "Prepared") {
-    // Update the delivery man's currentOrders and the order's status
-    await DeliveryMan.updateOne(
-      { _id: deliveryMan.id },
-      {
-        $push: {
-          currentOrders: {
-            orderId: order._id,
-            assignedTime: order.placedAt,
-            restaurant: {
-              id: order.restaurant.id,
-              name: order.restaurant.name
-            },
-            orderStatus: "Picked",
-            deliveryLocation: {
-              latitude: order.deliveryLocation.latitude,
-              longitude: order.deliveryLocation.longitude
+  const session = await Order.startSession();
+  try {
+    await session.withTransaction(async () => {
+      const user = req.user;
+      const { id } = req.params;
+      // Find the order
+      const order = await Order.findById(id);
+      if (!order || order.orderStatus != "Prepared") {
+        return res.status(404).json({ success: false, error: 'Order not found' });
+      }
+      // const customer = Customer.findById(order.customer.id);
+      // Find the delivery man
+      const deliveryMan = await DeliveryMan.findOne({ user_id: user.id });
+      if (!deliveryMan) {
+        return res.status(404).json({ success: false, error: 'Delivery Man not found' });
+      }
+      // Check if the order status is "Prepared"
+      if (order.orderStatus === "Prepared") {
+        // Update the delivery man's currentOrders and the order's status
+        await DeliveryMan.updateOne(
+          { _id: deliveryMan.id },
+          {
+            $push: {
+              currentOrders: {
+                orderId: order._id,
+                assignedTime: order.placedAt,
+                restaurant: {
+                  id: order.restaurant.id,
+                  name: order.restaurant.name
+                },
+                orderStatus: "Picked",
+                deliveryLocation: {
+                  latitude: order.deliveryLocation.latitude,
+                  longitude: order.deliveryLocation.longitude
+                }
+              }
             }
           }
-        }
+        );
+        const OTP = await order.generateOTP();
+
+        await order.save();
+
+        const htmlFilePath = path.join(
+          __dirname,
+          "../helpers/mailer/OTP_Code.html"
+        );
+        const otpTemplate = fs.readFileSync(htmlFilePath, "utf-8");
+        await sendEmailToGmail({
+          email: "karavadiadhruv22@gmail.com",
+          subject: "OTP for Delivery Verification",
+          html: otpTemplate.replace('{{otp}}', OTP)
+        });
+        await Order.updateOne({ _id: order._id }, { $set: { orderStatus: "Picked" } });
+        
+      } else {
+        return res.status(400).json({ success: false, error: 'Order is not prepared for picking' });
       }
-    );
-    const OTP = await order.generateOTP();
-
-    await order.save();
-
-    const htmlFilePath = path.join(
-      __dirname,
-      "../helpers/mailer/OTP_Code.html"
-    );
-    const otpTemplate = fs.readFileSync(htmlFilePath, "utf-8");
-    await sendEmailToGmail({
-      email: "karavadiadhruv22@gmail.com",
-      subject: "OTP for Delivery Verification",
-      html: otpTemplate.replace('{{otp}}', OTP)
+      await session.commitTransaction();
     });
-    await Order.updateOne({ _id: order._id }, { $set: { orderStatus: "Picked" } });
-    return res.status(201).json({ success: true, message: "Order Picked" });
-  } else {
-    return res.status(400).json({ success: false, error: 'Order is not prepared for picking' });
+    res.status(201).json({ success: true, message: "Order Picked" });
+  }
+  catch (error) {
+    await session.abortTransaction();
+    console.error('Error Picking Order :', error.message);
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+  finally {
+    // End the session
+    session.endSession();
   }
 };
 
