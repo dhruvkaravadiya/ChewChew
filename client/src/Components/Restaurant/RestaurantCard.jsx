@@ -20,12 +20,12 @@ const RestaurantCard = ({ resdata }) => {
     >
       <img
         alt="resPhoto"
-        src={resdata.photo.photoUrl}
+        src={resdata?.photo?.photoUrl}
         className="w-96 h-60 rounded-xl"
       />
       <div className="flex items-center justify-between m-2 p-1 text-white">
         <div className="text-base text-gray-600  font-semibold">
-          {resdata.restaurantName}
+          {resdata?.restaurantName}
         </div>
         <div className="bg-green-500 w-10 h-6 rounded-full flex items-center justify-evenly p-1">
           <p className="text-sm">4.4</p>
