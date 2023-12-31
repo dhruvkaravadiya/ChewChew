@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -7,7 +7,7 @@ import {
 } from "../../Redux/Slices/restaurantSlice";
 import { FaEdit, FaShoppingCart } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
-import { addItem } from "../../Redux/Slices/cartSlice";
+import { addItem, removeItem } from "../../Redux/Slices/cartSlice";
 
 const MenuItemCard = ({ menuItem }) => {
   const dispatch = useDispatch();
@@ -16,12 +16,22 @@ const MenuItemCard = ({ menuItem }) => {
   const { currentRestaurant } = useSelector((state) => state?.restaurant);
   const { cartItems } = useSelector((state) => state?.cart);
 
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
   async function handleDeleteItem(FoodId) {
     await dispatch(DeleteMenuItem(FoodId));
     await dispatch(fetchMenuItems(currentRestaurant?._id));
   }
+
+  function checkItemInCart(id) {
+    return cartItems?.some((item) => {
+      return item._id == id;
+    });
+  }
+
   return (
-    // <div className="w-1/2 rounded-lg">
     <div className="w-[550px] bg-red-50 font-custom p-3 m-3 rounded-lg flex items-center justify-between">
       <div className="flex items-center justify-center gap-4">
         <img
@@ -50,15 +60,21 @@ const MenuItemCard = ({ menuItem }) => {
       </div>
 
       <div className="flex gap-2">
-        <button
-          onClick={() => {
-            dispatch(addItem(menuItem));
-            localStorage.setItem("cart", JSON.stringify(cartItems));
-          }}
-          className="bg-orange-300 p-1 flex items-center gap-1 rounded-md hover:bg-orange-400"
-        >
-          <FaShoppingCart /> Add To Cart
-        </button>
+        {checkItemInCart(menuItem._id) ? (
+          <button
+            onClick={() => dispatch(removeItem(menuItem._id))}
+            className="bg-red-300 p-1 flex items-center gap-1 rounded-md hover:bg-red-400"
+          >
+            <FaShoppingCart /> Remove
+          </button>
+        ) : (
+          <button
+            onClick={() => dispatch(addItem(menuItem))}
+            className="bg-orange-300 p-1 flex items-center gap-1 rounded-md hover:bg-orange-400"
+          >
+            <FaShoppingCart /> Add To Cart
+          </button>
+        )}
 
         {role === "Restaurant" && data?._id === currentRestaurant?.user_id && (
           <div className="flex gap-2">
@@ -78,7 +94,6 @@ const MenuItemCard = ({ menuItem }) => {
         )}
       </div>
     </div>
-    // </div>
   );
 };
 

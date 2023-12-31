@@ -3,7 +3,7 @@ import { HiOutlineMail } from "react-icons/hi";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-400 py-4 font-Poppins mt-8 text-sm flex justify-between sticky font-custom">
+    <footer className="bg-gray-900 text-gray-400 py-4 mt-8 text-sm flex justify-between sticky font-custom">
       <div className="container mx-auto flex flex-col items-center">
         <p className="mb-2">&copy; {new Date().getFullYear()} Chirag Solanki</p>
         <p className="mb-2">

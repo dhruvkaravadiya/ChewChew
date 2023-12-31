@@ -12,12 +12,14 @@ const cartSlice = createSlice({
       state.cartItems.push(action.payload);
     },
     removeItem(state, action) {
+      console.log("action", action.payload);
       state.cartItems = state.cartItems.filter(
-        (item) => item.id !== action.payload
+        (item) => item._id !== action.payload
       );
     },
     clearCart: (state) => {
       state.cartItems = [];
+      localStorage.clear();
     },
   },
 });

@@ -20,7 +20,7 @@ const RestaurantDetails = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentRestaurant]);
 
   async function fetchData() {
     if (!currentRestaurant) {
@@ -29,6 +29,7 @@ const RestaurantDetails = () => {
       await dispatch(fetchMenuItems(currentRestaurant?._id));
     }
   }
+
 
   return (
     <AppLayout>
@@ -63,7 +64,7 @@ const RestaurantDetails = () => {
           <AddFoodItem resId={currentRestaurant?._id} />
         )}
         <div className="flex flex-wrap items-center justify-evenly">
-          {menuItems?.length > 0 &&
+          {menuItems?.length >= 0 &&
             menuItems?.map((item) => {
               return <MenuItemCard key={item?._id} menuItem={item} />;
             })}
