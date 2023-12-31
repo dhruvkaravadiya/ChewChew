@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import AppLayout from "../../Layout/AppLayout";
+import { FaIndianRupeeSign, FaMinus, FaPlus, FaTrash } from "react-icons/fa6";
 import {
-  FaHeart,
-  FaIndianRupeeSign,
-  FaMillSign,
-  FaMinus,
-  FaPlus,
-  FaTrash,
-} from "react-icons/fa6";
-import { FaShoppingCart } from "react-icons/fa";
-import { clearCart, removeItem } from "../../Redux/Slices/cartSlice";
+  calculateTotalBill,
+  clearCart,
+  removeItem,
+  updateQuantity,
+} from "../../Redux/Slices/cartSlice";
 
 const Cart = () => {
   const { cartItems } = useSelector((state) => state?.cart);
+  const { totalBill } = useSelector((state) => state.cart);
 
   const dispatch = useDispatch();
 
   useEffect(() => {
+    dispatch(calculateTotalBill());
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
@@ -26,7 +25,7 @@ const Cart = () => {
       <div className="mx-auto font-custom max-w-7xl px-2 lg:px-0">
         <div className="mx-28 max-w-2xl py-8 lg:max-w-7xl">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Shopping Cart
+            Your Cart
           </h1>
           <form className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
             <section
@@ -37,7 +36,7 @@ const Cart = () => {
                 Items in your shopping cart
               </h2>
               <ul role="list" className="divide-y divide-gray-200">
-                {cartItems.map((cItem, itemIdx) => (
+                {cartItems?.map((cItem, itemIdx) => (
                   <div key={itemIdx} className="">
                     <li className="flex py-6 hover:bg-slate-50 hover:transition-all duration-150 items-center justify-between sm:py-6 ">
                       <div className="flex items-center justify-center gap-4">
@@ -68,17 +67,34 @@ const Cart = () => {
                       </div>
                       <div className="mb-4 flex gap-5">
                         <div className="min-w-24 flex items-center justify-center">
-                          <button type="button" className="h-7 w-7">
+                          <button
+                            type="button"
+                            className="h-7 w-7"
+                            onClick={() =>
+                              dispatch(
+                                updateQuantity({
+                                  itemId: cItem._id,
+                                  newQuantity: cItem.quantity - 1,
+                                })
+                              )
+                            }
+                          >
                             <FaMinus />
                           </button>
-                          <input
-                            type="text"
-                            className="mx-1 h-9 w-9 rounded-md border text-center"
-                            defaultValue={1}
-                          />
+                          <p className="h-9 w-9 rounded-md flex items-center justify-center">
+                            {cItem.quantity}
+                          </p>
                           <button
                             type="button"
                             className="flex h-7 w-7 items-center justify-center"
+                            onClick={() =>
+                              dispatch(
+                                updateQuantity({
+                                  itemId: cItem._id,
+                                  newQuantity: cItem.quantity + 1,
+                                })
+                              )
+                            }
                           >
                             <FaPlus />
                           </button>
@@ -121,9 +137,11 @@ const Cart = () => {
               <div>
                 <dl className=" space-y-1 px-2 py-4">
                   <div className="flex items-center justify-between">
-                    <dt className="text-sm text-gray-800">Price (3 item)</dt>
+                    <dt className="text-sm text-gray-800">
+                      Price ({cartItems?.length} item)
+                    </dt>
                     <dd className="text-sm font-medium text-gray-900">
-                      ₹ 52,398
+                      ₹ {totalBill}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between pt-4">
@@ -131,7 +149,7 @@ const Cart = () => {
                       <span>Discount</span>
                     </dt>
                     <dd className="text-sm font-medium text-green-700">
-                      - ₹ 3,431
+                      - ₹ {totalBill >= 99 ? 19 : 0}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between py-4">
@@ -145,12 +163,12 @@ const Cart = () => {
                       Total Amount
                     </dt>
                     <dd className="text-base font-medium text-gray-900">
-                      ₹ 48,967
+                      ₹ {totalBill >= 99 ? totalBill - 19 : totalBill}
                     </dd>
                   </div>
                 </dl>
                 <div className="px-2 pb-4 font-medium text-green-700">
-                  You will save ₹ 3,431 on this order
+                  You will save ₹ {totalBill >= 99 ? 19 : 0} on this order
                 </div>
               </div>
             </section>

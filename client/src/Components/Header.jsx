@@ -17,6 +17,8 @@ const Header = () => {
   const dispatch = useDispatch();
   const { isLoggedIn, role } = useSelector((state) => state.auth);
 
+  const { cartItems } = useSelector((state) => state.cart);
+
   async function handleLogout() {
     await dispatch(logout());
   }
@@ -39,7 +41,7 @@ const Header = () => {
           <Link className="flex" to="/cart">
             <FaShoppingCart />
             <span className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-base text-red-200 relative top-[-8] right-1">
-              {/* {cartItems?.length}|| 10 */}10
+              {cartItems?.length}
             </span>
           </Link>
         </li>
