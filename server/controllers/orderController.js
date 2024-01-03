@@ -8,11 +8,9 @@ const { getCordinates } = require("../helpers/utils/getCordinates");
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const fs = require("fs");
 const path = require("path");
-const { startSession } = require('mongoose');
 const { STRIPE_TEST_SECRET_KEY, LOCALHOST_ORIGIN } = require('../config/appConfig');
-const { calculateOrderTotal } = require('../helpers/utils/calculateOrderTotal');
 const stripe = require("stripe")(STRIPE_TEST_SECRET_KEY);
-
+const {io} = require('../startup/io');
 
 // PLACE A ORDER
 async function createOrder(req, res) {
@@ -24,13 +22,11 @@ async function createOrder(req, res) {
       if (!customer) {
         return res.status(404).json({ success: false, error: "User not found" });
       }
-
       const restaurantId = req.params.id;
       const restaurant = await Restaurant.findById(restaurantId);
       if (!restaurant) {
         return res.status(404).json({ success: true, message: "Restaurant not found!" });
       }
-
       const cordinates = await getCordinates();
       // Validate req.body using the validation module
       const validationResult = validateOrder(req.body);
@@ -42,7 +38,6 @@ async function createOrder(req, res) {
       items.forEach((item) => {
         orderTotal += item.count * item.foodPrice;
       });
-
       const order = new Order({
         customer: {
           id: customer._id,
@@ -72,7 +67,6 @@ async function createOrder(req, res) {
         },
         quantity: item.count
       }));
-
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: line_items,
@@ -82,18 +76,17 @@ async function createOrder(req, res) {
       });
       order.payment.sessionId = session.id
       const savedOrder = await order.save();
-
       // Add order to restaurant's orders
       await Restaurant.findByIdAndUpdate(restaurantId, { $push: { currentOrders: savedOrder._id } });
-
       // Add order to Customer's Current orders
       await Customer.findByIdAndUpdate(customer._id, { $push: { currentOrders: savedOrder._id } });
       //commit corrent transaction
       await session.commitTransaction();
+      // emit on successful order place
+      await io.emit("orderPlaced","New Order Placed");
+      await io.emit("orderStatusUpdate", orderStatus);
       result = order;
     });
-
-
     res.status(201).json({
       success: true,
       data: { order: result, payementSessionId: session.id, paymentUrl: session.url },
@@ -114,7 +107,6 @@ async function createOrder(req, res) {
 // UPDATE ORDER STATUS
 async function updateOrderStatus(req, res) {
   const session = await Order.startSession();
-
   try {
     await session.withTransaction(async () => {
       const userId = req.user.id;
@@ -141,6 +133,7 @@ async function updateOrderStatus(req, res) {
       if (!updatedOrder) {
         return res.status(404).json({ success: false, error: "Order Not Found" });
       }
+      await io.emit("orderStatusUpdate", orderStatus);
       await session.commitTransaction();
     });
     res.status(221).json({ success: true, message: "Order Status Updated", orderstatus: updatedOrder.orderStatus });
@@ -212,7 +205,7 @@ const pickOrder = async (req, res) => {
           html: otpTemplate.replace('{{otp}}', OTP)
         });
         await Order.updateOne({ _id: order._id }, { $set: { orderStatus: "Picked" } });
-        
+        await io.emit("orderStatusUpdate", "Picked");
       } else {
         return res.status(400).json({ success: false, error: 'Order is not prepared for picking' });
       }
@@ -291,7 +284,7 @@ const completeOrder = async (req, res) => {
       if (!updatedDeliveryMan) {
         throw new Error('Delivery Man not updated');
       }
-
+      await io.emit("orderStatusUpdate", "Completed");
       await session.commitTransaction();
     });
 
@@ -344,7 +337,8 @@ const cancelOrder = async (req, res) => {
 
       // Commit the transaction here after successful deletion
       await session.commitTransaction();
-
+      //emit on delete order
+      await io.emit("orderStatusUpdate", "Canceled");
       // Return success response after successful deletion
       return res.status(200).json({ success: true, message: "Order deleted successfully" });
     });

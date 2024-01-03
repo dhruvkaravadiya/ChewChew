@@ -7,7 +7,6 @@ const crypto = require("crypto");
 const cloudinary = require("cloudinary");
 const fs = require("fs");
 const path = require("path");
-// const io = require("io");
 const {io} = require('../startup/io');
 cloudinary.v2.config({
   cloud_name: CLOUDINARY_NAME,
