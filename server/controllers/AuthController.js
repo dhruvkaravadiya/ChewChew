@@ -92,7 +92,7 @@ async function userSignUp(req, res) {
     console.error("Error during User SignUp:", error);
     return res
       .status(500)
-      .json({ success: false, message: "Internal Server Error" });
+      .json({ success: false, error: error.message });
   }
 }
 
