@@ -12,97 +12,102 @@ const { STRIPE_TEST_SECRET_KEY, LOCALHOST_ORIGIN } = require('../config/appConfi
 const stripe = require("stripe")(STRIPE_TEST_SECRET_KEY);
 const {io} = require('../startup/io');
 
-// PLACE A ORDER
 async function createOrder(req, res) {
-  const session = await Order.startSession();
-  let result;
   try {
-    await session.withTransaction(async () => {
-      const customer = await Customer.findOne({ user_id: req.user.id });
-      if (!customer) {
-        return res.status(404).json({ success: false, error: "User not found" });
-      }
-      const restaurantId = req.params.id;
-      const restaurant = await Restaurant.findById(restaurantId);
-      if (!restaurant) {
-        return res.status(404).json({ success: true, message: "Restaurant not found!" });
-      }
-      const coordinates = await getCoordinates();
-      // Validate req.body using the validation module
-      const validationResult = validateOrder(req.body);
-      if (!validationResult.success) {
-        return res.status(400).json({ success: false, errors: validationResult.errors });
-      }
-      const { items, paymentMethod, orderStatus } = req.body;
-      let orderTotal = 0;
-      items.forEach((item) => {
-        orderTotal += item.count * item.foodPrice;
-      });
-      const order = new Order({
-        customer: {
-          id: customer._id,
-          name: req.user.name,
-        },
-        restaurant: {
-          id: restaurant._id,
-          name: restaurant.restaurantName,
-        },
-        deliveryLocation: {
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-        },
-        items,
-        orderTotal,
-        paymentMethod,
-        orderStatus,
-        placedAt: new Date(),
-      });
-      const line_items = items.map((item) => ({
-        price_data: {
-          currency: "inr",
-          product_data: {
-            name: item.foodName
-          },
-          unit_amount: item.foodPrice * 100
-        },
-        quantity: item.count
-      }));
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: line_items,
-        mode: "payment",
-        success_url: LOCALHOST_ORIGIN,
-        cancel_url: LOCALHOST_ORIGIN
-      });
-      order.payment.sessionId = session.id
-      const savedOrder = await order.save();
-      // Add order to restaurant's orders
-      await Restaurant.findByIdAndUpdate(restaurantId, { $push: { currentOrders: savedOrder._id } });
-      // Add order to Customer's Current orders
-      await Customer.findByIdAndUpdate(customer._id, { $push: { currentOrders: savedOrder._id } });
-      //commit corrent transaction
-      await session.commitTransaction();
-      // emit on successful order place
-      await io.emit("orderPlaced","New Order Placed");
-      await io.emit("orderStatusUpdate", orderStatus);
-      result = order;
+    const customer = await Customer.findOne({ user_id: req.user.id });
+
+    if (!customer) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const restaurantId = req.params.id;
+    const restaurant = await Restaurant.findById(restaurantId);
+
+    if (!restaurant) {
+      return res.status(404).json({ success: false, message: "Restaurant not found!" });
+    }
+
+    const coordinates = await getCoordinates();
+
+    // const validationResult = validateOrder(req.body);
+
+    // if (!validationResult.success) {
+    //   return res.status(400).json({ success: false, errors: validationResult.errors });
+    // }
+
+    const { items, paymentMethod, orderStatus } = req.body;
+    let orderTotal = 0;
+
+    items.forEach((item) => {
+      orderTotal += item.count * item.foodPrice;
     });
+
+    const order = new Order({
+      customer: {
+        id: customer._id,
+        name: req.user.name,
+      },
+      restaurant: {
+        id: restaurant._id,
+        name: restaurant.restaurantName,
+      },
+      deliveryLocation: {
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+      },
+      items,
+      orderTotal,
+      paymentMethod,
+      orderStatus,
+      placedAt: new Date(),
+    });
+
+    const line_items = items.map((item) => ({
+      price_data: {
+        currency: "inr",
+        product_data: {
+          name: item.foodName,
+        },
+        unit_amount: item.foodPrice * 100,
+      },
+      quantity: item.count,
+    }));
+
+    const stripeSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: line_items,
+      mode: "payment",
+      success_url: LOCALHOST_ORIGIN,
+      cancel_url: LOCALHOST_ORIGIN,
+      billing_address_collection: 'required',
+      shipping_address_collection: {
+        allowed_countries: ['IN'], 
+      },
+    });
+
+    order.payment.sessionId = stripeSession.id;
+
+    const savedOrder = await order.save();
+
+    await Restaurant.findByIdAndUpdate(restaurantId, { $push: { currentOrders: savedOrder._id } });
+
+    await Customer.findByIdAndUpdate(customer._id, { $push: { currentOrders: savedOrder._id } });
+
+    // emit on successful order place
+    await io.emit("orderPlaced", "New Order Placed");
+    await io.emit("orderStatusUpdate", orderStatus);
+
     res.status(201).json({
       success: true,
-      data: { order: result, payementSessionId: session.id, paymentUrl: session.url },
-      message: "Order Placed Successfully"
+      data: { order: savedOrder, paymentSessionId: stripeSession.id, paymentUrl: stripeSession.url },
+      message: "Order Placed Successfully",
     });
   } catch (error) {
-    // An error occurred, abort the transaction
-    await session.abortTransaction();
     console.error('Error creating order:', error.message);
     return res.status(500).json({ success: false, error: "Internal Server Error" });
   }
-  finally {
-    // End the session
-    session.endSession();
-  }
 }
+
 
 // UPDATE ORDER STATUS
 async function updateOrderStatus(req, res) {

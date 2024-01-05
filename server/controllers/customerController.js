@@ -3,6 +3,8 @@ const { getCoordinates } = require("../helpers/utils/getCoordinates");
 const User = require("../models/User");
 async function createCustomer(req, res) {
       const coordinates = await getCoordinates();
+      console.log(req.user.id);
+      console.log(req.user._id);
       const customer = new Customer({
             user_id: req.user.id,
             location: {
@@ -10,7 +12,6 @@ async function createCustomer(req, res) {
                   longitude: coordinates.longitude
             }
       });
-      await User.findByIdAndUpdate({ _id: req.user.id }, { $set: { role: 'Customer' } });
       await customer.save();
       return res.status(201).json({ success: true, message : "New Customer Created" , customer: customer },);
 }
