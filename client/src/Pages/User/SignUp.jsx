@@ -5,7 +5,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { BsArrowRight, BsPersonCircle } from "react-icons/bs";
 import { toast } from "react-hot-toast";
 import { isPassword, isEmail } from "../../Helpers/regxMatcher.js";
-import { createAccount } from "../../Redux/Slices/authSlice.js";
+import {
+  createCustomer,
+  createDeliveryMan,
+  createUserAccount,
+} from "../../Redux/Slices/authSlice.js";
 import SignUpImage from "../../Assets/signup.jpg";
 
 const signUp = () => {
@@ -14,19 +18,31 @@ const signUp = () => {
 
   const [previewImage, setPreviewImage] = useState("");
 
+  const [isDeliveryMan, setIsDeliveryMan] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+
   const [signUpData, setSignUpData] = useState({
     fullName: "",
     email: "",
     password: "",
     photo: "",
+    role: "",
   });
 
   function handleUserInput(e) {
     const { name, value } = e.target;
-    setSignUpData({
-      ...signUpData,
-      [name]: value,
-    });
+
+    if (name === "role" && value === "on") {
+      setSignUpData({
+        ...signUpData,
+        role: "DeliveryMan",
+      });
+    } else {
+      setSignUpData({
+        ...signUpData,
+        [name]: value,
+      });
+    }
   }
 
   function getImage(event) {
@@ -83,8 +99,7 @@ const signUp = () => {
     formData.append("photo", signUpData.photo);
 
     try {
-      const res = await dispatch(createAccount(formData));
-
+      const res = await dispatch(createUserAccount(formData));
       if (res?.payload?.success) {
         setSignUpData({
           fullName: "",
@@ -92,7 +107,26 @@ const signUp = () => {
           password: "",
           photo: "",
         });
-        navigate("/");
+      }
+
+      if (isDeliveryMan) {
+        if (!phoneNumber) {
+          toast.error("enter phone number");
+          return;
+        }
+      
+        const response = await dispatch(createDeliveryMan({phoneNumber:phoneNumber}));
+        if (response?.payload?.success) {
+          setPhoneNumber("");
+          toast.success("you are DeliveryMan");
+          return;
+        }
+      } else {
+        const re = await dispatch(createCustomer());
+        if (re?.payload?.success) {
+          toast.success("you are Customer");
+          return;
+        }
       }
     } catch (error) {
       console.log("Error creating account:", error);
@@ -190,6 +224,47 @@ const signUp = () => {
                       onChange={handleUserInput}
                     ></input>
                   </div>
+                </div>
+                {isDeliveryMan && (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label
+                        htmlFor="phoneNumber"
+                        className="text-base font-medium text-gray-900"
+                      >
+                        {" "}
+                        Phone Number{" "}
+                      </label>
+                    </div>
+                    <div className="mt-2">
+                      <input
+                        className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
+                        type="number"
+                        placeholder="phoneNumber"
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                      ></input>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="role"
+                      id="role"
+                      checked={isDeliveryMan}
+                      onChange={(e) => {
+                        isDeliveryMan
+                          ? setIsDeliveryMan(false)
+                          : setIsDeliveryMan(true);
+                        handleUserInput(e);
+                      }}
+                    />
+                    Be Delivery Man
+                  </label>
                 </div>
                 <div>
                   <button

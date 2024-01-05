@@ -11,10 +11,50 @@ const initialState = {
       : {},
 };
 
-export const createAccount = createAsyncThunk("/auth/signup", async (data) => {
-  const loadingMessage = toast.loading("Please wait! Creating your account...");
+export const createUserAccount = createAsyncThunk(
+  "/auth/signup",
+  async (data) => {
+    const loadingMessage = toast.loading(
+      "Please wait! Creating your account..."
+    );
+    try {
+      const res = await axiosInstance.post("/auth/signup", data);
+      toast.success(res?.data?.message || res?.data?.error, {
+        id: loadingMessage,
+      });
+      return res?.data;
+    } catch (error) {
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
+      throw error;
+    }
+  }
+);
+
+export const createDeliveryMan = createAsyncThunk(
+  "/auth/DeliveryMan",
+  async ({ phoneNumber }) => {
+    const loadingMessage = toast.loading(
+      "Please wait! Creating DeliveryMan..."
+    );
+    try {
+      const res = await axiosInstance.post("/deliveryman/create", {
+        phoneNumber: phoneNumber,
+      });
+      toast.success(res?.data?.message || res?.data?.error, {
+        id: loadingMessage,
+      });
+      return res?.data;
+    } catch (error) {
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
+      throw error;
+    }
+  }
+);
+
+export const createCustomer = createAsyncThunk("/auth/customer", async () => {
+  const loadingMessage = toast.loading("Please wait! Creating Customer...");
   try {
-    const res = await axiosInstance.post("/auth/signup", data);
+    const res = await axiosInstance.post("/customer/create");
     toast.success(res?.data?.message || res?.data?.error, {
       id: loadingMessage,
     });
@@ -140,7 +180,7 @@ const authSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(createAccount.fulfilled, (state, action) => {
+      .addCase(createUserAccount.fulfilled, (state, action) => {
         localStorage.setItem("isLoggedIn", true);
         localStorage.setItem("role", action?.payload?.user?.role);
         localStorage.setItem("data", JSON.stringify(action?.payload?.user));
@@ -169,6 +209,10 @@ const authSlice = createSlice({
         state.isLoggedIn = true;
         state.role = action?.payload?.data?.role;
         state.data = action?.payload?.data;
+      })
+      .addCase(createDeliveryMan.fulfilled, (state, action) => {
+        localStorage.setItem("role", "DeliveryMan");
+        state.role = "DeliveryMan";
       });
   },
 });
