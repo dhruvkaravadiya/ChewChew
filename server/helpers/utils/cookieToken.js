@@ -9,7 +9,10 @@ module.exports = async function cookieToken(user, res, message) {
   await res.cookie("access_token", token, {
     expiresIn: new Date(Date.now() + TOKEN_EXPIRY),
     httpOnly: true,
+    maxAge : COOKIE_MAX_AGE,
+    sameSite : "none",
+    secure : true
   });
-
+  
   await res.status(200).json({ success: true, token, user, message });
 };

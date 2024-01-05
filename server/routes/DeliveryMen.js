@@ -5,7 +5,7 @@ const isLoggedIn = require("../middlewares/isLoggedIn");
 const deliveryManController = require("../controllers/deliveryManController");
 
 // # create new delivery man 
-router.post('/create', isLoggedIn, verifyRole("Customer"), asyncErrorHandler(deliveryManController.createDeliveryMan));
+router.post('/create', isLoggedIn, verifyRole("DeliveryMan"), asyncErrorHandler(deliveryManController.createDeliveryMan));
 // # delete 
 router.delete('/:id', isLoggedIn, verifyRole("DeliveryMan"), asyncErrorHandler(deliveryManController.deleteDeliveryMan));
 // # update details
