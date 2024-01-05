@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { IP_INFO_URL } = require('../../config/appConfig');
 
-async function getcoordinates() {
+async function getCoordinates() {
   try {
     const response = await axios.get(IP_INFO_URL);
     const { loc } = response.data;
@@ -13,4 +13,4 @@ async function getcoordinates() {
   }
 }
 
-module.exports = { getcoordinates };
+module.exports = { getCoordinates };
