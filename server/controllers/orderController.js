@@ -4,7 +4,7 @@ const Restaurant = require("../models/Restaurant");
 const DeliveryMan = require("../models/DeliveryMan");
 const Customer = require("../models/Customer");
 const { Server } = require("socket.io");
-const { getcoordinates } = require("../helpers/utils/getCoordinates");
+const { getCoordinates } = require("../helpers/utils/getCoordinates");
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
 const fs = require("fs");
 const path = require("path");
@@ -27,7 +27,7 @@ async function createOrder(req, res) {
       if (!restaurant) {
         return res.status(404).json({ success: true, message: "Restaurant not found!" });
       }
-      const coordinates = await getcoordinates();
+      const coordinates = await getCoordinates();
       // Validate req.body using the validation module
       const validationResult = validateOrder(req.body);
       if (!validationResult.success) {

@@ -1,8 +1,8 @@
 const Customer = require('../models/Customer');
-const { getcoordinates } = require("../helpers/utils/getCoordinates");
+const { getCoordinates } = require("../helpers/utils/getCoordinates");
 const User = require("../models/User");
 async function createCustomer(req, res) {
-      const coordinates = await getcoordinates();
+      const coordinates = await getCoordinates();
       const customer = new Customer({
             user_id: req.user.id,
             location: {
