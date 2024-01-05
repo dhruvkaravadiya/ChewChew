@@ -2,21 +2,21 @@ const Order = require('../models/Order');
 const DeliveryMan = require('../models/DeliveryMan');
 const Restaurant = require('../models/Restaurant');
 const Customer = require('../models/Customer');
-const { getCoordinates } = require('../helpers/utils/getCordinates');
+const { getCoordinates } = require('../helpers/utils/getCoordinates');
 const { calculateDistance } = require("../helpers/utils/calculateDistance");
 
 async function createDeliveryMan(req, res) {
       if (!req.body) {
             return res.status(400).json({ success: false, error: "Please Enter Necessary Details" });
       }
-      const cordinates = await getCoordinates();
+      const coordinates = await getCoordinates();
       const newDeliveryMan = new DeliveryMan(
             {
                   ...req.body,
                   user_id: req.user.id,
                   currentLocation: {
-                        latitude: cordinates.latitude,
-                        longitude: cordinates.longitude
+                        latitude: coordinates.latitude,
+                        longitude: coordinates.longitude
                   }
             }
       );
