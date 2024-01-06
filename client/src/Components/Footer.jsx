@@ -2,10 +2,6 @@ import { AiFillGithub, AiFillLinkedin } from "react-icons/ai";
 import { HiOutlineMail } from "react-icons/hi";
 
 const Footer = () => {
-  function createDeliveryMan() {
-    console.log("hii");
-  }
-
   return (
     <footer className="bg-gray-900 text-gray-400 py-4 mt-8 text-sm flex justify-between sticky font-custom">
       <div className="container mx-auto flex flex-col items-center">

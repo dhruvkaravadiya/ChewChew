@@ -109,8 +109,6 @@ const CreateRestaurant = () => {
       const res = await dispatch(createRestaurant(formData));
 
       if (res?.payload?.success) {
-        // setUserInput({
-        // });
         navigate("/");
         await dispatch(getAllRestaurants());
       }
@@ -118,8 +116,6 @@ const CreateRestaurant = () => {
       console.log("Error creating Restaurant:", error);
       toast.error(error?.message);
     }
-
-    console.log(userInput);
   }
 
   return (

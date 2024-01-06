@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
 import { logout } from "../Redux/Slices/authSlice.js";
+import { useState } from "react";
 
 export const BrandLogo = () => {
   return (
@@ -34,28 +35,43 @@ const Header = () => {
         </li>
         <li>
           <Link className="text-red-200 hover:text-white" to="/about">
-            About Project
+            About Us
           </Link>
         </li>
-        <li>
-          <Link className="flex" to="/cart">
-            <FaShoppingCart />
-            <span className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-base text-red-200 relative top-[-8] right-1">
+        <li className="relative">
+          <Link
+            to="/cart"
+            className="text-red-200 hover:text-white flex items-center"
+          >
+            <FaShoppingCart className="mr-2" />
+            <span className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-xs text-red-200 absolute top-0 right-0 -mt-1 -mr-1">
               {cartItems?.length}
             </span>
           </Link>
         </li>
         {isLoggedIn && role === "Restaurant" && (
-          <li>
-            <div className="flex gap-5">
-              <Link
-                className="text-red-200 hover:text-white"
-                to="/create/Restaurant"
-              >
-                Add New Restaurant
-              </Link>
-            </div>
-          </li>
+          <>
+            <li>
+              <div className="flex gap-5">
+                <Link
+                  className="text-red-200 hover:text-white"
+                  to="/create/Restaurant"
+                >
+                  Add Restaurant
+                </Link>
+              </div>
+            </li>
+            <li>
+              <div className="flex gap-5">
+                <Link
+                  className="text-red-200 hover:text-white"
+                  to="/create/Restaurant"
+                >
+                  DashBoard
+                </Link>
+              </div>
+            </li>
+          </>
         )}
         {!isLoggedIn ? (
           <li>

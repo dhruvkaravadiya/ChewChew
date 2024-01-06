@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BsArrowRight } from "react-icons/bs";
 import { Link, useNavigate } from "react-router-dom";
-import LoginImage from "../../Assets/Login.jpeg";
+import LoginImage3 from "../../Assets/Login3.jpeg";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { login } from "../../Redux/Slices/authSlice.js";
@@ -45,12 +45,12 @@ function Login() {
 
   return (
     <section>
-      <div className="grid grid-cols-1 lg:grid-cols-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 w-full min-h-screen">
         <div className="relative flex items-end px-4 pb-10 pt-60 sm:px-6 sm:pb-16 md:justify-center lg:px-8 lg:pb-24">
           <div className="absolute inset-0">
             <img
-              className="h-full w-full rounded-md object-cover object-top"
-              src={LoginImage}
+              className="h-full w-full object-cover object-top"
+              src={LoginImage3}
               alt="Login Food Image"
             />
           </div>

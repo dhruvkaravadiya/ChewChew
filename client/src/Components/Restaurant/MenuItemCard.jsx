@@ -21,8 +21,11 @@ const MenuItemCard = ({ menuItem }) => {
   }, [cartItems]);
 
   async function handleDeleteItem(FoodId) {
-    await dispatch(DeleteMenuItem(FoodId));
-    await dispatch(fetchMenuItems(currentRestaurant?._id));
+    const deleteItem = window.confirm("are you sure ?");
+    if (deleteItem) {
+      await dispatch(DeleteMenuItem(FoodId));
+      await dispatch(fetchMenuItems(currentRestaurant?._id));
+    }
   }
 
   function checkItemInCart(id) {
@@ -32,24 +35,25 @@ const MenuItemCard = ({ menuItem }) => {
   }
 
   return (
-    <div className="w-[550px] bg-red-50 font-custom p-3 m-3 rounded-lg flex items-center justify-between">
-      <div className="flex items-center justify-center gap-4">
+    <div className="w-[550px] bg-white font-custom p-4 m-4 rounded-lg flex items-center justify-between shadow-md">
+      <div className="flex items-center gap-4">
         <img
           src={menuItem?.foodImg?.url}
           alt="Food Image"
-          className="rounded-md w-200 h-100"
+          className="rounded-md h-28 w-36"
         />
-        <div className="flex flex-col items-start justify-center gap-1">
-          {menuItem?.type === "Veg" ? (
-            <p className="flex items-center w-6 h-6 justify-center border-2 border-green-600">
-              <span className="w-3 h-3 bg-green-600 rounded-full"></span>
-            </p>
-          ) : (
-            <p className="flex items-center w-6 h-6 justify-center border-2 border-red-600">
-              <span className="w-3 h-3 bg-red-600 rounded-full"></span>
-            </p>
-          )}
-
+        <div className="flex flex-col items-start justify-center">
+          <div
+            className={`w-6 h-6 flex items-center justify-center border-2 border-${
+              menuItem?.type === "Veg" ? "green" : "red"
+            }-600 rounded-full`}
+          >
+            <span
+              className={`w-3 h-3 bg-${
+                menuItem?.type === "Veg" ? "green" : "red"
+              }-600 rounded-full`}
+            ></span>
+          </div>
           <h1 className="text-base text-gray-800 font-semibold">
             {menuItem?.name}
           </h1>
@@ -63,14 +67,14 @@ const MenuItemCard = ({ menuItem }) => {
         {checkItemInCart(menuItem._id) ? (
           <button
             onClick={() => dispatch(removeItem(menuItem._id))}
-            className="bg-red-300 p-1 flex items-center gap-1 rounded-md hover:bg-red-400"
+            className="bg-red-300 p-2 flex items-center gap-1 rounded-md hover:bg-red-400 text-white"
           >
             <FaShoppingCart /> Remove
           </button>
         ) : (
           <button
             onClick={() => dispatch(addItem(menuItem))}
-            className="bg-orange-300 p-1 flex items-center gap-1 rounded-md hover:bg-orange-400"
+            className="bg-orange-300 p-2 flex items-center gap-1 rounded-md hover:bg-orange-400 text-white"
           >
             <FaShoppingCart /> Add To Cart
           </button>
@@ -80,13 +84,13 @@ const MenuItemCard = ({ menuItem }) => {
           <div className="flex gap-2">
             <button
               onClick={(e) => handleDeleteItem(menuItem?._id)}
-              className="bg-red-300 p-1 rounded-md hover:bg-red-400"
+              className="bg-red-300 p-2 rounded-md hover:bg-red-400 text-white"
             >
               <MdDeleteOutline />
             </button>
             <button
               onClick={(e) => handleDeleteItem()}
-              className="bg-green-300 p-1 rounded-md hover:bg-red-400"
+              className="bg-green-300 p-2 rounded-md hover:bg-green-400 text-white"
             >
               <FaEdit />
             </button>

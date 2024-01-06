@@ -16,12 +16,12 @@ const RestaurantCard = ({ resdata }) => {
   return (
     <div
       onClick={onCardClick}
-      className="w-96 h-auto flex flex-col gap-2 cursor-pointer rounded-lg font-custom hover:shadow-xl bg-gray-50 p-4"
+      className="w-96 h-auto flex flex-col gap-2 cursor-pointer rounded-lg font-custom hover:shadow-xl bg-white p-4 border border-gray-200"
     >
       <img
         alt="resPhoto"
         src={resdata?.photo?.photoUrl}
-        className="w-96 h-60 rounded-xl"
+        className="w-96 h-60 rounded-md"
       />
       <div className="flex items-center justify-between m-2 p-1 text-white">
         <div className="text-base text-gray-600  font-semibold">

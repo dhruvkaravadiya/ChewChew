@@ -30,7 +30,6 @@ const RestaurantDetails = () => {
     }
   }
 
-
   return (
     <AppLayout>
       <div className="w-2/3 mx-auto h-auto border border-slate-300 font-Poppins lg:w-4/5 md:w-11/12 sm:w-full">

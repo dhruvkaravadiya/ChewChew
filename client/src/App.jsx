@@ -13,12 +13,14 @@ import RequireAuth from "./Components/Auth/RequireAuth";
 import CreateRestaurant from "./Pages/Restaurant/CreateRestaurant";
 import RestaurantDetails from "./Pages/Restaurant/RestaurantDetails";
 import Cart from "./Pages/User/Cart";
+import AboutUs from "./Pages/AboutUs";
 
 const App = () => {
   return (
     <>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutUs />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />

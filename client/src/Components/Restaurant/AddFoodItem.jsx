@@ -64,24 +64,24 @@ const AddFoodItem = ({ resId }) => {
           type: "Veg",
         });
       }
-      // await dispatch(fetchMenuItems(resId));
     }
   }
 
   return (
-    <div className="flex p-2 gap-3 bg-red-50 mx-5 items-center justify-between rounded-lg mb-10">
-      <div className="border-2 border-black w-40 h-24 flex items-center justify-center rounded-lg">
+    <div className="flex p-4 gap-4 mx-5 items-center justify-between rounded-lg mb-8">
+      <div className="border-2 border-black w-36 h-20 flex items-center justify-center rounded-md overflow-hidden">
         {/* Display the user's photo in a round shape, make it clickable */}
-        <label htmlFor="photo">
+        <label htmlFor="photo" className="cursor-pointer">
           {foodItemData?.previewImage ? (
             <img
               src={foodItemData?.previewImage}
-              className="w-36 h-20 border-white cursor-pointer"
+              className="w-full h-full object-cover"
+              alt="Food Preview"
             />
           ) : (
-            <div className="cursor-pointer flex items-center justify-center mt-1">
-              <MdPhotoSizeSelectActual className="w-20 h-12" />{" "}
-              <span className="text-xs">Food Image</span>
+            <div className="flex items-center justify-center h-full">
+              <MdPhotoSizeSelectActual className="w-20 h-12" />
+              <span className="text-xs ml-2">Food Image</span>
             </div>
           )}
         </label>
@@ -102,7 +102,7 @@ const AddFoodItem = ({ resId }) => {
         onChange={handleInputChange}
         value={foodItemData.name}
         placeholder="Enter Food Name"
-        className="border border-gray-300 p-1 w-96 rounded-md outline-none"
+        className="border border-gray-300 p-2 w-72 rounded-md outline-none"
       />
       <input
         type="number"
@@ -110,12 +110,12 @@ const AddFoodItem = ({ resId }) => {
         id="price"
         onChange={handleInputChange}
         value={foodItemData.price}
-        placeholder="Enter Food Price(in RS)"
-        className="border border-gray-300 p-1 rounded-md outline-none"
+        placeholder="Enter Food Price (in RS)"
+        className="border border-gray-300 p-2 rounded-md outline-none"
       />
       <select
         id="foodType"
-        className="flex p-2 border rounded-md"
+        className="p-2 border rounded-md"
         value={foodItemData.type}
         onChange={(e) =>
           setFoodItemData({ ...foodItemData, type: e.target.value })
@@ -127,7 +127,7 @@ const AddFoodItem = ({ resId }) => {
       <button
         type="submit"
         onClick={handleAddItem}
-        className="bg-yellow-500 px-2 py-2 rounded-lg text-lg cursor-pointer hover:bg-yellow-400 transition-all ease-in-out duration-300"
+        className="bg-red-400 px-4 py-2 rounded-lg text-lg cursor-pointer hover:bg-red-300 transition-all ease-in-out duration-300"
       >
         Add Menu Item
       </button>
