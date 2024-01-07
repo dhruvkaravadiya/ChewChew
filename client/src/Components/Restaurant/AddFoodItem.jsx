@@ -6,6 +6,7 @@ import {
   fetchMenuItems,
 } from "../../Redux/Slices/restaurantSlice";
 import { useDispatch } from "react-redux";
+import toast from "react-hot-toast";
 
 const AddFoodItem = ({ resId }) => {
   const [foodItemData, setFoodItemData] = useState({
@@ -45,6 +46,16 @@ const AddFoodItem = ({ resId }) => {
   async function handleAddItem(e) {
     e.preventDefault();
 
+    if (
+      !foodItemData.photo ||
+      !foodItemData.name ||
+      !foodItemData.price ||
+      !foodItemData.type
+    ) {
+      toast.error("All Field are required");
+      return;
+    }
+
     const formData = new FormData();
 
     formData.append("photo", foodItemData.photo);
@@ -68,7 +79,7 @@ const AddFoodItem = ({ resId }) => {
   }
 
   return (
-    <div className="flex p-4 gap-4 mx-5 items-center justify-between rounded-lg mb-8">
+    <div className="flex p-4 gap-4 mx-5 items-center justify-between rounded-lg my-8">
       <div className="border-2 border-black w-36 h-20 flex items-center justify-center rounded-md overflow-hidden">
         {/* Display the user's photo in a round shape, make it clickable */}
         <label htmlFor="photo" className="cursor-pointer">

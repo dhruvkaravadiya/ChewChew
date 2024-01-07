@@ -42,17 +42,13 @@ const MenuItemCard = ({ menuItem }) => {
           alt="Food Image"
           className="rounded-md h-28 w-36"
         />
-        <div className="flex flex-col items-start justify-center">
-          <div
-            className={`w-6 h-6 flex items-center justify-center border-2 border-${
-              menuItem?.type === "Veg" ? "green" : "red"
-            }-600 rounded-full`}
-          >
-            <span
-              className={`w-3 h-3 bg-${
-                menuItem?.type === "Veg" ? "green" : "red"
-              }-600 rounded-full`}
-            ></span>
+        <div className="flex flex-col items-start justify-center gap-2">
+          <div className="w-5 h-5 flex items-center justify-center border-2 border-600">
+            {menuItem?.type === "Veg" ? (
+              <span className="w-3 h-3 bg-green-600 rounded-full"></span>
+            ) : (
+              <span className="w-3 h-3 bg-red-600 rounded-full"></span>
+            )}
           </div>
           <h1 className="text-base text-gray-800 font-semibold">
             {menuItem?.name}
