@@ -14,6 +14,8 @@ import CreateRestaurant from "./Pages/Restaurant/CreateRestaurant";
 import RestaurantDetails from "./Pages/Restaurant/RestaurantDetails";
 import Cart from "./Pages/User/Cart";
 import AboutUs from "./Pages/AboutUs";
+import PaymentSuccess from "./Pages/Payment/PaymentSuccess";
+import PaymentFail from "./Pages/Payment/PaymentFail";
 
 const App = () => {
   return (
@@ -29,7 +31,11 @@ const App = () => {
         <Route path="/restaurant" element={<RestaurantList />} />
         <Route path="/restaurant/details" element={<RestaurantDetails />} />
 
-        <Route path="/cart" element={<Cart />} />
+        <Route element={<RequireAuth allowedRoles={["Customer"]} />}>
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/fail" element={<PaymentFail />} />
+        </Route>
 
         <Route
           element={

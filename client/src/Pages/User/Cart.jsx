@@ -9,6 +9,10 @@ import {
   updateQuantity,
 } from "../../Redux/Slices/cartSlice";
 import cartEmpty from "../../Assets/cartEmpty.jpg";
+import { loadStripe } from "@stripe/stripe-js";
+import axiosInstance from "../../Helpers/axiosInstance";
+import { STRIPE_Publishable_key } from "../../../config.js";
+import toast from "react-hot-toast";
 
 const Cart = () => {
   const { cartItems } = useSelector((state) => state?.cart);
@@ -20,6 +24,32 @@ const Cart = () => {
     dispatch(calculateTotalBill());
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
+
+  async function makePayment(event) {
+    event.preventDefault();
+    const stripe = await loadStripe(STRIPE_Publishable_key);
+
+    console.log("resID", cartItems[0].restaurant.resId);
+
+    const loadingMessage = toast.loading("Wait payment in process...!");
+    try {
+      const session = await axiosInstance.post(
+        `/order/placeorder/${cartItems[0].restaurant.resId}`,
+        {
+          items: cartItems,
+        }
+      );
+
+      const res = await stripe.redirectToCheckout({
+        sessionId: session.data.data.paymentSessionId,
+      });
+
+      console.log("res", res);
+    } catch (error) {
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
+      throw error;
+    }
+  }
 
   return (
     <AppLayout>
@@ -189,7 +219,10 @@ const Cart = () => {
                   You will save ₹ {totalBill >= 99 ? 19 : 0} on this order
                 </div>
                 {/* Place Order button */}
-                <button className="w-full py-2 bg-green-500 text-white rounded-md font-medium">
+                <button
+                  onClick={makePayment}
+                  className="w-full py-2 bg-green-500 text-white rounded-md font-medium"
+                >
                   Place Order
                 </button>
               </div>
