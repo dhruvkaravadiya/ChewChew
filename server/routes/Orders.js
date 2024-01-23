@@ -1,63 +1,68 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const asyncErrorHandler = require("../middlewares/asyncErrorHandler");
 const isLoggedIn = require("../middlewares/isLoggedIn");
 const orderController = require("../controllers/orderController");
 //place order
 router.post(
-      "/placeorder/:id",
-      isLoggedIn,
-      verifyRole("Customer"),
-      asyncErrorHandler(orderController.createOrder)
+    "/placeorder/:id",
+    isLoggedIn,
+    verifyRole("Customer"),
+    asyncErrorHandler(orderController.createOrder)
 );
 //update order status
 router.put(
-      "/update/:id",
-      isLoggedIn,
-      verifyRole("Restaurant"),
-      asyncErrorHandler(orderController.updateOrderStatus)
+    "/update/:id",
+    isLoggedIn,
+    verifyRole("Restaurant"),
+    asyncErrorHandler(orderController.updateOrderStatus)
 );
-// # pick up order 
+// # pick up order
 router.put(
-      '/pick/:id',
-      isLoggedIn, 
-      verifyRole("DeliveryMan"), 
-      asyncErrorHandler(orderController.pickOrder)
+    "/pick/:id",
+    isLoggedIn,
+    verifyRole("DeliveryMan"),
+    asyncErrorHandler(orderController.pickOrder)
 );
-// # complete Order 
+// # complete Order
 router.put(
-      '/verify/:id', 
-      isLoggedIn, 
-      verifyRole("DeliveryMan"), 
-      asyncErrorHandler(orderController.completeOrder)
+    "/verify/:id",
+    isLoggedIn,
+    verifyRole("DeliveryMan"),
+    asyncErrorHandler(orderController.completeOrder)
 );
 // # get past orders
 router.get(
-      '/past', 
-      isLoggedIn, 
-      verifyRole(["DeliveryMan", "Restaurant","Customer"]), 
-      asyncErrorHandler(orderController.getPastOrders)
+    "/past",
+    isLoggedIn,
+    verifyRole(["DeliveryMan", "Restaurant", "Customer"]),
+    asyncErrorHandler(orderController.getPastOrders)
 );
 // # get current orders
 router.get(
-      '/current', 
-      isLoggedIn, 
-      verifyRole(["DeliveryMan","Restaurant","Customer"]), 
-      asyncErrorHandler(orderController.getCurrentOrders)
+    "/current",
+    isLoggedIn,
+    verifyRole(["DeliveryMan", "Restaurant", "Customer"]),
+    asyncErrorHandler(orderController.getCurrentOrders)
 );
-//get prepared orders 
+//get prepared orders
 router.get(
-      '/prepared', 
-      isLoggedIn,
-      verifyRole('DeliveryMan'),
-      asyncErrorHandler(orderController.getPreparedOrders)
+    "/prepared",
+    isLoggedIn,
+    verifyRole("DeliveryMan"),
+    asyncErrorHandler(orderController.getPreparedOrders)
 );
 // cancel order
 router.put(
-      '/cancel/:id',
-      isLoggedIn,
-      verifyRole('Customer'),
-      asyncErrorHandler(orderController.cancelOrder)
+    "/cancel/:id",
+    isLoggedIn,
+    verifyRole("Customer"),
+    asyncErrorHandler(orderController.cancelOrder)
 );
-
+router.put(
+    "/handle-payment-response/:id",
+    isLoggedIn,
+    verifyRole("Customer"),
+    asyncErrorHandler(orderController.handlePaymentResponse)
+);
 module.exports = router;

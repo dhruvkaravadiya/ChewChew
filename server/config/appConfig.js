@@ -1,4 +1,4 @@
-require("dotenv").config()
+require("dotenv").config();
 
 module.exports = {
     DB_CONNECTION_STRING: process.env.DB_CONNECTION_STRING,
@@ -18,10 +18,12 @@ module.exports = {
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
     IP_INFO_URL: process.env.IP_INFO_URL,
     IPINFO_API_TOKEN: process.env.IPINFO_API_TOKEN,
-    OTP_EXPIRY : process.env.OTP_EXPIRY,
-    LOCALHOST_ORIGIN : process.env.LOCALHOST_ORIGIN,
-    MAILING_EMAIL_ID : process.env.MAILING_EMAIL_ID,
-    COOKIE_MAX_AGE : process.env.COOKIE_MAX_AGE,
-    STRIPE_TEST_PUBLISHABLE_KEY : process.env.STRIPE_TEST_PUBLISHABLE_KEY,
-    STRIPE_TEST_SECRET_KEY : process.env.STRIPE_TEST_SECRET_KEY
-}
+    OTP_EXPIRY: process.env.OTP_EXPIRY,
+    LOCALHOST_ORIGIN: process.env.LOCALHOST_ORIGIN,
+    MAILING_EMAIL_ID: process.env.MAILING_EMAIL_ID,
+    COOKIE_MAX_AGE: process.env.COOKIE_MAX_AGE,
+    STRIPE_TEST_PUBLISHABLE_KEY: process.env.STRIPE_TEST_PUBLISHABLE_KEY,
+    STRIPE_TEST_SECRET_KEY: process.env.STRIPE_TEST_SECRET_KEY,
+    PAYMENT_SUCCESS_URL: process.env.PAYMENT_SUCCESS_URL,
+    PAYMENT_FAIL_URL: process.env.PAYMENT_FAIL_URL,
+};
