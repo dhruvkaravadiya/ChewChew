@@ -474,43 +474,59 @@ const cancelOrder = async (req, res) => {
     }
 };
 
-// GET PAST ORDERS
 const getPastOrders = async (req, res) => {
     const deliveryManId = req.user._id;
     const deliveryMan = await DeliveryMan.findOne({ user_id: deliveryManId });
+
     if (!deliveryMan) {
         return res
             .status(404)
-            .json({ success: false, error: "Delivery Peron Not Found" });
+            .json({ success: false, error: "Delivery Person Not Found" });
     }
-    return res
-        .status(200)
-        .json({ success: true, data: deliveryMan.deliveryHistory });
+
+    try {
+        const pastOrders = await Order.find({
+            _id: { $in: deliveryMan.deliveryHistory },
+        });
+        return res.status(200).json({ success: true, data: pastOrders });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ success: false, error: "Internal Server Error" });
+    }
 };
 
-// GET CURRENT ORDERS
 const getCurrentOrders = async (req, res) => {
     const deliveryManId = req.user._id;
     const deliveryMan = await DeliveryMan.findOne({ user_id: deliveryManId });
+
     if (!deliveryMan) {
         return res
             .status(404)
-            .json({ success: false, error: "Delivery Peron Not Found" });
+            .json({ success: false, error: "Delivery Person Not Found" });
     }
-    return res
-        .status(200)
-        .json({ success: true, data: deliveryMan.currentOrders });
+
+    try {
+        const currentOrders = await Order.find({
+            _id: { $in: deliveryMan.currentOrders },
+        });
+        return res.status(200).json({ success: true, data: currentOrders });
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ success: false, error: "Internal Server Error" });
+    }
 };
 
-// GET PREPARED ORDERS
 const getPreparedOrders = async (req, res) => {
-    const preparedOrders = await Order.find({ orderStatus: "Prepared" });
-    if (preparedOrders.length == 0) {
+    try {
+        const preparedOrders = await Order.find({ orderStatus: "Prepared" });
+        return res.status(200).json({ success: true, data: preparedOrders });
+    } catch (error) {
         return res
-            .status(404)
-            .json({ success: false, error: "No Prepared Orders" });
+            .status(500)
+            .json({ success: false, error: "Internal Server Error" });
     }
-    return res.status(200).json({ success: true, data: preparedOrders });
 };
 
 module.exports = {
