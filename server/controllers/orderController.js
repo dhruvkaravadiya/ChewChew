@@ -378,7 +378,7 @@ const completeOrder = async (req, res) => {
                 { "currentOrders.orderId": order._id },
                 {
                     $pull: { currentOrders: { orderId: order._id } },
-                    $push: { deliveryHistory: orderId },
+                    $push: { pastOrders: orderId },
                 }
             );
             if (!updatedDeliveryMan) {
@@ -474,21 +474,51 @@ const cancelOrder = async (req, res) => {
     }
 };
 
+// GET ROLE WISE PAST ORDERS
 const getPastOrders = async (req, res) => {
-    const deliveryManId = req.user._id;
-    const deliveryMan = await DeliveryMan.findOne({ user_id: deliveryManId });
-
-    if (!deliveryMan) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Delivery Person Not Found" });
-    }
+    const role = req.user.role;
+    const userId = req.user._id;
 
     try {
-        const pastOrders = await Order.find({
-            _id: { $in: deliveryMan.deliveryHistory },
-        });
-        return res.status(200).json({ success: true, data: pastOrders });
+        let model, fieldName;
+
+        switch (role) {
+            case "Restaurant":
+                model = Restaurant;
+                fieldName = "user_id";
+                break;
+            case "DeliveryMan":
+                model = DeliveryMan;
+                fieldName = "user_id";
+                break;
+            case "Customer":
+                model = Customer;
+                fieldName = "user_id";
+                break;
+            default:
+                return res
+                    .status(400)
+                    .json({ success: false, error: "Invalid Role" });
+        }
+
+        const userInstance = await model.findOne({ [fieldName]: userId });
+        console.log();
+        if (!userInstance) {
+            return res
+                .status(404)
+                .json({ success: false, error: `${role} Not Found` });
+        }
+
+        const pastOrders = userInstance.pastOrders;
+
+        // Check if there are past orders before querying the Order model
+        if (!pastOrders || pastOrders.length === 0) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        const orders = await Order.find({ _id: { $in: pastOrders } });
+
+        return res.status(200).json({ success: true, data: orders });
     } catch (error) {
         return res
             .status(500)
@@ -496,20 +526,40 @@ const getPastOrders = async (req, res) => {
     }
 };
 
+// GET ROLE WISE CURRENT ORDERS
 const getCurrentOrders = async (req, res) => {
-    const deliveryManId = req.user._id;
-    const deliveryMan = await DeliveryMan.findOne({ user_id: deliveryManId });
-
-    if (!deliveryMan) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Delivery Person Not Found" });
-    }
-
+    const role = req.user.role;
+    const userId = req.user._id;
     try {
+        let model;
+        switch (role) {
+            case "Restaurant":
+                model = Restaurant;
+                break;
+            case "DeliveryMan":
+                model = DeliveryMan;
+                break;
+            case "Customer":
+                model = Customer;
+                break;
+            default:
+                return res
+                    .status(400)
+                    .json({ success: false, error: "Invalid Role" });
+        }
+
+        const userInstance = await model.findOne({ user_id: userId });
+
+        if (!userInstance) {
+            return res
+                .status(404)
+                .json({ success: false, error: `${role} Not Found` });
+        }
+
         const currentOrders = await Order.find({
-            _id: { $in: deliveryMan.currentOrders },
+            _id: { $in: userInstance.currentOrders },
         });
+
         return res.status(200).json({ success: true, data: currentOrders });
     } catch (error) {
         return res
@@ -528,6 +578,8 @@ const getPreparedOrders = async (req, res) => {
             .json({ success: false, error: "Internal Server Error" });
     }
 };
+
+const getOrderLocation = async (req, res) => {};
 
 module.exports = {
     createOrder,

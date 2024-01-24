@@ -1,5 +1,9 @@
 const jwt = require("jsonwebtoken");
-const { TOKEN_EXPIRY, JWT_SECRET_KEY } = require("../../config/appConfig");
+const {
+    TOKEN_EXPIRY,
+    JWT_SECRET_KEY,
+    COOKIE_MAX_AGE,
+} = require("../../config/appConfig");
 
 module.exports = async function cookieToken(user, res, message) {
     const token = jwt.sign({ id: user._id }, JWT_SECRET_KEY, {
