@@ -28,6 +28,10 @@ const orderSchema = mongoose.Schema(
             latitude: Number,
             longitude: Number,
         },
+        restaurantLocation: {
+            latitude: Number,
+            longitude: Number,
+        },
         items: [
             {
                 _id: false,
@@ -67,8 +71,8 @@ const orderSchema = mongoose.Schema(
             type: String,
             enum: [
                 "Placed",
-                "Prepared",
                 "Preparing",
+                "Prepared",
                 "Picked",
                 "Completed",
                 "Canceled",

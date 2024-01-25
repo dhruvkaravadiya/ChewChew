@@ -112,6 +112,8 @@ async function userLogin(req, res) {
     const user = await User.findOne({ email: req.body.email }).select(
         "+password"
     );
+    console.log(req.body.email);
+    console.log(user);
     if (!user) {
         return res
             .status(404)

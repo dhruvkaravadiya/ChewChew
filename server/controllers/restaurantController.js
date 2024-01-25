@@ -2,6 +2,8 @@ const Restaurant = require("../models/Restaurant");
 const Food = require("../models/Food");
 const mongoose = require("mongoose");
 const cloudinary = require("cloudinary");
+const { getCoordinates } = require("../helpers/utils/getCoordinates");
+
 const {
     CLOUDINARY_NAME,
     CLOUDINARY_API,
@@ -63,6 +65,7 @@ async function createRestaurant(req, res) {
         const photoId = result.public_id;
         const photoUrl = result.secure_url;
         const cuisinesList = cuisines.split(",");
+        const coordinates = await getCoordinates();
         const newRes = new Restaurant({
             user_id: req.user._id,
             restaurantName,
@@ -74,6 +77,10 @@ async function createRestaurant(req, res) {
             openingHours,
             closingHours,
             deliveryCharges,
+            location: {
+                latitude: coordinates.latitude,
+                longitude: coordinates.longitude,
+            },
             photo: {
                 id: photoId,
                 photoUrl: photoUrl,

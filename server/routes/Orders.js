@@ -59,10 +59,18 @@ router.put(
     verifyRole("Customer"),
     asyncErrorHandler(orderController.cancelOrder)
 );
+// handle payment response
 router.put(
     "/handle-payment-response/:id",
     isLoggedIn,
     verifyRole("Customer"),
     asyncErrorHandler(orderController.handlePaymentResponse)
+);
+// get Order Distance
+router.get(
+    "/location",
+    isLoggedIn,
+    verifyRole(["Customer", "Restaurant", "DeliveryMan"]),
+    asyncErrorHandler(orderController.getOrderDistance)
 );
 module.exports = router;
