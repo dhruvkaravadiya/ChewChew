@@ -23,7 +23,7 @@ io.on("connection", (socket) => {
     });
 
     // broadcast on successful order place
-    socket.on("orderPlacing", (data) => {
+    socket.on("orderPlaced", (data) => {
         io.emit("orderPlaced", data);
         console.log("Order placed successfully");
     });

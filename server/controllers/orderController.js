@@ -109,7 +109,7 @@ async function createOrder(req, res) {
         });
 
         // emit on successful order place
-        await io.emit("orderPlacing", "New Order Placed");
+        await io.emit("orderPlaced", "New Order Placed");
         await io.emit("orderStatusUpdate", order.orderStatus);
         res.status(201).json({
             success: true,
