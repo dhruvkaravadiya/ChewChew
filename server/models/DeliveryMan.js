@@ -7,6 +7,17 @@ const deliveryManSchema = new mongoose.Schema(
             required: [true, "User Id of Delivery Man is Required"],
             ref: "User",
         },
+        restaurant: {
+            id: {
+                type: mongoose.SchemaTypes.ObjectId,
+                ref: "Restaurant",
+                default: undefined,
+            },
+            name: {
+                type: String,
+                default: undefined,
+            },
+        },
         phoneNumber: {
             type: String,
             required: [true, "Please enter Contact Number"],
