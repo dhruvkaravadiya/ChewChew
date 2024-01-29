@@ -10,6 +10,14 @@ router.post(
     verifyRole("Customer"),
     asyncErrorHandler(orderController.createOrder)
 );
+
+router.post(
+    "/handle-success-response/:id",
+    isLoggedIn,
+    verifyRole("Customer"),
+    asyncErrorHandler(orderController.handleSuccessfulPayment)
+);
+
 //update order status
 router.put(
     "/update/:id",

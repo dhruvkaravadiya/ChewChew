@@ -17,114 +17,114 @@ const {
 const stripe = require("stripe")(STRIPE_TEST_SECRET_KEY);
 const { io } = require("../startup/io");
 
-// PLACE NEW ORDER
-async function createOrder(req, res) {
-    try {
-        const customer = await Customer.findOne({ user_id: req.user.id });
+// // PLACE NEW ORDER
+// async function createOrder(req, res) {
+//     try {
+//         const customer = await Customer.findOne({ user_id: req.user.id });
 
-        if (!customer) {
-            return res
-                .status(404)
-                .json({ success: false, error: "User not found" });
-        }
+//         if (!customer) {
+//             return res
+//                 .status(404)
+//                 .json({ success: false, error: "User not found" });
+//         }
 
-        const restaurantId = req.params.id;
-        const restaurant = await Restaurant.findById(restaurantId);
+//         const restaurantId = req.params.id;
+//         const restaurant = await Restaurant.findById(restaurantId);
 
-        if (!restaurant) {
-            return res
-                .status(404)
-                .json({ success: false, message: "Restaurant not found!" });
-        }
+//         if (!restaurant) {
+//             return res
+//                 .status(404)
+//                 .json({ success: false, message: "Restaurant not found!" });
+//         }
 
-        const coordinates = await getCoordinates();
+//         const coordinates = await getCoordinates();
 
-        // const validationResult = validateOrder(req.body);
+//         // const validationResult = validateOrder(req.body);
 
-        // if (!validationResult.success) {
-        //   return res.status(400).json({ success: false, errors: validationResult.errors });
-        // }
+//         // if (!validationResult.success) {
+//         //   return res.status(400).json({ success: false, errors: validationResult.errors });
+//         // }
 
-        const { items } = req.body;
-        let orderTotal = 0;
+//         const { items } = req.body;
+//         let orderTotal = 0;
 
-        items.forEach((item) => {
-            orderTotal += item.quantity * item.price;
-        });
+//         items.forEach((item) => {
+//             orderTotal += item.quantity * item.price;
+//         });
 
-        const order = new Order({
-            customer: {
-                id: customer._id,
-                name: req.user.name,
-            },
-            restaurant: {
-                id: restaurant._id,
-                name: restaurant.restaurantName,
-            },
-            deliveryLocation: {
-                latitude: coordinates.latitude,
-                longitude: coordinates.longitude,
-            },
-            restaurantLocation: {
-                latitude: restaurant.location.latitude,
-                longitude: restaurant.location.longitude,
-            },
-            items,
-            orderTotal,
-            placedAt: new Date(),
-        });
+//         const order = new Order({
+//             customer: {
+//                 id: customer._id,
+//                 name: req.user.name,
+//             },
+//             restaurant: {
+//                 id: restaurant._id,
+//                 name: restaurant.restaurantName,
+//             },
+//             deliveryLocation: {
+//                 latitude: coordinates.latitude,
+//                 longitude: coordinates.longitude,
+//             },
+//             restaurantLocation: {
+//                 latitude: restaurant.location.latitude,
+//                 longitude: restaurant.location.longitude,
+//             },
+//             items,
+//             orderTotal,
+//             placedAt: new Date(),
+//         });
 
-        const line_items = items.map((item) => ({
-            price_data: {
-                currency: "inr",
-                product_data: {
-                    name: item.name,
-                },
-                unit_amount: item.price * 100,
-            },
-            quantity: item.quantity,
-        }));
+//         const line_items = items.map((item) => ({
+//             price_data: {
+//                 currency: "inr",
+//                 product_data: {
+//                     name: item.name,
+//                 },
+//                 unit_amount: item.price * 100,
+//             },
+//             quantity: item.quantity,
+//         }));
 
-        const stripeSession = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items: line_items,
-            mode: "payment",
-            success_url: PAYMENT_SUCCESS_URL,
-            cancel_url: PAYMENT_FAIL_URL,
-            billing_address_collection: "required",
-            shipping_address_collection: {
-                allowed_countries: ["IN"],
-            },
-        });
-        order.payment.sessionId = stripeSession.id;
+//         const stripeSession = await stripe.checkout.sessions.create({
+//             payment_method_types: ["card"],
+//             line_items: line_items,
+//             mode: "payment",
+//             success_url: PAYMENT_SUCCESS_URL,
+//             cancel_url: PAYMENT_FAIL_URL,
+//             billing_address_collection: "required",
+//             shipping_address_collection: {
+//                 allowed_countries: ["IN"],
+//             },
+//         });
+//         order.payment.sessionId = stripeSession.id;
 
-        const savedOrder = await order.save();
+//         const savedOrder = await order.save();
 
-        await Restaurant.findByIdAndUpdate(restaurantId, {
-            $push: { currentOrders: savedOrder._id },
-        });
+//         await Restaurant.findByIdAndUpdate(restaurantId, {
+//             $push: { currentOrders: savedOrder._id },
+//         });
 
-        await Customer.findByIdAndUpdate(customer._id, {
-            $push: { currentOrders: savedOrder._id },
-        });
+//         await Customer.findByIdAndUpdate(customer._id, {
+//             $push: { currentOrders: savedOrder._id },
+//         });
 
-        // emit on successful order place
-        await io.emit("orderPlaced", "New Order Placed");
-        await io.emit("orderStatusUpdate", order.orderStatus);
-        res.status(201).json({
-            success: true,
-            data: {
-                order: savedOrder,
-                paymentSessionId: stripeSession.id,
-                paymentUrl: stripeSession.url,
-            },
-            message: "Order Placed Successfully",
-        });
-    } catch (error) {
-        console.error("Error creating order:", error.message);
-        return res.status(500).json({ success: false, error: error.message });
-    }
-}
+//         // emit on successful order place
+//         await io.emit("orderPlaced", "New Order Placed");
+//         await io.emit("orderStatusUpdate", order.orderStatus);
+//         res.status(201).json({
+//             success: true,
+//             data: {
+//                 order: savedOrder,
+//                 paymentSessionId: stripeSession.id,
+//                 paymentUrl: stripeSession.url,
+//             },
+//             message: "Order Placed Successfully",
+//         });
+//     } catch (error) {
+//         console.error("Error creating order:", error.message);
+//         return res.status(500).json({ success: false, error: error.message });
+//     }
+// }
 
 // HANDLE PAYMENT RESPONSE CHANGES
 const handlePaymentResponse = async (req, res) => {
@@ -539,6 +539,153 @@ const getOrderDistance = async (req, res) => {
     return res.status(200).json({ success: true, data: kms });
 };
 
+// PLACE NEW ORDER
+async function createOrder(req, res) {
+    try {
+        const { items } = req.body;
+        let orderTotal = 0;
+
+        items.forEach((item) => {
+            orderTotal += item.quantity * item.price;
+        });
+
+        const line_items = items.map((item) => ({
+            price_data: {
+                currency: "inr",
+                product_data: {
+                    name: item.name,
+                },
+                unit_amount: item.price * 100,
+            },
+            quantity: item.quantity,
+        }));
+
+        const stripeSession = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            line_items: line_items,
+            mode: "payment",
+            success_url: `${PAYMENT_SUCCESS_URL}?sessionId={CHECKOUT_SESSION_ID}`,
+            cancel_url: PAYMENT_FAIL_URL,
+            billing_address_collection: "required",
+            shipping_address_collection: {
+                allowed_countries: ["IN"],
+            },
+        });
+        console.log("Session id in CREATE ORDER : ", stripeSession.id);
+        res.status(201).json({
+            success: true,
+            data: {
+                paymentSessionId: stripeSession.id,
+                paymentUrl: stripeSession.url,
+            },
+            message: "Payment session created successfully",
+        });
+    } catch (error) {
+        console.error("Error creating payment session:", error.message);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+// Handle successful payment and create database order
+async function handleSuccessfulPayment(req, res) {
+    try {
+        const customer = await Customer.findOne({ user_id: req.user.id });
+
+        if (!customer) {
+            return res
+                .status(404)
+                .json({ success: false, error: "User not found" });
+        }
+
+        const restaurantId = req.params.id;
+        const restaurant = await Restaurant.findById(restaurantId);
+
+        if (!restaurant) {
+            return res
+                .status(404)
+                .json({ success: false, message: "Restaurant not found!" });
+        }
+
+        const coordinates = await getCoordinates();
+
+        const sessionId = req.query.sessionId;
+        console.log("Handle payment SESSION ID : ", sessionId);
+        // Retrieve relevant information from the session or request
+        const { items } = req.body;
+        let orderTotal = 0;
+        items.forEach((item) => {
+            orderTotal += item.quantity * item.price;
+        });
+        // Fetch information related to the Stripe session
+        const stripeSession = await stripe.checkout.sessions.retrieve(
+            sessionId
+        );
+        console.log("Stripe Session : ", stripeSession);
+        // Check if payment was successful in the Stripe session
+        if (stripeSession.payment_status === "paid") {
+            // Continue with creating the database order
+            const restaurantId = req.params.id;
+            const restaurant = await Restaurant.findById(restaurantId);
+
+            const order = new Order({
+                customer: {
+                    id: customer._id,
+                    name: req.user.name,
+                },
+                restaurant: {
+                    id: restaurant._id,
+                    name: restaurant.restaurantName,
+                },
+                deliveryLocation: {
+                    latitude: coordinates.latitude,
+                    longitude: coordinates.longitude,
+                },
+                restaurantLocation: {
+                    latitude: restaurant.location.latitude,
+                    longitude: restaurant.location.longitude,
+                },
+                items,
+                orderTotal,
+                paymentStatus: "Paid",
+                placedAt: new Date(),
+            });
+
+            // Save the order to the database
+            const savedOrder = await order.save();
+
+            // Update restaurant and customer with the new order
+            await Restaurant.findByIdAndUpdate(restaurantId, {
+                $push: { currentOrders: savedOrder._id },
+            });
+
+            await Customer.findByIdAndUpdate(customer._id, {
+                $push: { currentOrders: savedOrder._id },
+            });
+
+            // Emit on successful order placeS
+            await io.emit("orderPlaced", "New Order Placed");
+            await io.emit("orderStatusUpdate", savedOrder);
+
+            res.status(201).json({
+                success: true,
+                data: {
+                    order: savedOrder,
+                },
+                message: "Order Placed Successfully",
+            });
+        } else {
+            // If payment was not successful, handle accordingly
+            return res.status(400).json({
+                success: false,
+                error: "Payment was not successful",
+            });
+        }
+    } catch (error) {
+        console.error("Error handling successful payment:", error.message);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
 module.exports = {
     createOrder,
     handlePaymentResponse,
@@ -550,4 +697,5 @@ module.exports = {
     getCurrentOrders,
     getPreparedOrders,
     getOrderDistance,
+    handleSuccessfulPayment,
 };
