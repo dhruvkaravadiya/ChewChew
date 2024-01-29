@@ -12,14 +12,16 @@ const RestaurantList = () => {
 
   const { restaurantData } = useSelector((state) => state?.restaurant);
 
-  async function loadRestaurants() {
+  const { isLoggedIn, role, data } = useSelector((state) => state.auth);
+
+  async function loadAllRestaurants() {
     if (restaurantData.length == 0) {
       await dispatch(getAllRestaurants());
     }
   }
 
   useEffect(() => {
-    loadRestaurants();
+    loadAllRestaurants();
   }, []);
 
   return (
@@ -27,10 +29,19 @@ const RestaurantList = () => {
       {restaurantData.length == 0 ? (
         <RestaurantCardShimmer />
       ) : (
-        // <div>Loading</div>
         <React.Fragment>
           {restaurantData.map((restaurant) => {
-            return <RestaurantCard key={restaurant._id} resdata={restaurant} />;
+            // Check if the user's role is 'restaurant' and the IDs match
+            if (role === "Restaurant" && restaurant.user_id === data._id) {
+              return (
+                <RestaurantCard key={restaurant._id} resdata={restaurant} />
+              );
+            } else if (role !== "Restaurant") {
+              return (
+                <RestaurantCard key={restaurant._id} resdata={restaurant} />
+              );
+            }
+            return null; // Don't render anything if conditions are not met
           })}
         </React.Fragment>
       )}

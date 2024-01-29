@@ -160,7 +160,7 @@ const restaurantSlice = createSlice({
         state.menuItems = action?.payload?.data;
       })
       .addCase(addMenuItem.fulfilled, (state, action) => {
-        console.log("payload in add menu",action?.payload);
+        console.log("payload in add menu", action?.payload);
         state.menuItems = [...state.menuItems, action?.payload?.newItem];
       });
   },

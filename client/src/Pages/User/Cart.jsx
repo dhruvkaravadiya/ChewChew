@@ -9,10 +9,7 @@ import {
   updateQuantity,
 } from "../../Redux/Slices/cartSlice";
 import cartEmpty from "../../Assets/cartEmpty.jpg";
-import { loadStripe } from "@stripe/stripe-js";
-import axiosInstance from "../../Helpers/axiosInstance";
-import { STRIPE_Publishable_key } from "../../../config.js";
-import toast from "react-hot-toast";
+import { placeorder } from "../../Redux/Slices/orderSlice.js";
 
 const Cart = () => {
   const { cartItems } = useSelector((state) => state?.cart);
@@ -27,28 +24,9 @@ const Cart = () => {
 
   async function makePayment(event) {
     event.preventDefault();
-    const stripe = await loadStripe(STRIPE_Publishable_key);
-
-    console.log("resID", cartItems[0].restaurant.resId);
-
-    const loadingMessage = toast.loading("Wait payment in process...!");
-    try {
-      const session = await axiosInstance.post(
-        `/order/placeorder/${cartItems[0].restaurant.resId}`,
-        {
-          items: cartItems,
-        }
-      );
-
-      const res = await stripe.redirectToCheckout({
-        sessionId: session.data.data.paymentSessionId,
-      });
-
-      console.log("res", res);
-    } catch (error) {
-      toast.error(error?.response?.data?.error, { id: loadingMessage });
-      throw error;
-    }
+    const resId = cartItems[0].restaurant.resId;
+    const res = dispatch(placeorder([resId, cartItems]));
+    console.log("place order res", res);
   }
 
   return (

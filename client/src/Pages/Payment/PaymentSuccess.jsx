@@ -1,14 +1,32 @@
 import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { clearCart } from "../../Redux/Slices/cartSlice";
+import { orderSuccess } from "../../Redux/Slices/orderSlice";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  // Access the current location
+  const location = useLocation();
+
+  // Extract query parameters using URLSearchParams
+  const queryParams = new URLSearchParams(location.search);
+  const sessionId = queryParams.get("sessionId");
+
+  const { cartItems } = useSelector((state) => state?.cart);
+
+  async function verifyPayment() {
+    const resId = cartItems[0].restaurant.resId;
+    await dispatch(orderSuccess([resId, sessionId, cartItems]));
+  }
 
   useEffect(() => {
-    dispatch(clearCart());
+    const res = verifyPayment();
+    console.log("res", res);
+    if (res?.success) {
+      dispatch(clearCart());
+    }
   }, []);
 
   return (

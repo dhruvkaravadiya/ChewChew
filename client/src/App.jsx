@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./Pages/HomePage";
 import NotFoundPage from "./Pages/NotFoundPage";
@@ -16,8 +16,23 @@ import Cart from "./Pages/User/Cart";
 import AboutUs from "./Pages/AboutUs";
 import PaymentSuccess from "./Pages/Payment/PaymentSuccess";
 import PaymentFail from "./Pages/Payment/PaymentFail";
+import MyOrder from "./Pages/User/MyOrder";
+
+import { io } from "socket.io-client";
+export const socket = io("http://localhost:8080/");
 
 const App = () => {
+  useEffect(() => {
+    socket.on("connect", () => {
+      console.log(socket.id, "connected");
+    });
+
+    // Clean up the socket connection on component unmount
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   return (
     <>
       <Routes>
@@ -33,6 +48,7 @@ const App = () => {
 
         <Route element={<RequireAuth allowedRoles={["Customer"]} />}>
           <Route path="/cart" element={<Cart />} />
+
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/fail" element={<PaymentFail />} />
         </Route>
@@ -46,6 +62,7 @@ const App = () => {
         >
           <Route path="/changePassword" element={<ChangePassword />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/myorder" element={<MyOrder />} />
         </Route>
 
         <Route element={<RequireAuth allowedRoles={["Restaurant"]} />}>

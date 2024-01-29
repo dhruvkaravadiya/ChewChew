@@ -1,0 +1,131 @@
+import React, { useEffect, useState } from "react";
+import { FaRupeeSign } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  completeOrder,
+  pickOrder,
+  updateOrderStatus,
+} from "../../Redux/Slices/orderSlice";
+import { socket } from "../../App";
+
+const OrderCard = ({ order }) => {
+  const dispatch = useDispatch();
+
+  const { role } = useSelector((state) => state?.auth);
+
+  const [newStatus, setNewStatus] = useState(order?.orderStatus);
+
+  useEffect(() => {
+    socket.on("orderStatusUpdate", ({ Id, orderStatus }) => {
+      console.log("id", Id);
+      console.log(orderStatus);
+
+      if (Id === order?._id) {
+        setNewStatus(orderStatus);
+      }
+    });
+  }, []);
+
+  async function confirmPickOrder(orderId) {
+    console.log("oreder ind", orderId);
+    if (window.confirm("are you sure You want to pick order?")) {
+      await dispatch(pickOrder(orderId));
+      console.log("yes");
+    }
+  }
+
+  async function completeOrderVerify(orderId) {
+    const OTP = window.prompt("Enter OTP ::");
+    console.log(OTP);
+    if (OTP) {
+      await dispatch(completeOrder([orderId, OTP]));
+    }
+  }
+
+  return (
+    <div
+      key={order?._id}
+      className="bg-white p-6 rounded-md shadow-md flex  items-center justify-between"
+      // onClick={() => handleCardClick(order._id)}
+    >
+      <div className="mb-4">
+        <p className="text-xl font-semibold mb-2">Order ID: {order?._id}</p>
+        <p className="text-gray-700">Customer: {order?.customer.name}</p>
+        <p className="text-gray-700">Restaurant: {order?.restaurant.name}</p>
+      </div>
+
+      <div className="flex flex-col items-center gap-1">
+        <p className="font-semibold relative">
+          Order Status: {newStatus}
+          {(order?.orderStatus === "Placed" ||
+            order?.orderStatus === "Preparing") &&
+            role === "Restaurant" && (
+              <select
+                value={newStatus}
+                onChange={(e) => {
+                  if (e.target.value !== "Update status")
+                    dispatch(updateOrderStatus([order?._id, e.target.value]));
+                }}
+                className="border p-2 rounded ml-2 appearance-none focus:outline-none focus:border-blue-500 bg-gray-100 hover:bg-gray-200 transition-colors duration-300"
+              >
+                <option value="Update status">Update status</option>
+                <option value="Preparing">Preparing</option>
+                <option value="Prepared">Prepared</option>
+              </select>
+            )}
+        </p>
+
+        <p className="text-gray-700">Payment Status: {order?.paymentStatus}</p>
+
+        <div>
+          {order?.orderStatus === "Prepared" && role === "DeliveryMan" && (
+            <button
+              onClick={(e) => confirmPickOrder(order?._id)}
+              className="px-4 py-1 mt-2 font-semibold rounded-md mx-4 bg-red-200 hover:scale-105 hover:bg-red-200 "
+            >
+              Pick Order
+            </button>
+          )}
+          {order?.orderStatus === "Piked" && role === "DeliveryMan" && (
+            <button
+              onClick={(e) => completeOrderVerify(order?._id)}
+              className="px-4 py-1 mt-2 font-semibold rounded-md mx-4 bg-red-200 hover:scale-105 hover:bg-red-200 "
+            >
+              Complete Order
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <div className="flex items-between">
+          <div>
+            <p className="text-gray-700 font-semibold">Items:</p>
+            <ul className="list-disc ml-6">
+              {order?.items?.map((item) => (
+                <li key={item.Id}>
+                  {item.name} - {item.quantity} x {item.price.toFixed(2)}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="ml-6">
+            <p className="text-green-600 font-semibold flex items-center gap-2">
+              <span>Total: </span>
+              <span className="flex items-center">
+                <FaRupeeSign /> {order?.orderTotal?.toFixed(2)}
+              </span>
+            </p>
+          </div>
+        </div>
+        <div className="mt-4">
+          <p className="text-gray-700">
+            Placed At: {new Date(order?.placedAt).toLocaleString()}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OrderCard;
