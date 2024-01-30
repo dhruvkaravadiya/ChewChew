@@ -7,6 +7,7 @@ import {
   updateOrderStatus,
 } from "../../Redux/Slices/orderSlice";
 import { socket } from "../../App";
+import toast from "react-hot-toast";
 
 const OrderCard = ({ order }) => {
   const dispatch = useDispatch();
@@ -16,14 +17,16 @@ const OrderCard = ({ order }) => {
   const [newStatus, setNewStatus] = useState(order?.orderStatus);
 
   useEffect(() => {
-    socket.on("orderStatusUpdate", ({ Id, orderStatus }) => {
-      console.log("id", Id);
-      console.log(orderStatus);
-
-      if (Id === order?._id) {
+    socket.on("updateOrderStatus", ({ orderId, orderStatus }) => {
+      if (orderId === order._id) {
+        toast.success("your order is"+orderStatus)
         setNewStatus(orderStatus);
       }
     });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   async function confirmPickOrder(orderId) {

@@ -6,11 +6,11 @@ import {
   getPastOrders,
 } from "../../Redux/Slices/orderSlice.js";
 import AppLayout from "../../Layout/AppLayout";
-
 import { socket } from "../../App.jsx";
 import CurrentOrdersList from "../../Components/Order/CurrentOrdersList.jsx";
 import PastOrdersList from "../../Components/Order/PastOrdersList.jsx";
 import OrderNavbar from "../../Components/Order/OrderNavbar.jsx";
+import toast from "react-hot-toast";
 
 const MyOrder = () => {
   const dispatch = useDispatch();
@@ -30,18 +30,11 @@ const MyOrder = () => {
   useEffect(() => {
     isPast ? fetchPastOrders() : fetchCurrentOrders();
 
-    socket.on("orderPlaced", () => {
-      console.log("orderPlaced call");
-      console.log("data._id", data._id);
-      socket.emit("joinRestaurantRoom", data._id);
-    });
-
-    // Listen for new orders from customers
-    socket.on("newOrderForRestaurant", ({ newOrder }) => {
-      console.log("newOrder", newOrder);
-
-      dispatch(NewCurrentOrder(newOrder));
-      // console.log("newOrder", newOrder);
+    socket.on("orderPlaced", ({ userId, newOrder }) => {
+      if (data._id == userId) {
+        toast.success("New Order For Restaurant")
+        dispatch(NewCurrentOrder(newOrder));
+      }
     });
 
     return () => {

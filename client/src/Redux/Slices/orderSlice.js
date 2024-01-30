@@ -201,7 +201,7 @@ const orderSlice = createSlice({
   reducers: {
     NewCurrentOrder: (state, action) => {
       console.log("action payload", action.payload);
-      state.currentOrders.push(action.payload.data);
+      state.currentOrders.push(action.payload);
     },
   },
   extraReducers: (builder) => {
