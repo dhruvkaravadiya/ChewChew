@@ -7,7 +7,11 @@ import {
 } from "../../Redux/Slices/restaurantSlice";
 import { FaEdit, FaShoppingCart } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
-import { addItem, removeItem } from "../../Redux/Slices/cartSlice";
+import {
+  addItem,
+  calculateTotalBill,
+  removeItem,
+} from "../../Redux/Slices/cartSlice";
 
 const MenuItemCard = ({ menuItem }) => {
   const dispatch = useDispatch();
@@ -62,14 +66,20 @@ const MenuItemCard = ({ menuItem }) => {
       <div className="flex gap-2">
         {checkItemInCart(menuItem._id) ? (
           <button
-            onClick={() => dispatch(removeItem(menuItem._id))}
+            onClick={() => {
+              dispatch(removeItem(menuItem._id));
+              dispatch(calculateTotalBill());
+            }}
             className="bg-red-300 p-2 flex items-center gap-1 rounded-md hover:bg-red-400 text-white"
           >
             <FaShoppingCart /> Remove
           </button>
         ) : (
           <button
-            onClick={() => dispatch(addItem(menuItem))}
+            onClick={() => {
+              dispatch(addItem(menuItem));
+              dispatch(calculateTotalBill());
+            }}
             className="bg-orange-300 p-2 flex items-center gap-1 rounded-md hover:bg-orange-400 text-white"
           >
             <FaShoppingCart /> Add To Cart

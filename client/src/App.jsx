@@ -45,10 +45,9 @@ const App = () => {
 
         <Route path="/restaurant" element={<RestaurantList />} />
         <Route path="/restaurant/details" element={<RestaurantDetails />} />
+        <Route path="/cart" element={<Cart />} />
 
         <Route element={<RequireAuth allowedRoles={["Customer"]} />}>
-          <Route path="/cart" element={<Cart />} />
-
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/fail" element={<PaymentFail />} />
         </Route>

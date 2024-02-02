@@ -6,7 +6,10 @@ export default {
       fontFamily: {
         custom: ["Poppins", "sans-serif"],
       },
+      daisyui: {
+        themes: ["light", "dark", "cupcake","coffee"],
+      },
     },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
 };
