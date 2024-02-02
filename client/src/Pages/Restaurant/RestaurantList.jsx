@@ -26,8 +26,8 @@ const RestaurantList = () => {
 
   return (
     <div className="flex items-center justify-center flex-wrap gap-11 mt-10">
-      {restaurantData.length == 0 ? (
-        <RestaurantCardShimmer />
+      {restaurantData.length === 0 ? (
+        <RestaurantListShimmer />
       ) : (
         <React.Fragment>
           {restaurantData.map((restaurant) => {
