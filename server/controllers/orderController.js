@@ -190,10 +190,10 @@ async function updateOrderStatus(req, res) {
             .status(400)
             .json({ success: false, error: "Order Not Found" });
     }
-    if (order.orderStatus != "Placed") {
+    if (order.orderStatus != "Placed" && order.orderStatus != "Preparing") {
         return res.status(400).json({
             success: false,
-            error: "Order Status must be Placed",
+            error: "Sorry 🙏🙏 after Prepared you can't change the order Status",
         });
     }
     const allowedOrderStatuses = ["Prepared", "Preparing"];
@@ -215,8 +215,22 @@ async function updateOrderStatus(req, res) {
             .status(404)
             .json({ success: false, error: "Order Not Found" });
     }
-    await io.emit("orderStatusUpdate", orderStatus);
+    const restaurant = await Restaurant.findById(order.restaurant.id);
+    if (!restaurant) {
+        return res
+            .status(404)
+            .json({ success: false, error: "Restaurant Not Found" });
+    }
+    await io.emit("updateOrderStatus", { orderId, orderStatus });
 
+    const resDeliveryMen = restaurant.deliveryMen;
+    resDeliveryMen.forEach((deliverymanId) => {
+        () => {
+            io.emit("joinDeliveryMan", {
+                userId: deliverymanId,
+            });
+        };
+    });
     res.status(221).json({
         success: true,
         message: "Order Status Updated",
@@ -453,8 +467,9 @@ const getPastOrders = async (req, res) => {
         if (!userInstance) {
             return res
                 .status(404)
-                .json({ success: false, error: `${role} Not Found` });
+                .json({ success: false, error: `${role} Not Found ` });
         }
+        gg;
 
         const pastOrders = userInstance.pastOrders;
 
@@ -500,7 +515,7 @@ const getCurrentOrders = async (req, res) => {
         if (!userInstance) {
             return res
                 .status(404)
-                .json({ success: false, error: `${role} Not Found` });
+                .json({ success: false, error: `${role} Not Found ` });
         }
 
         const currentOrders = await Order.find({
@@ -662,9 +677,11 @@ async function handleSuccessfulPayment(req, res) {
                 $push: { currentOrders: savedOrder._id },
             });
 
-            // Emit on successful order placeS
-            await io.emit("orderPlaced", "New Order Placed");
-            await io.emit("orderStatusUpdate", savedOrder);
+            // Emit orderPlaced
+            await io.emit("orderPlaced", {
+                userId: restaurant.user_id,
+                newOrder: savedOrder,
+            });
 
             res.status(201).json({
                 success: true,

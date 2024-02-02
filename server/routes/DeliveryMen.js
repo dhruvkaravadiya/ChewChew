@@ -47,7 +47,7 @@ router.put(
 );
 // # select a resturant for delivery
 router.put(
-    "/select-restaurant/:id",
+    "/select-restaurant/",
     isLoggedIn,
     verifyRole("DeliveryMan"),
     asyncErrorHandler(deliveryManController.addRestaurantToDeliveryMan)

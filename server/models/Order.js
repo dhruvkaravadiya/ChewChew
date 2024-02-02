@@ -24,6 +24,13 @@ const orderSchema = mongoose.Schema(
                 required: true,
             },
         },
+        deliveryMan: {
+            id: {
+                type: mongoose.SchemaTypes.ObjectId,
+                ref: "DeliveryMan",
+                required: true,
+            },
+        },
         deliveryLocation: {
             latitude: Number,
             longitude: Number,

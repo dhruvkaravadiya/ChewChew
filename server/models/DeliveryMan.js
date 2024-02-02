@@ -7,16 +7,30 @@ const deliveryManSchema = new mongoose.Schema(
             required: [true, "User Id of Delivery Man is Required"],
             ref: "User",
         },
-        restaurant: {
-            id: {
-                type: mongoose.SchemaTypes.ObjectId,
-                ref: "Restaurant",
-                default: undefined,
+        restaurants: {
+            type: [
+                {
+                    _id: false,
+                    id: {
+                        type: mongoose.SchemaTypes.ObjectId,
+                        ref: "Restaurant",
+                        default: undefined,
+                    },
+                    name: {
+                        type: String,
+                        default: undefined,
+                    },
+                },
+            ],
+            validate: {
+                validator: function (value) {
+                    return value.length <= 3;
+                },
+                message:
+                    "Cannot add more than 3 restaurants for a delivery man.",
             },
-            name: {
-                type: String,
-                default: undefined,
-            },
+            max: 3,
+            default: [],
         },
         phoneNumber: {
             type: String,

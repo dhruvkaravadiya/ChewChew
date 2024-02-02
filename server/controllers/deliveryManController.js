@@ -96,8 +96,7 @@ const updateLocation = async (req, res) => {
 };
 
 const addRestaurantToDeliveryMan = async (req, res) => {
-    const resId = req.params.id;
-
+    const { resIds } = req.body;
     try {
         const deliveryMan = await DeliveryMan.findOne({ user_id: req.user.id });
 
@@ -108,55 +107,52 @@ const addRestaurantToDeliveryMan = async (req, res) => {
             });
         }
 
-        if (deliveryMan.restaurant.id || deliveryMan.restaurant.name) {
+        if (deliveryMan.restaurants.length === 3) {
             return res.status(400).json({
                 success: false,
-                error: "DeliveryMan is already associated with a restaurant",
+                error: "DeliveryMan can be associated with a maximum of 3 restaurants",
             });
         }
 
-        const restaurant = await Restaurant.findByIdAndUpdate(
-            resId,
+        const existingRestaurantIds = deliveryMan.restaurants.map(
+            (restaurant) => restaurant.id
+        );
+
+        // Check if any of the selected restaurant IDs already exist in the delivery man's restaurants list
+        const overlap = resIds.some((id) => existingRestaurantIds.includes(id));
+        if (overlap) {
+            return res.status(400).json({
+                success: false,
+                error: "DeliveryMan is already associated with one or more of the selected restaurants",
+            });
+        }
+
+        // Fetch restaurant details using the provided IDs
+        const restaurantsToAdd = await Restaurant.find({
+            _id: { $in: resIds },
+        });
+        // Add new restaurant IDs and names to the delivery man's restaurants list
+        const updatedDeliveryMan = await DeliveryMan.findOneAndUpdate(
+            { user_id: req.user.id },
             {
                 $push: {
-                    deliveryMan: {
-                        id: deliveryMan._id,
-                        name: deliveryMan.name,
+                    restaurants: {
+                        $each: restaurantsToAdd.map(
+                            ({ _id, restaurantName }) => ({
+                                id: _id,
+                                name: restaurantName,
+                            })
+                        ),
                     },
                 },
             },
             { new: true }
         );
 
-        if (!restaurant) {
-            return res.status(404).json({
-                success: false,
-                error: "Error adding DeliveryMan to Restaurant",
-            });
-        }
-
-        const deliveryManUpdateResponse = await DeliveryMan.findOneAndUpdate(
-            { user_id: req.user.id },
-            {
-                $set: {
-                    "restaurant.id": resId,
-                    "restaurant.name": restaurant.restaurantName,
-                },
-            },
-            { new: true, upsert: true }
-        );
-
-        if (!deliveryManUpdateResponse) {
-            return res.status(400).json({
-                success: false,
-                error: "Error adding restaurant to delivery man",
-            });
-        }
-
         res.json({
             success: true,
-            message: "Successfully selected Restaurant",
-            data: deliveryManUpdateResponse,
+            message: "Successfully added restaurant(s) to DeliveryMan",
+            data: updatedDeliveryMan,
         });
     } catch (error) {
         console.error(error);

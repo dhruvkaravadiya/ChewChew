@@ -1,8 +1,12 @@
 const mongoose = require("mongoose");
-const cookieparser = require('cookie-parser');
+const cookieparser = require("cookie-parser");
 const cors = require("cors");
-const { DB_CONNECTION_STRING, PORT,LOCALHOST_ORIGIN } = require("./config/appConfig");
-const authRoutes = require('./routes/Auths');
+const {
+    DB_CONNECTION_STRING,
+    PORT,
+    LOCALHOST_ORIGIN,
+} = require("./config/appConfig");
+const authRoutes = require("./routes/Auths");
 const restaurantsRoutes = require("./routes/Restaurants");
 const deliveryManRoutes = require("./routes/DeliveryMen");
 const customerRoutes = require("./routes/Customers");
@@ -10,38 +14,16 @@ const orderRoutes = require("./routes/Orders");
 const fileUpload = require("express-fileupload");
 const path = require("path");
 
-const {io, app, server, express} = require("./startup/io");
-
-// // io object configuration 
-// io.on("connection", (socket) => {
-//   console.log("A user connected");
-
-//   // Emit event when a user connects
-//   io.emit("userConnected");
-
-//   socket.on("orderStatusUpdate", (data) => {
-//     // Broadcast the order status update to all connected clients
-//     io.emit("updateOrderStatus", data);
-//   });
-
-//   socket.on("userLogin", (loginMessage) => {
-//     io.emit("userLogin",loginMessage);
-//   })
-
-//   socket.on("disconnect", () => { 
-//     console.log("A user disconnected");
-//   });
-// });
-
+const { io, app, server, express } = require("./startup/io");
 
 mongoose
-  .connect(DB_CONNECTION_STRING, { useUnifiedTopology: true })
-  .then(() => {
-    console.log("Connected to Database");
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
+    .connect(DB_CONNECTION_STRING, { useUnifiedTopology: true })
+    .then(() => {
+        console.log("Connected to Database");
+    })
+    .catch((err) => {
+        console.log(err.message);
+    });
 
 // Body Parser Middleware to parse data from the body to JSON
 app.use(express.json());
@@ -50,55 +32,53 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Enable cross-origin resource sharing using cors() middleware
-app.use(cors(
-  {
-    origin: LOCALHOST_ORIGIN,
-    credentials: true,
-    methods: "GET,POST,DELETE,PUT",
-  }
-));
+app.use(
+    cors({
+        origin: LOCALHOST_ORIGIN,
+        credentials: true,
+        methods: "GET,POST,DELETE,PUT",
+    })
+);
 
 // Cookie-parser middleware to parse data from Cookie
 app.use(cookieparser());
 
 // Configure the file upload
-app.use(fileUpload({
-  useTempFiles: true,
-  tempFileDir: '/tmp/'
-}));
+app.use(
+    fileUpload({
+        useTempFiles: true,
+        tempFileDir: "/tmp/",
+    })
+);
 
 // set real ip proxy trust settings
-app.set('trust proxy', true);
+app.set("trust proxy", true);
 
 // Set the views directory
-app.set('views', path.join(__dirname, 'views'));
+app.set("views", path.join(__dirname, "views"));
 
 // Setting the EJS view engine
 app.set("view engine", "ejs");
 
 // Routes
-app.use('/api/v1/restaurants', restaurantsRoutes);
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/deliveryman', deliveryManRoutes);
-app.use('/api/v1/customer', customerRoutes);
-app.use('/api/v1/order', orderRoutes);
+app.use("/api/v1/restaurants", restaurantsRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/deliveryman", deliveryManRoutes);
+app.use("/api/v1/customer", customerRoutes);
+app.use("/api/v1/order", orderRoutes);
 
-app.get('/resboard', (req, res) => (
-  res.render('resupdate')
-));
+app.get("/resboard", (req, res) => res.render("resupdate"));
 
-app.get('/cusboard', (req, res) => (
-  res.render('cusview')
-));
+app.get("/cusboard", (req, res) => res.render("cusview"));
 
 // Signup form ejs
-app.get('/api/auth/signup', (req, res) => {
-  res.render("signupForm");
+app.get("/api/auth/signup", (req, res) => {
+    res.render("signupForm");
 });
 
 // Render the test.ejs template
 app.get("/test", (req, res) => {
-  res.render("test");
+    res.render("test");
 });
 
 // // Update food status ejs
@@ -127,7 +107,7 @@ app.get("/test", (req, res) => {
 
 // Listen to the server
 server.listen(PORT, () => {
-  console.log(`Server running at port: ${PORT}`);
+    console.log(`Server running at port: ${PORT}`);
 });
 
 module.exports = io;

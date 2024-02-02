@@ -100,7 +100,7 @@ const restaurantSchema = mongoose.Schema(
                 ref: "Order",
             },
         ],
-        deliveryMan: [
+        deliveryMen: [
             {
                 id: {
                     type: mongoose.SchemaTypes.ObjectId,
