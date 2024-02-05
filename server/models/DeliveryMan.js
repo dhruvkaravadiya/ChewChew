@@ -69,6 +69,10 @@ const deliveryManSchema = new mongoose.Schema(
                 ref: "Order",
             },
         ],
+        cancelledOrders: {
+            type: Number,
+            default: 0,
+        },
         earnings: {
             type: Number,
             default: 0,

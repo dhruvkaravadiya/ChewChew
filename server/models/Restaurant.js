@@ -100,6 +100,10 @@ const restaurantSchema = mongoose.Schema(
                 ref: "Order",
             },
         ],
+        cancelledOrders: {
+            type: Number,
+            default: 0,
+        },
         deliveryMen: [
             {
                 id: {

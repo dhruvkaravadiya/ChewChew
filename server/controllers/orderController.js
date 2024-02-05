@@ -393,10 +393,17 @@ const cancelOrder = async (req, res) => {
             error: "Order cannot be canceled",
         });
     }
-
+    const deliveryMap = await DeliveryMan.findByIdAndUpdate(
+        order.deliveryMan.id,
+        {
+            $push: { cancelledOrders: order._id },
+            $pull: { currentOrders: order._id },
+        }
+    );
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
         order.restaurant.id,
         {
+            $push: { cancelledOrders: order._id },
             $pull: { currentOrders: order._id },
         }
     );
