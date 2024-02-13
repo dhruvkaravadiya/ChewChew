@@ -112,27 +112,11 @@ const RestaurantDetails = () => {
           {/* Search and Sort */}
           <div className="flex space-x-4 items-center mb-6">
             {/* Search Input */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search Within Menu"
-                className="w-96 h-10 border border-gray-300 p-4 focus:outline-none focus:ring focus:border-blue-500 rounded-md"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M15.742 14.344a10.932 10.932 0 0 0 1.93-1.93l.001-.002 2.586 2.585-1.93 1.93-2.587-2.586zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-            </div>
+            <input
+              type="text"
+              placeholder="search restarant by Name..."
+              className="input input-bordered input-md w-full max-w-3xl "
+            />
 
             {/* Sort Dropdown */}
             <div>

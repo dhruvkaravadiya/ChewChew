@@ -1,5 +1,4 @@
 import React from "react";
-// import Skeleton from "react-loading-skeleton";
 
 const RestaurantCardShimmer = () => {
   const cuisine = [1, 2, 3, 4];
@@ -12,8 +11,6 @@ const RestaurantCardShimmer = () => {
           return <div key={c} className="skeleton h-6 w-40"></div>;
         })}
       </div>
-      {/* <div className="skeleton h-4 w-16"></div>
-      <div className="skeleton h-4 w-full"></div> */}
     </div>
   );
 };

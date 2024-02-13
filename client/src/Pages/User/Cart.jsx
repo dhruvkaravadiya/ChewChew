@@ -197,9 +197,9 @@ const Cart = () => {
                     </div>
                   </dl>
                   {/* Savings message */}
-                  <div className="px-2 pb-4 font-medium text-green-700">
+                  {/* <div className="px-2 pb-4 font-medium text-green-700">
                     You will save ₹ {totalBill >= 99 ? 19 : 0} on this order
-                  </div>
+                  </div> */}
                   {/* Place Order button */}
                   {isLoggedIn && role === "Customer" && (
                     <button
