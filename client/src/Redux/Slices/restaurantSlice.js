@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 
 const initialState = {
   restaurantData: [],
-  filteredRestaurant: [],
   currentRestaurant: null,
   menuItems: [],
 };
@@ -151,18 +150,6 @@ const restaurantSlice = createSlice({
     updateCurrentRestaurant: (state, action) => {
       state.currentRestaurant = action.payload;
     },
-    searchRestaurant: (state, action) => {
-      console.log("action.payload", action.payload);
-      const searchText = action.payload;
-      state.filteredRestaurant = state.restaurantData.filter((res) => {
-        return (
-          res.restaurantName.toLowerCase().includes(searchText) ||
-          res.cuisines.some((cuisine) =>
-            cuisine.toLowerCase().includes(searchText)
-          )
-        );
-      });
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -179,7 +166,6 @@ const restaurantSlice = createSlice({
   },
 });
 
-export const { updateCurrentRestaurant, searchRestaurant } =
-  restaurantSlice.actions;
+export const { updateCurrentRestaurant } = restaurantSlice.actions;
 
 export default restaurantSlice.reducer;
