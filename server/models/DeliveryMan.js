@@ -7,19 +7,30 @@ const deliveryManSchema = new mongoose.Schema(
             required: [true, "User Id of Delivery Man is Required"],
             ref: "User",
         },
-        restaurants: [
-            {
-                id: {
-                    type: mongoose.SchemaTypes.ObjectId,
-                    ref: "Restaurant",
-                    default: undefined,
+        restaurants: {
+            type: [
+                {
+                    id: {
+                        type: mongoose.SchemaTypes.ObjectId,
+                        ref: "Restaurant",
+                        default: undefined,
+                    },
+                    name: {
+                        type: String,
+                        default: undefined,
+                    },
                 },
-                name: {
-                    type: String,
-                    default: undefined,
+            ],
+            validate: [
+                {
+                    validator: function (arr) {
+                        return arr.length >= 1 && arr.length <= 3;
+                    },
+                    message:
+                        "Restaurants array must have at least 1 and at most 3 items",
                 },
-            },
-        ],
+            ],
+        },
         phoneNumber: {
             type: String,
             required: [true, "Please enter Contact Number"],
@@ -72,7 +83,7 @@ const deliveryManSchema = new mongoose.Schema(
 //set the schema property array empty
 deliveryManSchema.path("pastOrders").default([]);
 deliveryManSchema.path("currentOrders").default([]);
-deliveryManSchema.path("restaurants").default([]).max(3);
+deliveryManSchema.path("restaurants").default([]);
 // check if the current location changes or not
 // before saving the updated object
 deliveryManSchema.pre("save", async function (next) {
