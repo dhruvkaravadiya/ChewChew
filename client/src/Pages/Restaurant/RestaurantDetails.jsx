@@ -7,11 +7,12 @@ import AddFoodItem from "../../Components/Restaurant/AddFoodItem";
 import {
   DeleteMenuItem,
   fetchMenuItems,
+  updateCurrentRestaurant,
 } from "../../Redux/Slices/restaurantSlice";
 import MenuItemCard from "../../Components/Restaurant/MenuItemCard";
 import { MdMail, MdOutlineStar } from "react-icons/md";
 
-const RestaurantDetails = () => {
+const RestaurantDetails = ({ RestaurantData }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -20,6 +21,7 @@ const RestaurantDetails = () => {
   const { menuItems } = useSelector((state) => state?.restaurant);
 
   const [isChecked, setIsChecked] = useState(false);
+  const [sortBy, setSortBy] = useState(""); // State to track sorting option
 
   const handleToggle = () => {
     setIsChecked((prev) => !prev);
@@ -33,8 +35,19 @@ const RestaurantDetails = () => {
     if (!currentRestaurant) {
       navigate("/");
     } else {
-      console.log(currentRestaurant);
       await dispatch(fetchMenuItems(currentRestaurant?._id));
+    }
+  }
+
+  function handleSorting(sortValue) {
+    console.log("dshf");
+    setSortBy(sortValue);
+    if (sortBy === "priceHighToLow") {
+      menuItems.slice().sort((a, b) => b.price - a.price);
+    } else if (sortBy === "priceLowToHigh") {
+      menuItems.slice().sort((a, b) => a.price - b.price);
+    } else {
+      return menuItems; // No sorting
     }
   }
 
@@ -120,9 +133,14 @@ const RestaurantDetails = () => {
 
             {/* Sort Dropdown */}
             <div>
-              <select className="border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500">
-                <option value="">Price High To Low</option>
-                <option value="">Price Low To High</option>
+              <select
+                value={sortBy}
+                onChange={(e) => handleSorting(e.target.value)}
+                className="border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500"
+              >
+                <option value="">Sort By</option>
+                <option value="priceHighToLow">Price High To Low</option>
+                <option value="priceLowToHigh">Price Low To High</option>
               </select>
             </div>
           </div>

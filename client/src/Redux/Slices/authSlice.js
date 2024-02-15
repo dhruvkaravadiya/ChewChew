@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
-import axiosInstance from "../../Helpers/axiosInstance.js";
+import axiosInstance from "../../Helpers/axiosInstance";
 
 const initialState = {
   isLoggedIn: localStorage.getItem("isLoggedIn") || false,
@@ -32,13 +32,17 @@ export const createUserAccount = createAsyncThunk(
 
 export const createDeliveryMan = createAsyncThunk(
   "/auth/DeliveryMan",
-  async ({ phoneNumber }) => {
+  async ({ phoneNumber, selectedRestaurants }) => {
     const loadingMessage = toast.loading(
       "Please wait! Creating DeliveryMan..."
     );
+    console.log(phoneNumber);
+    console.log(selectedRestaurants);
+
     try {
       const res = await axiosInstance.post("/deliveryman/create", {
         phoneNumber: phoneNumber,
+        restaurants: selectedRestaurants,
       });
       toast.success(res?.data?.message || res?.data?.error, {
         id: loadingMessage,

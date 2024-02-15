@@ -116,14 +116,11 @@ const signUp = () => {
         if (!phoneNumber) {
           toast.error("enter phone number");
           return;
-        }
-
-        const response = await dispatch(
-          createDeliveryMan({ phoneNumber: phoneNumber })
-        );
-        if (response?.payload?.success) {
+        } else {
+          navigate("/select/Restaurants", {
+            state: { phoneNumber: phoneNumber },
+          });
           setPhoneNumber("");
-          return;
         }
       } else {
         const re = await dispatch(createCustomer());

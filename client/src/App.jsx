@@ -19,6 +19,7 @@ import PaymentFail from "./Pages/Payment/PaymentFail";
 import MyOrder from "./Pages/User/MyOrder";
 
 import { io } from "socket.io-client";
+import SelectRestarant from "./Pages/Restaurant/SelectRestarant";
 export const socket = io("http://localhost:8080/");
 
 const App = () => {
@@ -67,6 +68,10 @@ const App = () => {
         <Route element={<RequireAuth allowedRoles={["Restaurant"]} />}>
           <Route path="/create/Restaurant" element={<CreateRestaurant />} />
         </Route>
+
+        {/* <Route element={<RequireAuth allowedRoles={[""]} />}> */}
+        <Route path="/select/Restaurants" element={<SelectRestarant />} />
+        {/* </Route> */}
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

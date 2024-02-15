@@ -25,14 +25,16 @@ const RestaurantList = () => {
 
   return (
     <div className="flex flex-col justify-center mt-10">
-      <div className="flex gap-5 pl-36">
-        <input
-          type="text"
-          placeholder="search restarant by Name..."
-          className="input input-bordered input-md w-full max-w-lg "
-        />
-        <button className="btn btn-active btn-neutral">search</button>
-      </div>
+      {role !== "Restaurant" && (
+        <div className="flex gap-5 pl-36">
+          <input
+            type="text"
+            placeholder="search restarant by Name..."
+            className="input input-bordered input-md w-full max-w-lg "
+          />
+          <button className="btn btn-active btn-neutral">search</button>
+        </div>
+      )}
 
       <div className="flex items-center justify-center flex-wrap gap-11 mt-10">
         {restaurantData.length === 0 ? (
