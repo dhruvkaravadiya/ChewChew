@@ -7,30 +7,20 @@ const deliveryManSchema = new mongoose.Schema(
             required: [true, "User Id of Delivery Man is Required"],
             ref: "User",
         },
-        restaurants: {
-            type: [
-                {
-                    id: {
-                        type: mongoose.SchemaTypes.ObjectId,
-                        ref: "Restaurant",
-                        default: undefined,
-                    },
-                    name: {
-                        type: String,
-                        default: undefined,
-                    },
+        restaurants: [
+            {
+                _id: false,
+                id: {
+                    type: mongoose.SchemaTypes.ObjectId,
+                    ref: "Restaurant",
+                    default: undefined,
                 },
-            ],
-            validate: [
-                {
-                    validator: function (arr) {
-                        return arr.length >= 1 && arr.length <= 3;
-                    },
-                    message:
-                        "Restaurants array must have at least 1 and at most 3 items",
+                name: {
+                    type: String,
+                    default: undefined,
                 },
-            ],
-        },
+            },
+        ],
         phoneNumber: {
             type: String,
             required: [true, "Please enter Contact Number"],
@@ -83,11 +73,25 @@ const deliveryManSchema = new mongoose.Schema(
 //set the schema property array empty
 deliveryManSchema.path("pastOrders").default([]);
 deliveryManSchema.path("currentOrders").default([]);
-deliveryManSchema.path("restaurants").default([]);
-// check if the current location changes or not
-// before saving the updated object
+
+// Validation middleware for the restaurants array length
+deliveryManSchema.pre("save", function (next) {
+    if (
+        this.isNew &&
+        (this.restaurants.length < 1 || this.restaurants.length > 3)
+    ) {
+        return next(
+            new Error(
+                "Restaurants array must have at least 1 and at most 3 items"
+            )
+        );
+    }
+    next();
+});
+
+// Middleware to handle current location update
 deliveryManSchema.pre("save", async function (next) {
-    if (this.isModified("currentLocation") === true) {
+    if (this.isModified("currentLocation")) {
         const io = this.model("DeliveryMan").io;
         if (io) {
             // Emit the location update to the specific delivery man
