@@ -5,15 +5,15 @@
 
 <br>
 
-# Overview 📑
+# 📑 Overview
 
 The Food Ordering App allows users to browse and order food from various restaurants. The app provides a user-friendly interface for customers to view restaurant menus, place orders, and track their deliveries. It also includes features for restaurant owners to manage their menus and orders.
 
 <br>
 
-# Features ⭐
+# ⭐ Features 
 
-## Customer Features 🪄
+## 🪄 Customer Features 
 
  - Browse and search for restaurants 
  - View restaurant menus and food items
@@ -22,7 +22,7 @@ The Food Ordering App allows users to browse and order food from various restaur
  - View order history and receipts
  - Leave restaurant reviews and ratings
 
-## Restaurant Owner Features ⚙️
+## ⚙️ Restaurant Owner Features 
 
 - Manage restaurant menus and items
 - Accept and manage incoming food orders
@@ -41,7 +41,7 @@ The Food Ordering App allows users to browse and order food from various restaur
 <br>
 <br>
 
-# Technologies Used 💻
+# 💻 Technologies Used 
 
 ## Backend
 
