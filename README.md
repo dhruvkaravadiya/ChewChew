@@ -3,13 +3,10 @@
     A modern real-time food-ordering-application built with Node.js, Express, MongoDB, and React.js
 </p>
 
-<br>
 
 # 📑 Overview
 
 The Food Ordering App allows users to browse and order food from various restaurants. The app provides a user-friendly interface for customers to view restaurant menus, place orders, and track their deliveries. It also includes features for restaurant owners to manage their menus and orders.
-
-<br>
 
 # ⭐ Features 
 
@@ -41,7 +38,7 @@ The Food Ordering App allows users to browse and order food from various restaur
 <br>
 <br>
 
-# 💻 Technologies Used 
+# 🔨 Technologies Used 
 
 ## Backend
 
