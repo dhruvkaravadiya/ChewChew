@@ -1,6 +1,6 @@
 <h1 align="center">Food Ordering App Demo README 🍔 (UNDER PRODUCTION)</h1>
 <p align="center">
-    A modern food ordering web application built with **Node.js**, **Express**, **MongoDB**, and **React.js**
+    A modern food ordering web application built with Node.js, Express, MongoDB, and React.js
 </p>
 
 <br>
