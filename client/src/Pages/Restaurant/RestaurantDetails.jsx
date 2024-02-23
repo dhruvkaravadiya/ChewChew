@@ -2,76 +2,95 @@ import React, { useEffect, useState } from "react";
 import AppLayout from "../../Layout/AppLayout";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { FaPhoneAlt, FaShoppingCart, FaStar } from "react-icons/fa";
+import { FaPhoneAlt } from "react-icons/fa";
 import AddFoodItem from "../../Components/Restaurant/AddFoodItem";
-import {
-  DeleteMenuItem,
-  fetchMenuItems,
-  updateCurrentRestaurant,
-} from "../../Redux/Slices/restaurantSlice";
+import { fetchMenuItems } from "../../Redux/Slices/restaurantSlice";
 import MenuItemCard from "../../Components/Restaurant/MenuItemCard";
 import { MdMail, MdOutlineStar } from "react-icons/md";
+import NoItemImage from "../../Assets/NoMenuItemFound.png";
 
-const RestaurantDetails = ({ RestaurantData }) => {
+const RestaurantDetails = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const location = useLocation();
+  const { resdata } = location.state;
+
   const { role, data } = useSelector((state) => state?.auth);
-  const { currentRestaurant } = useSelector((state) => state?.restaurant);
+  // const { resdata } = useSelector((state) => state?.restaurant);
   const { menuItems } = useSelector((state) => state?.restaurant);
 
-  const [isChecked, setIsChecked] = useState(false);
-  const [sortBy, setSortBy] = useState(""); // State to track sorting option
-
-  const handleToggle = () => {
-    setIsChecked((prev) => !prev);
-  };
+  const [searchText, setSearchText] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isVeg, setIsVeg] = useState(false);
+  const [sortBy, setSortBy] = useState("default");
 
   useEffect(() => {
-    fetchData();
-  }, [currentRestaurant]);
-
-  async function fetchData() {
-    if (!currentRestaurant) {
+    console.log(resdata);
+    if (!resdata) {
       navigate("/");
     } else {
-      await dispatch(fetchMenuItems(currentRestaurant?._id));
+      fetchData();
+    }
+  }, []);
+
+  useEffect(() => {
+    setSearchResults(menuItems);
+  }, [menuItems]);
+
+  useEffect(() => {
+    handleSearchSortFilter();
+  }, [searchText, sortBy, isVeg]);
+
+  async function fetchData() {
+    try {
+      if (!resdata) {
+        navigate("/");
+      } else {
+        await dispatch(fetchMenuItems(resdata?._id));
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
     }
   }
 
-  function handleSorting(sortValue) {
-    console.log("dshf");
-    setSortBy(sortValue);
+  function handleSearchSortFilter() {
+    let filteredMenuItems = menuItems.filter((item) => {
+      const matchesSearchText = item.name
+        .toLowerCase()
+        .includes(searchText.toLowerCase());
+      const isVegMatch = isVeg ? item.type === "Veg" : true;
+      return matchesSearchText && isVegMatch;
+    });
+
     if (sortBy === "priceHighToLow") {
-      menuItems.slice().sort((a, b) => b.price - a.price);
+      filteredMenuItems.sort((a, b) => b.price - a.price);
     } else if (sortBy === "priceLowToHigh") {
-      menuItems.slice().sort((a, b) => a.price - b.price);
-    } else {
-      return menuItems; // No sorting
+      filteredMenuItems.sort((a, b) => a.price - b.price);
     }
+
+    setSearchResults(filteredMenuItems);
   }
 
   return (
     <AppLayout>
-      <div className="w-2/3 mx-auto h-auto border border-slate-300 font-custom lg:w-4/5 md:w-11/12 sm:w-full">
+      <div className="w-2/3 border border-x-gray-300 mx-auto h-auto font-custom lg:w-4/5 md:w-11/12 sm:w-full">
         <div className="flex gap-16 w-full items-center justify-between py-4 px-10 mt-10">
           <div className="flex gap-6">
             <div>
               <img
-                src={currentRestaurant?.photo?.photoUrl}
+                src={resdata?.photo?.photoUrl}
                 className="w-60 h-36 rounded-md"
               />
             </div>
             <div className="flex flex-col items-start justify-between gap-2">
               <div className="text-2xl font-extrabold">
-                {currentRestaurant?.restaurantName}
+                {resdata?.restaurantName}
               </div>
-              <div className="text-sm">
-                {currentRestaurant?.quickDescription}
-              </div>
-              <div className="text-xs">{currentRestaurant?.address}</div>
+              <div className="text-sm">{resdata?.quickDescription}</div>
+              <div className="text-xs">{resdata?.address}</div>
               <div className="text-xs">
-                {currentRestaurant?.cuisines?.map((cuisine) => {
+                {resdata?.cuisines[0].split(",")?.map((cuisine) => {
                   return (
                     <span
                       key={cuisine}
@@ -85,10 +104,24 @@ const RestaurantDetails = ({ RestaurantData }) => {
             </div>
           </div>
           <div className="flex flex-col gap-8 items-center">
+            <div>
+              {role === "Restaurant" && data?._id === resdata?.user_id && (
+                <button
+                  onClick={() =>
+                    navigate("/create/Restaurant", {
+                      state: { dataToEdit: resdata },
+                    })
+                  }
+                  className="btn btn-active btn-link"
+                >
+                  Edit Restaurant Details
+                </button>
+              )}
+            </div>
             <div className="border border-gray-400 font-medium rounded-lg p-1 shadow-md">
               <p>
-                OPEN <span>{currentRestaurant?.openingHours}</span> TO
-                <span>{currentRestaurant?.closingHours}</span>
+                OPEN <span>{resdata?.openingHours}</span> TO
+                <span>{resdata?.closingHours}</span>
               </p>
             </div>
             <div className="flex flex-col p-2 border border-gray-400 w-auto gap-2 rounded-xl shadow-md">
@@ -105,7 +138,7 @@ const RestaurantDetails = ({ RestaurantData }) => {
           <div className="flex flex-col justify-between gap-3">
             <p className="text-xl font-bold">About US</p>
             <p className="text-sm text-gray-700">
-              {currentRestaurant?.detailedDescription}
+              {resdata?.detailedDescription}
             </p>
           </div>
           <div className="flex flex-col items-start justify-between gap-2">
@@ -116,29 +149,34 @@ const RestaurantDetails = ({ RestaurantData }) => {
             </p>
             <p className="flex items-center justify-center gap-2 ">
               <FaPhoneAlt />{" "}
-              <p className="text-gray-700"> {currentRestaurant?.phoneNumber}</p>
+              <p className="text-gray-700"> {resdata?.phoneNumber}</p>
             </p>
           </div>
         </div>
         <hr className="mt-5 border-solid border-2 mx-10 border-grey-500" />
-        <div className="flex gap-16 w-full items-center justify-between py-4 px-10 mt-5">
+        {role === "Restaurant" && data?._id === resdata?.user_id && (
+          <AddFoodItem resId={resdata?._id} />
+        )}
+        <div className="flex gap-40 w-full items-center justify-center mt-5 py-5">
           {/* Search and Sort */}
-          <div className="flex space-x-4 items-center mb-6">
+          <div className="flex space-x-4 items-center">
             {/* Search Input */}
             <input
               type="text"
-              placeholder="search restarant by Name..."
-              className="input input-bordered input-md w-full max-w-3xl "
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="search by menu item name..."
+              className="input input-bordered input-md w-96 max-w-3xl "
             />
 
             {/* Sort Dropdown */}
             <div>
               <select
                 value={sortBy}
-                onChange={(e) => handleSorting(e.target.value)}
+                onChange={(e) => setSortBy(e.target.value)}
                 className="border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500"
               >
-                <option value="">Sort By</option>
+                <option value="default">Sort By</option>
                 <option value="priceHighToLow">Price High To Low</option>
                 <option value="priceLowToHigh">Price Low To High</option>
               </select>
@@ -152,14 +190,14 @@ const RestaurantDetails = ({ RestaurantData }) => {
               <input
                 type="checkbox"
                 className={`appearance-none transition-colors cursor-pointer w-14 h-7 rounded-full focus:outline-none  ${
-                  isChecked ? "bg-green-500 " : "bg-red-500"
+                  isVeg ? "bg-green-500 " : "bg-red-500"
                 }`}
-                checked={isChecked}
-                onChange={handleToggle}
+                checked={false}
+                onChange={() => setIsVeg((prevIsVeg) => !prevIsVeg)}
               />
               <span
                 className={`absolute font-medium text-xs uppercase right-1 text-white ${
-                  isChecked ? "hidden" : ""
+                  isVeg ? "hidden" : ""
                 }`}
               >
                 {" "}
@@ -167,7 +205,7 @@ const RestaurantDetails = ({ RestaurantData }) => {
               </span>
               <span
                 className={`absolute font-medium text-xs uppercase right-8 text-white  ${
-                  isChecked ? "" : "hidden"
+                  isVeg ? "" : "hidden"
                 }`}
               >
                 {" "}
@@ -175,22 +213,91 @@ const RestaurantDetails = ({ RestaurantData }) => {
               </span>
               <span
                 className={`w-7 h-7 right-7 absolute rounded-full transform transition-transform bg-gray-200 ${
-                  isChecked ? "translate-x-7" : ""
+                  isVeg ? "translate-x-7" : ""
                 }`}
               />
             </label>
           </div>
         </div>
 
-        {role === "Restaurant" && data?._id === currentRestaurant?.user_id && (
-          <AddFoodItem resId={currentRestaurant?._id} />
+        {role != "Restaurant" ? (
+          <div className="flex flex-col items-center">
+            {searchResults.length == 0 ? (
+              <div className="flex items-center justify-center">
+                <img
+                  src={NoItemImage}
+                  alt="Empty Cart"
+                  className="h-[400px] w-[500px]"
+                />
+              </div>
+            ) : (
+              searchResults?.map((item) => {
+                return <MenuItemCard key={item?._id} menuItem={item} />;
+              })
+            )}
+          </div>
+        ) : (
+          <div className="px-36">
+            <table className="table">
+              {/* head */}
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Veg / Non-Veg</th>
+                  <th>Oprations</th>
+                </tr>
+              </thead>
+              <tbody>
+                {searchResults.map((item) => {
+                  return (
+                    <tr>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar">
+                            <div className="mask mask-squircle w-12 h-12">
+                              <img
+                                src={item?.foodImg?.url}
+                                alt="Food Image"
+                                className="rounded-md h-28 w-36"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-bold">{item.name}</div>
+                            <div className="text-sm opacity-50">{item._id}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        {item.price}
+                        <span className="badge badge-ghost badge-sm">RS</span>
+                      </td>
+                      <td className="flex gap-2">
+                        <span>{item.type}</span>
+                        {/* <div className="w-5 h-5 flex items-center justify-center border-2 border-600">
+                          {item?.type === "Veg" ? (
+                            <span className="w-3 h-3 bg-green-600 rounded-full"></span>
+                          ) : (
+                            <span className="w-3 h-3 bg-red-600 rounded-full"></span>
+                          )}
+                        </div> */}
+                      </td>
+                      <td>
+                        <button className="btn btn-info btn-sm mx-3">
+                          Edit
+                        </button>
+                        <button className="btn bg-red-300 btn-sm">
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
-        <div className="flex flex-wrap items-center justify-evenly">
-          {menuItems?.length >= 0 &&
-            menuItems?.map((item) => {
-              return <MenuItemCard key={item?._id} menuItem={item} />;
-            })}
-        </div>
       </div>
     </AppLayout>
   );

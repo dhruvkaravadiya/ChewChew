@@ -79,69 +79,72 @@ const AddFoodItem = ({ resId }) => {
   }
 
   return (
-    <div className="flex p-4 gap-4 mx-5 items-center justify-between rounded-lg my-8">
-      <div className="border-2 border-black w-36 h-20 flex items-center justify-center rounded-md overflow-hidden">
-        {/* Display the user's photo in a round shape, make it clickable */}
-        <label htmlFor="photo" className="cursor-pointer">
-          {foodItemData?.previewImage ? (
-            <img
-              src={foodItemData?.previewImage}
-              className="w-full h-full object-cover"
-              alt="Food Preview"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <MdPhotoSizeSelectActual className="w-20 h-12" />
-              <span className="text-xs ml-2">Food Image</span>
-            </div>
-          )}
-        </label>
-        {/* Hidden file input for photo upload */}
+    <div className="flex items-center justify-center ">
+      <div className="flex w-3/4 p-4 gap-4 mx-5 items-center justify-between rounded-lg my-8">
+        <div className="border-2 border-black w-36 h-20 flex items-center justify-center rounded-md overflow-hidden">
+          {/* Display the user's photo in a round shape, make it clickable */}
+          <label htmlFor="photo" className="cursor-pointer">
+            {foodItemData?.previewImage ? (
+              <img
+                src={foodItemData?.previewImage}
+                className="w-full h-full object-cover"
+                alt="Food Preview"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <MdPhotoSizeSelectActual className="w-20 h-12" />
+                <span className="text-xs ml-2">Food Image</span>
+              </div>
+            )}
+          </label>
+          {/* Hidden file input for photo upload */}
+          <input
+            type="file"
+            id="photo"
+            name="photo"
+            onChange={handleImageUpload}
+            className="hidden"
+            accept=".jpg, .png, .svg, .jpeg"
+          />
+        </div>
         <input
-          type="file"
-          id="photo"
-          name="photo"
-          onChange={handleImageUpload}
-          className="hidden"
-          accept=".jpg, .png, .svg, .jpeg"
+          type="text"
+          name="name"
+          id="name"
+          onChange={handleInputChange}
+          value={foodItemData.name}
+          placeholder="Enter Food Name"
+          className="border border-gray-300 p-2 w-72 rounded-md outline-none"
         />
+        <input
+          type="number"
+          name="price"
+          id="price"
+          onChange={handleInputChange}
+          value={foodItemData.price}
+          placeholder="Food Price (RS)"
+          className="border border-gray-300 p-2 w-40 rounded-md outline-none"
+          min={1}
+        />
+        <select
+          id="foodType"
+          className="p-2 border rounded-md"
+          value={foodItemData.type}
+          onChange={(e) =>
+            setFoodItemData({ ...foodItemData, type: e.target.value })
+          }
+        >
+          <option value="Veg">Veg</option>
+          <option value="Non-Veg">Non-Veg</option>
+        </select>
+        <button
+          type="submit"
+          onClick={handleAddItem}
+          className="btn btn-md bg-red-400"
+        >
+          Add Item
+        </button>
       </div>
-      <input
-        type="text"
-        name="name"
-        id="name"
-        onChange={handleInputChange}
-        value={foodItemData.name}
-        placeholder="Enter Food Name"
-        className="border border-gray-300 p-2 w-72 rounded-md outline-none"
-      />
-      <input
-        type="number"
-        name="price"
-        id="price"
-        onChange={handleInputChange}
-        value={foodItemData.price}
-        placeholder="Enter Food Price (in RS)"
-        className="border border-gray-300 p-2 rounded-md outline-none"
-      />
-      <select
-        id="foodType"
-        className="p-2 border rounded-md"
-        value={foodItemData.type}
-        onChange={(e) =>
-          setFoodItemData({ ...foodItemData, type: e.target.value })
-        }
-      >
-        <option value="Veg">Veg</option>
-        <option value="Non-Veg">Non-Veg</option>
-      </select>
-      <button
-        type="submit"
-        onClick={handleAddItem}
-        className="bg-red-400 px-4 py-2 rounded-lg text-lg cursor-pointer hover:bg-red-300 transition-all ease-in-out duration-300"
-      >
-        Add Menu Item
-      </button>
     </div>
   );
 };

@@ -1,21 +1,13 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { MdOutlineStar } from "react-icons/md";
-import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { updateCurrentRestaurant } from "../../Redux/Slices/restaurantSlice.js";
 
 const RestaurantCard = ({ resdata }) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  function onCardClick(e) {
-    dispatch(updateCurrentRestaurant(resdata));
-    navigate("/restaurant/details");
-  }
 
   return (
     <div
-      onClick={onCardClick}
+      onClick={(e) => navigate("/restaurant/details", { state: { resdata } })}
       className="card w-96 bg-base-100 hover:shadow-lg hover:scale-[1.01] cursor-pointer"
     >
       <figure>
@@ -36,7 +28,6 @@ const RestaurantCard = ({ resdata }) => {
             <MdOutlineStar />
           </div>
         </div>
-        {/* <p>If a dog chews shoes whose shoes does he choose?</p> */}
         <div className="card-actions flex gap-0 justify-start">
           {resdata?.cuisines?.map((cuisine) => {
             return (

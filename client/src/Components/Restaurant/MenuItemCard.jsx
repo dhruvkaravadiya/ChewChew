@@ -39,7 +39,7 @@ const MenuItemCard = ({ menuItem }) => {
   }
 
   return (
-    <div className="w-[550px] bg-white font-custom p-4 m-4 rounded-lg flex items-center justify-between shadow-md">
+    <div className="w-3/4 bg-white font-custom p-4 m-4 rounded-lg flex items-center justify-between shadow-md">
       <div className="flex items-center gap-4">
         <img
           src={menuItem?.foodImg?.url}
@@ -64,39 +64,43 @@ const MenuItemCard = ({ menuItem }) => {
       </div>
 
       <div className="flex gap-2">
-        {checkItemInCart(menuItem._id) ? (
-          <button
-            onClick={() => {
-              dispatch(removeItem(menuItem._id));
-              dispatch(calculateTotalBill());
-            }}
-            className="bg-red-300 p-2 flex items-center gap-1 rounded-md hover:bg-red-400 text-white"
-          >
-            <FaShoppingCart /> Remove
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              dispatch(addItem(menuItem));
-              dispatch(calculateTotalBill());
-            }}
-            className="bg-orange-300 p-2 flex items-center gap-1 rounded-md hover:bg-orange-400 text-white"
-          >
-            <FaShoppingCart /> Add To Cart
-          </button>
+        {role !== "Restaurant" && (
+          <div>
+            {checkItemInCart(menuItem?._id) ? (
+              <button
+                onClick={() => {
+                  dispatch(removeItem(menuItem?._id));
+                  dispatch(calculateTotalBill());
+                }}
+                className="bg-red-300 p-2 flex items-center gap-1 rounded-md hover:bg-red-400 text-white"
+              >
+                <FaShoppingCart /> Remove
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  dispatch(addItem(menuItem));
+                  dispatch(calculateTotalBill());
+                }}
+                className="bg-orange-300 p-2 flex items-center gap-1 rounded-md hover:bg-orange-400 text-white"
+              >
+                <FaShoppingCart /> Add To Cart
+              </button>
+            )}
+          </div>
         )}
 
         {role === "Restaurant" && data?._id === currentRestaurant?.user_id && (
           <div className="flex gap-2">
             <button
               onClick={(e) => handleDeleteItem(menuItem?._id)}
-              className="bg-red-300 p-2 rounded-md hover:bg-red-400 text-white"
+              className="bg-red-300 w-14 flex items-center justify-center p-2 rounded-md hover:bg-red-400 text-white"
             >
               <MdDeleteOutline />
             </button>
             <button
               onClick={(e) => handleDeleteItem()}
-              className="bg-green-300 p-2 rounded-md hover:bg-green-400 text-white"
+              className="bg-green-300 w-14 flex items-center justify-center p-2 rounded-md hover:bg-green-400 text-white"
             >
               <FaEdit />
             </button>

@@ -19,7 +19,7 @@ const OrderCard = ({ order }) => {
   useEffect(() => {
     socket.on("updateOrderStatus", ({ orderId, orderStatus }) => {
       if (orderId === order._id) {
-        toast.success("your order is"+orderStatus)
+        toast.success("your order is" + orderStatus);
         setNewStatus(orderStatus);
       }
     });
@@ -59,12 +59,13 @@ const OrderCard = ({ order }) => {
 
       <div className="flex flex-col items-center gap-1">
         <p className="font-semibold relative">
-          Order Status: {newStatus}
+          Order Status:
           {(order?.orderStatus === "Placed" ||
             order?.orderStatus === "Preparing") &&
             role === "Restaurant" && (
               <select
                 value={newStatus}
+                disabled={newStatus == "Prepared" && true}
                 onChange={(e) => {
                   if (e.target.value !== "Update status")
                     dispatch(updateOrderStatus([order?._id, e.target.value]));

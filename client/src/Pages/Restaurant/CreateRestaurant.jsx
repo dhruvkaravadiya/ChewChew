@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppLayout from "../../Layout/AppLayout";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { useDispatch } from "react-redux";
@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   createRestaurant,
   getAllRestaurants,
+  updateRestaurant,
 } from "../../Redux/Slices/restaurantSlice";
 import { isEmail } from "../../Helpers/regxMatcher";
 import toast from "react-hot-toast";
@@ -14,32 +15,27 @@ const CreateRestaurant = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const data = useLocation();
+  const dataToEdit = data?.state?.dataToEdit;
+
+  useEffect(() => {
+    console.log(dataToEdit?.cuisines);
+  }, []);
+
   const [userInput, setUserInput] = useState({
-    photo: "",
-
+    photo: dataToEdit?.image || "",
     previewImage: "",
-
-    restaurantName: "",
-
-    quickDescription: "",
-
-    address: "",
-
-    deliveryCharges: "",
-
-    detailedDescription: "",
-
-    cuisines: "",
-
-    phoneNumber: "",
-
-    email: "",
-
-    openingHours: "",
-
-    closingHours: "",
-
-    promotions: "",
+    restaurantName: dataToEdit?.restaurantName || "",
+    quickDescription: dataToEdit?.quickDescription || "",
+    address: dataToEdit?.address || "",
+    deliveryCharges: dataToEdit?.deliveryCharges || "",
+    detailedDescription: dataToEdit?.detailedDescription || "",
+    cuisines: dataToEdit?.cuisines?.join(",") || "",
+    phoneNumber: dataToEdit?.phoneNumber || "",
+    email: dataToEdit?.email || "",
+    openingHours: dataToEdit?.openingHours || "",
+    closingHours: dataToEdit?.closingHours || "",
+    promotions: dataToEdit?.promotions || "",
   });
 
   function handleUserInput(e) {
@@ -105,6 +101,16 @@ const CreateRestaurant = () => {
     formData.append("openingHours", userInput.openingHours);
     formData.append("closingHours", userInput.closingHours);
 
+    if (dataToEdit) {
+      const res = await dispatch(updateRestaurant([dataToEdit._id, formData]));
+
+      if (res?.payload?.success) {
+        toast.success("Restaurant details update done");
+        await dispatch(getAllRestaurants());
+        return;
+      }
+    }
+
     try {
       const res = await dispatch(createRestaurant(formData));
 
@@ -133,7 +139,7 @@ const CreateRestaurant = () => {
           </Link>
 
           <h1 className="font-custom text-center border-b-2 border-red-800 text-2xl font-bold pb-5 mb-3">
-            Add New Restaurant
+            {dataToEdit ? "Edit Restaurant Page" : "Add New Restaurant"}
           </h1>
 
           <main className="grid grid-cols-2 gap-x-10">
@@ -382,7 +388,7 @@ const CreateRestaurant = () => {
             type="submit"
             className="w-full py-2 rounded-sm font-semibold text-lg cursor-pointer bg-red-400 hover:bg-red-500 transition-all ease-in-out duration-300"
           >
-            Add Restaurant
+            {dataToEdit ? "Edit Restaurant" : "Add New Restaurant"}
           </button>
         </form>
       </div>
