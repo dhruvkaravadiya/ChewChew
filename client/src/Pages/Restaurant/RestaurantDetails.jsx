@@ -4,7 +4,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaPhoneAlt } from "react-icons/fa";
 import AddFoodItem from "../../Components/Restaurant/AddFoodItem";
-import { fetchMenuItems } from "../../Redux/Slices/restaurantSlice";
+import {
+  deleteMenuItem,
+  fetchMenuItems,
+} from "../../Redux/Slices/restaurantSlice";
 import MenuItemCard from "../../Components/Restaurant/MenuItemCard";
 import { MdMail, MdOutlineStar } from "react-icons/md";
 import NoItemImage from "../../Assets/NoMenuItemFound.png";
@@ -17,13 +20,15 @@ const RestaurantDetails = () => {
   const { resdata } = location.state;
 
   const { role, data } = useSelector((state) => state?.auth);
-  // const { resdata } = useSelector((state) => state?.restaurant);
   const { menuItems } = useSelector((state) => state?.restaurant);
 
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isVeg, setIsVeg] = useState(false);
   const [sortBy, setSortBy] = useState("default");
+
+  const [editMode, setEditMode] = useState(false);
+  const [dataToEdit, setDataToEdit] = useState(null);
 
   useEffect(() => {
     console.log(resdata);
@@ -70,6 +75,21 @@ const RestaurantDetails = () => {
     }
 
     setSearchResults(filteredMenuItems);
+  }
+
+  function handleDeleteMenuItem(menuItemId) {
+    confirm = window.confirm("MenuItem Remove");
+    if (confirm) {
+      dispatch(deleteMenuItem(menuItemId));
+    }
+  }
+
+  function handleEditMenuItem(ItemToEdit) {
+    console.log("edit");
+    setEditMode(true);
+    setDataToEdit(ItemToEdit);
+    console.log("editMode", editMode);
+    console.log("ItemToEdit", ItemToEdit);
   }
 
   return (
@@ -155,7 +175,13 @@ const RestaurantDetails = () => {
         </div>
         <hr className="mt-5 border-solid border-2 mx-10 border-grey-500" />
         {role === "Restaurant" && data?._id === resdata?.user_id && (
-          <AddFoodItem resId={resdata?._id} />
+          <AddFoodItem
+            resId={resdata._id}
+            editMode={editMode}
+            dataToEdit={dataToEdit}
+            setEditMode={setEditMode}
+            setDataToEdit={setDataToEdit}
+          />
         )}
         <div className="flex gap-40 w-full items-center justify-center mt-5 py-5">
           {/* Search and Sort */}
@@ -226,7 +252,7 @@ const RestaurantDetails = () => {
               <div className="flex items-center justify-center">
                 <img
                   src={NoItemImage}
-                  alt="Empty Cart"
+                  alt="No Items Found"
                   className="h-[400px] w-[500px]"
                 />
               </div>
@@ -251,7 +277,7 @@ const RestaurantDetails = () => {
               <tbody>
                 {searchResults.map((item) => {
                   return (
-                    <tr>
+                    <tr key={item._id}>
                       <td>
                         <div className="flex items-center gap-3">
                           <div className="avatar">
@@ -275,19 +301,18 @@ const RestaurantDetails = () => {
                       </td>
                       <td className="flex gap-2">
                         <span>{item.type}</span>
-                        {/* <div className="w-5 h-5 flex items-center justify-center border-2 border-600">
-                          {item?.type === "Veg" ? (
-                            <span className="w-3 h-3 bg-green-600 rounded-full"></span>
-                          ) : (
-                            <span className="w-3 h-3 bg-red-600 rounded-full"></span>
-                          )}
-                        </div> */}
                       </td>
                       <td>
-                        <button className="btn btn-info btn-sm mx-3">
+                        <button
+                          onClick={() => handleEditMenuItem({ ...item })}
+                          className="btn btn-info btn-sm mx-3"
+                        >
                           Edit
                         </button>
-                        <button className="btn bg-red-300 btn-sm">
+                        <button
+                          onClick={() => handleDeleteMenuItem(item._id)}
+                          className="btn bg-red-300 btn-sm"
+                        >
                           Delete
                         </button>
                       </td>

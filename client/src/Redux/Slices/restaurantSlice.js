@@ -127,7 +127,7 @@ export const updateMenuItem = createAsyncThunk(
   }
 );
 
-export const DeleteMenuItem = createAsyncThunk(
+export const deleteMenuItem = createAsyncThunk(
   "/delete/menuItem",
   async (foodId) => {
     const loadingMessage = toast.loading("Wait deleting MenuItem...!");

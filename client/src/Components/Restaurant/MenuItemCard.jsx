@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  DeleteMenuItem,
+  deleteMenuItem,
   fetchMenuItems,
 } from "../../Redux/Slices/restaurantSlice";
 import { FaEdit, FaShoppingCart } from "react-icons/fa";
@@ -27,7 +27,7 @@ const MenuItemCard = ({ menuItem }) => {
   async function handleDeleteItem(FoodId) {
     const deleteItem = window.confirm("are you sure ?");
     if (deleteItem) {
-      await dispatch(DeleteMenuItem(FoodId));
+      await dispatch(deleteMenuItem(FoodId));
       await dispatch(fetchMenuItems(currentRestaurant?._id));
     }
   }

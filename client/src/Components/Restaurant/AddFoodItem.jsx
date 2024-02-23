@@ -1,14 +1,21 @@
 // PopupForm.js
-import React, { useState } from "react";
-import { MdPhotoSizeSelectActual } from "react-icons/md";
+import React, { useEffect, useState } from "react";
+import { MdClear, MdPhotoSizeSelectActual } from "react-icons/md";
 import {
   addMenuItem,
   fetchMenuItems,
+  updateMenuItem,
 } from "../../Redux/Slices/restaurantSlice";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 
-const AddFoodItem = ({ resId }) => {
+const AddFoodItem = ({
+  resId,
+  editMode,
+  dataToEdit,
+  setEditMode,
+  setDataToEdit,
+}) => {
   const [foodItemData, setFoodItemData] = useState({
     photo: "",
     previewImage: "",
@@ -16,6 +23,31 @@ const AddFoodItem = ({ resId }) => {
     price: "",
     type: "Veg",
   });
+
+  useEffect(() => {
+    if (editMode && dataToEdit) {
+      setFoodItemData({
+        photo: dataToEdit.foodImg.url || "",
+        previewImage: dataToEdit.foodImg.url || "",
+        name: dataToEdit.name || "",
+        price: dataToEdit.price || "",
+        type: dataToEdit.type || "Veg",
+      });
+    } else {
+      setFoodItemData({
+        photo: "",
+        previewImage: "",
+        name: "",
+        price: "",
+        type: "Veg",
+      });
+    }
+  }, [editMode, dataToEdit]);
+
+  useEffect(() => {
+    console.log("editMode in add", editMode);
+    console.log("data to Edit", dataToEdit);
+  }, []);
 
   const dispatch = useDispatch();
 
@@ -78,11 +110,47 @@ const AddFoodItem = ({ resId }) => {
     }
   }
 
+  function handleClear() {
+    console.log("clear");
+    setEditMode(false);
+    setDataToEdit(null);
+  }
+
+  async function handleEditItem(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    console.log("foodItemData?.photo", typeof foodItemData?.photo);
+
+    if (typeof foodItemData?.photo !== "string") {
+      formData.append("photo", foodItemData.photo);
+    }
+
+    formData.append("name", foodItemData.name);
+    formData.append("price", foodItemData.price);
+    formData.append("type", foodItemData.type);
+
+    const response = await dispatch(updateMenuItem([dataToEdit._id, formData]));
+
+    if (response?.payload?.success) {
+      if (response?.payload?.success) {
+        setFoodItemData({
+          photo: "",
+          previewImage: "",
+          name: "",
+          price: "",
+          type: "Veg",
+        });
+      }
+      await dispatch(fetchMenuItems(resId));
+    }
+  }
+
   return (
     <div className="flex items-center justify-center ">
       <div className="flex w-3/4 p-4 gap-4 mx-5 items-center justify-between rounded-lg my-8">
         <div className="border-2 border-black w-36 h-20 flex items-center justify-center rounded-md overflow-hidden">
-          {/* Display the user's photo in a round shape, make it clickable */}
           <label htmlFor="photo" className="cursor-pointer">
             {foodItemData?.previewImage ? (
               <img
@@ -137,13 +205,29 @@ const AddFoodItem = ({ resId }) => {
           <option value="Veg">Veg</option>
           <option value="Non-Veg">Non-Veg</option>
         </select>
-        <button
-          type="submit"
-          onClick={handleAddItem}
-          className="btn btn-md bg-red-400"
-        >
-          Add Item
-        </button>
+
+        {editMode ? (
+          <>
+            <button
+              type="submit"
+              onClick={handleEditItem}
+              className="btn btn-md bg-red-400"
+            >
+              Edit Item
+            </button>
+            <button onClick={() => handleClear()} className="text-black">
+              <MdClear />
+            </button>
+          </>
+        ) : (
+          <button
+            type="submit"
+            onClick={handleAddItem}
+            className="btn btn-md bg-red-400"
+          >
+            Add Item
+          </button>
+        )}
       </div>
     </div>
   );
