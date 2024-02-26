@@ -3,7 +3,6 @@ const User = require("../models/User");
 const Restaurant = require("../models/Restaurant");
 const DeliveryMan = require("../models/DeliveryMan");
 const Customer = require("../models/Customer");
-const { Server } = require("socket.io");
 const { getCoordinates } = require("../helpers/utils/getCoordinates");
 const { calculateDistance } = require("../helpers/utils/calculateDistance");
 const { sendEmailToGmail } = require("../helpers/mailer/mailer");
@@ -17,161 +16,51 @@ const {
 const stripe = require("stripe")(STRIPE_TEST_SECRET_KEY);
 const { io } = require("../startup/io");
 
-// // PLACE NEW ORDER
-// async function createOrder(req, res) {
-//     try {
-//         const customer = await Customer.findOne({ user_id: req.user.id });
-
-//         if (!customer) {
-//             return res
-//                 .status(404)
-//                 .json({ success: false, error: "User not found" });
-//         }
-
-//         const restaurantId = req.params.id;
-//         const restaurant = await Restaurant.findById(restaurantId);
-
-//         if (!restaurant) {
-//             return res
-//                 .status(404)
-//                 .json({ success: false, message: "Restaurant not found!" });
-//         }
-
-//         const coordinates = await getCoordinates();
-
-//         // const validationResult = validateOrder(req.body);
-
-//         // if (!validationResult.success) {
-//         //   return res.status(400).json({ success: false, errors: validationResult.errors });
-//         // }
-
-//         const { items } = req.body;
-//         let orderTotal = 0;
-
-//         items.forEach((item) => {
-//             orderTotal += item.quantity * item.price;
-//         });
-
-//         const order = new Order({
-//             customer: {
-//                 id: customer._id,
-//                 name: req.user.name,
-//             },
-//             restaurant: {
-//                 id: restaurant._id,
-//                 name: restaurant.restaurantName,
-//             },
-//             deliveryLocation: {
-//                 latitude: coordinates.latitude,
-//                 longitude: coordinates.longitude,
-//             },
-//             restaurantLocation: {
-//                 latitude: restaurant.location.latitude,
-//                 longitude: restaurant.location.longitude,
-//             },
-//             items,
-//             orderTotal,
-//             placedAt: new Date(),
-//         });
-
-//         const line_items = items.map((item) => ({
-//             price_data: {
-//                 currency: "inr",
-//                 product_data: {
-//                     name: item.name,
-//                 },
-//                 unit_amount: item.price * 100,
-//             },
-//             quantity: item.quantity,
-//         }));
-
-//         const stripeSession = await stripe.checkout.sessions.create({
-//             payment_method_types: ["card"],
-//             line_items: line_items,
-//             mode: "payment",
-//             success_url: PAYMENT_SUCCESS_URL,
-//             cancel_url: PAYMENT_FAIL_URL,
-//             billing_address_collection: "required",
-//             shipping_address_collection: {
-//                 allowed_countries: ["IN"],
-//             },
-//         });
-//         order.payment.sessionId = stripeSession.id;
-
-//         const savedOrder = await order.save();
-
-//         await Restaurant.findByIdAndUpdate(restaurantId, {
-//             $push: { currentOrders: savedOrder._id },
-//         });
-
-//         await Customer.findByIdAndUpdate(customer._id, {
-//             $push: { currentOrders: savedOrder._id },
-//         });
-
-//         // emit on successful order place
-//         await io.emit("orderPlaced", "New Order Placed");
-//         await io.emit("orderStatusUpdate", order.orderStatus);
-//         res.status(201).json({
-//             success: true,
-//             data: {
-//                 order: savedOrder,
-//                 paymentSessionId: stripeSession.id,
-//                 paymentUrl: stripeSession.url,
-//             },
-//             message: "Order Placed Successfully",
-//         });
-//     } catch (error) {
-//         console.error("Error creating order:", error.message);
-//         return res.status(500).json({ success: false, error: error.message });
-//     }
-// }
-
-// HANDLE PAYMENT RESPONSE CHANGES
-const handlePaymentResponse = async (req, res) => {
+// PLACE NEW ORDER
+async function createOrder(req, res) {
     try {
-        const orderId = req.params.id;
-        const order = await Order.findById(orderId);
-        if (!order) {
-            return res
-                .status(404)
-                .json({ success: false, error: "Order not found" });
-        }
-        const response = req.body.paymentResponse;
-        // Check payment status and update order
-        if (response === true) {
-            // Update payment status and other relevant information
-            if (order.paymentStatus == "Pending") {
-                order.paymentStatus = "Paid";
-                const updatedRestaurant = await Restaurant.findByIdAndUpdate(
-                    order.restaurant.id,
-                    {
-                        $inc: {
-                            income: order.orderTotal - order.orderTotal / 10,
-                        },
-                    }
-                );
-                if (!updatedRestaurant) {
-                    throw new Error("Restaurant not updated");
-                }
-                await order.save();
-                // Emit event for successful payment
-                await io.emit("paymentSuccess", "Payment Successful");
-                return res
-                    .status(200)
-                    .json({ success: true, message: "Payment Successful" });
-            }
-        } else {
-            return res
-                .status(400)
-                .json({ success: false, message: "Payment failed" });
-        }
+        const { items } = req.body;
+        let orderTotal = 0;
+
+        items.forEach((item) => {
+            orderTotal += item.quantity * item.price;
+        });
+
+        const line_items = items.map((item) => ({
+            price_data: {
+                currency: "inr",
+                product_data: {
+                    name: item.name,
+                },
+                unit_amount: item.price * 100,
+            },
+            quantity: item.quantity,
+        }));
+
+        const stripeSession = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            line_items: line_items,
+            mode: "payment",
+            success_url: `${PAYMENT_SUCCESS_URL}?sessionId={CHECKOUT_SESSION_ID}`,
+            cancel_url: PAYMENT_FAIL_URL,
+            billing_address_collection: "required",
+            shipping_address_collection: {
+                allowed_countries: ["IN"],
+            },
+        });
+        res.status(201).json({
+            success: true,
+            data: {
+                paymentSessionId: stripeSession.id,
+                paymentUrl: stripeSession.url,
+            },
+            message: "Payment session created successfully",
+        });
     } catch (error) {
-        console.error("Error handling payment response:", error.message);
-        return res
-            .status(500)
-            .json({ success: false, error: "Internal Server Error" });
+        console.error("Error creating payment session:", error.message);
+        return res.status(500).json({ success: false, error: error.message });
     }
-};
+}
 
 // UPDATE ORDER STATUS
 async function updateOrderStatus(req, res) {
@@ -241,15 +130,25 @@ async function updateOrderStatus(req, res) {
 // PICK THE ORDER
 const pickOrder = async (req, res) => {
     const user = req.user;
-    const { id } = req.params;
+    const id = req.params.id;
+
     // Find the order
     const order = await Order.findById(id);
-    if (!order || order.orderStatus != "Prepared") {
+
+    // Check if the order exists
+    if (!order) {
         return res
             .status(404)
             .json({ success: false, error: "Order not found" });
     }
-    // const customer = Customer.findById(order.customer.id);
+
+    // Check if the order status is not "Prepared"
+    if (order.orderStatus !== "Prepared") {
+        return res
+            .status(400)
+            .json({ success: false, error: "Order is not prepared" });
+    }
+
     // Find the delivery man
     const deliveryMan = await DeliveryMan.findOne({ user_id: user.id });
     if (!deliveryMan) {
@@ -257,6 +156,7 @@ const pickOrder = async (req, res) => {
             .status(404)
             .json({ success: false, error: "Delivery Man not found" });
     }
+
     // Check if the order status is "Prepared"
     if (order.orderStatus === "Prepared") {
         // Update the delivery man's currentOrders and the order's status
@@ -280,24 +180,50 @@ const pickOrder = async (req, res) => {
                 },
             }
         );
+
+        // Generate OTP
         const OTP = await order.generateOTP();
 
+        // Save the order
         await order.save();
 
+        // Load HTML template for email
         const htmlFilePath = path.join(
             __dirname,
             "../helpers/mailer/OTP_Code.html"
         );
         const otpTemplate = fs.readFileSync(htmlFilePath, "utf-8");
+
+        // Find the customer for email
+        const customer = await Customer.findById(order.customer.id);
+        if (!customer) {
+            return res
+                .status(404)
+                .json({ success: false, error: "Customer not found" });
+        }
+
+        // Find the user for email
+        const user = await User.findById(customer.user_id);
+        if (!user) {
+            return res
+                .status(404)
+                .json({ success: false, error: "User not found" });
+        }
+
+        // Send email to the customer
         await sendEmailToGmail({
-            email: "karavadiadhruv22@gmail.com",
+            email: user.email,
             subject: "OTP for Delivery Verification",
             html: otpTemplate.replace("{{otp}}", OTP),
         });
+
+        // Update order status
         await Order.updateOne(
             { _id: order._id },
             { $set: { orderStatus: "Picked" } }
         );
+
+        // Emit order status update
         await io.emit("orderStatusUpdate", "Picked");
     } else {
         return res.status(400).json({
@@ -470,7 +396,6 @@ const getPastOrders = async (req, res) => {
         }
 
         const userInstance = await model.findOne({ [fieldName]: userId });
-        console.log();
         if (!userInstance) {
             return res
                 .status(404)
@@ -561,53 +486,6 @@ const getOrderDistance = async (req, res) => {
     return res.status(200).json({ success: true, data: kms });
 };
 
-// PLACE NEW ORDER
-async function createOrder(req, res) {
-    try {
-        const { items } = req.body;
-        let orderTotal = 0;
-
-        items.forEach((item) => {
-            orderTotal += item.quantity * item.price;
-        });
-
-        const line_items = items.map((item) => ({
-            price_data: {
-                currency: "inr",
-                product_data: {
-                    name: item.name,
-                },
-                unit_amount: item.price * 100,
-            },
-            quantity: item.quantity,
-        }));
-
-        const stripeSession = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items: line_items,
-            mode: "payment",
-            success_url: `${PAYMENT_SUCCESS_URL}?sessionId={CHECKOUT_SESSION_ID}`,
-            cancel_url: PAYMENT_FAIL_URL,
-            billing_address_collection: "required",
-            shipping_address_collection: {
-                allowed_countries: ["IN"],
-            },
-        });
-        console.log("Session id in CREATE ORDER : ", stripeSession.id);
-        res.status(201).json({
-            success: true,
-            data: {
-                paymentSessionId: stripeSession.id,
-                paymentUrl: stripeSession.url,
-            },
-            message: "Payment session created successfully",
-        });
-    } catch (error) {
-        console.error("Error creating payment session:", error.message);
-        return res.status(500).json({ success: false, error: error.message });
-    }
-}
-
 // Handle successful payment and create database order
 async function handleSuccessfulPayment(req, res) {
     try {
@@ -631,7 +509,6 @@ async function handleSuccessfulPayment(req, res) {
         const coordinates = await getCoordinates();
 
         const sessionId = req.query.sessionId;
-        console.log("Handle payment SESSION ID : ", sessionId);
         // Retrieve relevant information from the session or request
         const { items } = req.body;
         let orderTotal = 0;
@@ -642,7 +519,6 @@ async function handleSuccessfulPayment(req, res) {
         const stripeSession = await stripe.checkout.sessions.retrieve(
             sessionId
         );
-        console.log("Stripe Session : ", stripeSession);
         // Check if payment was successful in the Stripe session
         if (stripeSession.payment_status === "paid") {
             // Continue with creating the database order
@@ -710,9 +586,48 @@ async function handleSuccessfulPayment(req, res) {
     }
 }
 
+async function getPreparedOrderByDeliverymanId(req, res) {
+    const deliverymanId = req.params.id;
+    //   const deliverymanId = req.user._id;
+
+    try {
+        const deliveryman = await DeliveryMan.findOne({
+            user_id: deliverymanId,
+        });
+        if (!deliveryman) {
+            return res.status(404).json({ message: "Deliveryman not found" });
+        }
+
+        let prepredOrders = [];
+
+        // Iterate through each restaurant ID in the deliveryman's restaurant array
+        for (const restaurantObj of deliveryman.restaurants) {
+            const restaurantId = restaurantObj.id;
+            const restaurant = await Restaurant.findById(restaurantId);
+
+            if (!restaurant) {
+                console.log(`Restaurant with ID ${restaurantId} not found`);
+                continue;
+            }
+
+            const orderIds = restaurant.currentOrders;
+            const orders = await Order.find({ _id: { $in: orderIds } });
+            prepredOrders = prepredOrders.concat(orders);
+        }
+
+        res.status(200).json({
+            succcess: true,
+            message: "prepredOrders Fetched successfully",
+            data: prepredOrders,
+        });
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
 module.exports = {
     createOrder,
-    handlePaymentResponse,
     updateOrderStatus,
     pickOrder,
     cancelOrder,
@@ -722,4 +637,5 @@ module.exports = {
     getPreparedOrders,
     getOrderDistance,
     handleSuccessfulPayment,
+    getPreparedOrderByDeliverymanId,
 };

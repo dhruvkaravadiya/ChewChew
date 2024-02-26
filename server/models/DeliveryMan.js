@@ -33,6 +33,7 @@ const deliveryManSchema = new mongoose.Schema(
         },
         currentOrders: [
             {
+                _id: false,
                 orderId: {
                     type: mongoose.SchemaTypes.ObjectId,
                     ref: "Order",
@@ -54,6 +55,7 @@ const deliveryManSchema = new mongoose.Schema(
         ],
         pastOrders: [
             {
+                _id: false,
                 type: mongoose.SchemaTypes.ObjectId,
                 ref: "Order",
             },
