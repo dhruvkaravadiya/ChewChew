@@ -28,7 +28,6 @@ const orderSchema = mongoose.Schema(
             id: {
                 type: mongoose.SchemaTypes.ObjectId,
                 ref: "DeliveryMan",
-                required: true,
             },
         },
         deliveryLocation: {
