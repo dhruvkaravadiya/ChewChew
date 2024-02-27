@@ -611,7 +611,10 @@ async function getPreparedOrderByDeliverymanId(req, res) {
             }
 
             const orderIds = restaurant.currentOrders;
-            const orders = await Order.find({ _id: { $in: orderIds } });
+            const orders = await Order.find({
+                _id: { $in: orderIds },
+                orderStatus: "Prepared",
+            });
             prepredOrders = prepredOrders.concat(orders);
         }
 
