@@ -164,23 +164,10 @@ const pickOrder = async (req, res) => {
             { _id: deliveryMan.id },
             {
                 $push: {
-                    currentOrders: {
-                        orderId: order._id,
-                        assignedTime: order.placedAt,
-                        restaurant: {
-                            id: order.restaurant.id,
-                            name: order.restaurant.name,
-                        },
-                        orderStatus: "Picked",
-                        deliveryLocation: {
-                            latitude: order.deliveryLocation.latitude,
-                            longitude: order.deliveryLocation.longitude,
-                        },
-                    },
+                    currentOrders: order._id,
                 },
             }
         );
-
         // Generate OTP
         const OTP = await order.generateOTP();
 
@@ -286,10 +273,10 @@ const completeOrder = async (req, res) => {
     }
 
     // Move order from current orders to delivery history for delivery man
-    const updatedDeliveryMan = await DeliveryMan.findOneAndUpdate(
-        { "currentOrders.orderId": order._id },
+    const updatedDeliveryMan = await DeliveryMan.findByIdAndUpdate(
+        order.deliveryMan.id,
         {
-            $pull: { currentOrders: { orderId: order._id } },
+            $pull: { currentOrders: order._id },
             $push: { pastOrders: orderId },
         }
     );
@@ -319,13 +306,19 @@ const cancelOrder = async (req, res) => {
             error: "Order cannot be canceled",
         });
     }
-    const deliveryMap = await DeliveryMan.findByIdAndUpdate(
+    const deliveryMan = await DeliveryMan.findByIdAndUpdate(
         order.deliveryMan.id,
         {
             $push: { cancelledOrders: order._id },
             $pull: { currentOrders: order._id },
         }
     );
+    if (!deliveryMan) {
+        return res.status(404).json({
+            success: false,
+            error: "No delivery man has picked your order",
+        });
+    }
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
         order.restaurant.id,
         {
@@ -597,14 +590,12 @@ async function getPreparedOrderByDeliverymanId(req, res) {
         if (!deliveryman) {
             return res.status(404).json({ message: "Deliveryman not found" });
         }
-
         let prepredOrders = [];
 
         // Iterate through each restaurant ID in the deliveryman's restaurant array
         for (const restaurantObj of deliveryman.restaurants) {
             const restaurantId = restaurantObj.id;
             const restaurant = await Restaurant.findById(restaurantId);
-
             if (!restaurant) {
                 console.log(`Restaurant with ID ${restaurantId} not found`);
                 continue;

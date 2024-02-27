@@ -34,23 +34,8 @@ const deliveryManSchema = new mongoose.Schema(
         currentOrders: [
             {
                 _id: false,
-                orderId: {
-                    type: mongoose.SchemaTypes.ObjectId,
-                    ref: "Order",
-                },
-                orderStatus: String,
-                assignedTime: Date,
-                restaurant: {
-                    id: {
-                        type: mongoose.SchemaTypes.ObjectId,
-                        ref: "Restaurant",
-                    },
-                    name: String,
-                },
-                deliveryLocation: {
-                    latitude: Number,
-                    longitude: Number,
-                },
+                type: mongoose.SchemaTypes.ObjectId,
+                ref: "Order",
             },
         ],
         pastOrders: [

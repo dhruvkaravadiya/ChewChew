@@ -97,7 +97,12 @@ const restaurantSchema = mongoose.Schema(
         ],
         pastOrders: [
             {
-                _id: false,
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Order",
+            },
+        ],
+        currentOrders: [
+            {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Order",
             },
