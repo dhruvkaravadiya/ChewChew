@@ -170,7 +170,7 @@ const pickOrder = async (req, res) => {
         );
         // Generate OTP
         const OTP = await order.generateOTP();
-
+        order.deliveryManId = deliveryMan._id;
         // Save the order
         await order.save();
 
@@ -274,9 +274,9 @@ const completeOrder = async (req, res) => {
 
     // Move order from current orders to delivery history for delivery man
     const updatedDeliveryMan = await DeliveryMan.findByIdAndUpdate(
-        order.deliveryMan.id,
+        order.deliveryManId,
         {
-            $pull: { currentOrders: order._id },
+            $pull: { currentOrders: orderId },
             $push: { pastOrders: orderId },
         }
     );

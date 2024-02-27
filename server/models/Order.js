@@ -24,11 +24,9 @@ const orderSchema = mongoose.Schema(
                 required: true,
             },
         },
-        deliveryMan: {
-            id: {
-                type: mongoose.SchemaTypes.ObjectId,
-                ref: "DeliveryMan",
-            },
+        deliveryManId: {
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: "DeliveryMan",
         },
         deliveryLocation: {
             latitude: Number,
@@ -96,15 +94,13 @@ const orderSchema = mongoose.Schema(
 );
 
 orderSchema.methods.generateOTP = async function () {
-    const otp = Math.floor(100000 + Math.random() * 900000);
-    this.OTP = otp.toString();
-    this.OTPExpiry = Date.now() + OTP_EXPIRY;
-    return otp.toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    this.OTP = otp;
+    this.OTPExpiry = (Date.now() + OTP_EXPIRY).toString();
+    return otp;
 };
 
 orderSchema.methods.verifyOTP = async function (userProvidedOTP) {
-    console.log(this.OTP);
-    console.log(userProvidedOTP);
     return this.OTP === userProvidedOTP && Date.now() <= this.OTPExpiry;
 };
 
