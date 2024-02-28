@@ -56,7 +56,9 @@ const SelectRestarant = () => {
       })
     );
 
-    console.log("res", res);
+    if (res?.payload?.success) {
+      navigate("/");
+    }
   }
 
   return (

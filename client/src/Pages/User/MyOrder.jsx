@@ -32,7 +32,7 @@ const MyOrder = () => {
 
     socket.on("orderPlaced", ({ userId, newOrder }) => {
       if (data._id == userId) {
-        toast.success("New Order For Restaurant")
+        toast.success("New Order For Restaurant");
         dispatch(NewCurrentOrder(newOrder));
       }
     });
@@ -40,7 +40,7 @@ const MyOrder = () => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [isPast]);
 
   return (
     <AppLayout>

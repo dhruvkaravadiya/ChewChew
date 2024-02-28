@@ -9,9 +9,9 @@ const CurrentOrdersList = () => {
     <div>
       {currentOrders?.length !== 0 ? (
         <div className="flex flex-col gap-10 m-10">
-          {currentOrders
-            ?.map((order) => <OrderCard key={order?._id} order={order} />)
-            .reverse()}
+          {currentOrders?.map((order) => (
+            <OrderCard key={order?._id} order={order} />
+          ))}
         </div>
       ) : (
         <NoOrder order="current" />

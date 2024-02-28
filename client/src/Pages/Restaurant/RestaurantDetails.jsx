@@ -247,7 +247,7 @@ const RestaurantDetails = () => {
         </div>
 
         {role != "Restaurant" ? (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col justify-center items-center">
             {searchResults.length == 0 ? (
               <div className="flex items-center justify-center">
                 <img
@@ -275,50 +275,60 @@ const RestaurantDetails = () => {
                 </tr>
               </thead>
               <tbody>
-                {searchResults.map((item) => {
-                  return (
-                    <tr key={item._id}>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <div className="avatar">
-                            <div className="mask mask-squircle w-12 h-12">
-                              <img
-                                src={item?.foodImg?.url}
-                                alt="Food Image"
-                                className="rounded-md h-28 w-36"
-                              />
+                {searchResults.length == 0 ? (
+                  <tr>No Item Found</tr>
+                ) : (
+                  <>
+                    {searchResults.map((item) => {
+                      return (
+                        <tr key={item._id}>
+                          <td>
+                            <div className="flex items-center gap-3">
+                              <div className="avatar">
+                                <div className="mask mask-squircle w-12 h-12">
+                                  <img
+                                    src={item?.foodImg?.url}
+                                    alt="Food Image"
+                                    className="rounded-md h-28 w-36"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="font-bold">{item.name}</div>
+                                <div className="text-sm opacity-50">
+                                  {item._id}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          <div>
-                            <div className="font-bold">{item.name}</div>
-                            <div className="text-sm opacity-50">{item._id}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        {item.price}
-                        <span className="badge badge-ghost badge-sm">RS</span>
-                      </td>
-                      <td className="flex gap-2">
-                        <span>{item.type}</span>
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => handleEditMenuItem({ ...item })}
-                          className="btn btn-info btn-sm mx-3"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMenuItem(item._id)}
-                          className="btn bg-red-300 btn-sm"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                          </td>
+                          <td>
+                            {item.price}
+                            <span className="badge badge-ghost badge-sm">
+                              RS
+                            </span>
+                          </td>
+                          <td className="flex gap-2">
+                            <span>{item.type}</span>
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => handleEditMenuItem({ ...item })}
+                              className="btn btn-info btn-sm mx-3"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteMenuItem(item._id)}
+                              className="btn bg-red-300 btn-sm"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
               </tbody>
             </table>
           </div>
