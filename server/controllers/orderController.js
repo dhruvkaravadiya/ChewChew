@@ -104,22 +104,26 @@ async function updateOrderStatus(req, res) {
             .status(404)
             .json({ success: false, error: "Order Not Found" });
     }
-    const restaurant = await Restaurant.findById(order.restaurant.id);
-    if (!restaurant) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Restaurant Not Found" });
-    }
+
     await io.emit("updateOrderStatus", { orderId, orderStatus });
 
-    const resDeliveryMen = restaurant.deliveryMen;
-    resDeliveryMen.forEach((deliverymanId) => {
-        () => {
-            io.emit("joinDeliveryMan", {
-                userId: deliverymanId,
+    if (updatedOrder.orderStatus === "Prepared") {
+        const restaurant = await Restaurant.findById(order.restaurant.id);
+        if (!restaurant) {
+            return res
+                .status(404)
+                .json({ success: false, error: "Restaurant Not Found" });
+        }
+
+        restaurant.deliveryMen.forEach((deliveryman) => {
+            const userId = deliveryman.user_id;
+            io.emit("orderPrepared", {
+                order: updatedOrder,
+                userId: userId,
             });
-        };
-    });
+        });
+    }
+
     res.status(221).json({
         success: true,
         message: "Order Status Updated",

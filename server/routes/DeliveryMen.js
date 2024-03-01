@@ -9,7 +9,9 @@ router.post(
     "/create",
     isLoggedIn,
     verifyRole("DeliveryMan"),
-    asyncErrorHandler(deliveryManController.createDeliveryMan)
+    asyncErrorHandler(
+        deliveryManController.createDeliveryManAndAddToRestaurants
+    )
 );
 // # delete
 router.delete(
@@ -44,12 +46,5 @@ router.put(
     isLoggedIn,
     verifyRole("DeliveryMan"),
     asyncErrorHandler(deliveryManController.updateLocation)
-);
-// # select a resturant for delivery
-router.put(
-    "/select-restaurant/",
-    isLoggedIn,
-    verifyRole("DeliveryMan"),
-    asyncErrorHandler(deliveryManController.addRestaurantToDeliveryMan)
 );
 module.exports = router;

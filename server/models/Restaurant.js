@@ -117,6 +117,10 @@ const restaurantSchema = mongoose.Schema(
                     type: mongoose.SchemaTypes.ObjectId,
                     ref: "DeliveryMan",
                 },
+                user_id: {
+                    type: mongoose.SchemaTypes.ObjectId,
+                    ref: "User",
+                },
                 name: {
                     type: String,
                 },
