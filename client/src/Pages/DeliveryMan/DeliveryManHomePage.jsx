@@ -2,13 +2,32 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import OrderCard from "../../Components/Order/OrderCard";
 import NoOrder from "../../Components/Order/NoOrder";
-import { getAllPrepredOrdersBydmId } from "../../Redux/Slices/orderSlice.js";
+import {
+  getAllPrepredOrdersBydmId,
+  pushOrderToAllPrepredOrders,
+} from "../../Redux/Slices/orderSlice.js";
+import { socket } from "../../App.jsx";
 
 const DeliveryManHomePage = () => {
   const dispatch = useDispatch();
   const { role, data } = useSelector((state) => state.auth);
 
   const { AllPrepredOrders } = useSelector((state) => state?.order);
+
+  useEffect(() => {
+    socket.on("orderPrepared", (data) => {
+      console.log("Received orderPrepared event:", data);
+      const { order, deliverymanId } = data;
+      if (deliverymanId === data._id) {
+        console.log("This order is for me:", order);
+        dispatch(pushOrderToAllPrepredOrders(order));
+      }
+    });
+
+    return () => {
+      socket.disconnect(); // Disconnect the socket when the component unmounts
+    };
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {

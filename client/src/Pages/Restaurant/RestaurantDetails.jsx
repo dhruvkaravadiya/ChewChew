@@ -85,11 +85,8 @@ const RestaurantDetails = () => {
   }
 
   function handleEditMenuItem(ItemToEdit) {
-    console.log("edit");
     setEditMode(true);
     setDataToEdit(ItemToEdit);
-    console.log("editMode", editMode);
-    console.log("ItemToEdit", ItemToEdit);
   }
 
   return (

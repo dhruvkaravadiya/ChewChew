@@ -143,7 +143,6 @@ export const getPreparedOrders = createAsyncThunk(
 export const pickOrder = createAsyncThunk("/pickOrder", async (orderId) => {
   const loadingMessage = toast.loading("Please wait! pickOrder...");
   try {
-    console.log("orderId", orderId);
     const res = await axiosInstance.put(`/order/pick/${orderId}`);
     toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
@@ -220,6 +219,27 @@ const orderSlice = createSlice({
       console.log("action payload", action.payload);
       state.currentOrders.push(action.payload);
     },
+    removeFromPreOrder: (state, action) => {
+      const orderId = action.payload;
+      console.log(orderId);
+      console.log("state.AllPrepredOrders", state.AllPrepredOrders);
+      state.AllPrepredOrders = state?.AllPrepredOrders?.filter((order) => {
+        return order._id !== orderId;
+      });
+      console.log(AllPrepredOrders);
+    },
+    removeFromCurrentOrder: (state, action) => {
+      const orderId = action.payload;
+      console.log("action.payload", action.payload);
+      console.log("state.cuurrentOrders", state.currentOrders);
+      state.currentOrders = state?.currentOrders?.filter((order) => {
+        return order._id !== orderId;
+      });
+      console.log("state.cuurrentOrders after loop", state.currentOrders);
+    },
+    pushOrderToAllPrepredOrders: (state, action) => {
+      state?.AllPrepredOrders?.push(action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -242,6 +262,12 @@ const orderSlice = createSlice({
   },
 });
 
-export const { NewCurrentOrder } = orderSlice.actions;
+export const {
+  NewCurrentOrder,
+  removeFromPreOrder,
+  removeFromCurrentOrder,
+  pushOrderToAllPrepredOrders,
+  setIsLoading,
+} = orderSlice.actions;
 
 export default orderSlice.reducer;

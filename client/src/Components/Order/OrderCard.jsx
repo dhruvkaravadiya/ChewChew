@@ -5,6 +5,8 @@ import {
   completeOrder,
   getCurrentOrders,
   pickOrder,
+  removeFromCurrentOrder,
+  removeFromPreOrder,
   updateOrderStatus,
 } from "../../Redux/Slices/orderSlice";
 import { socket } from "../../App";
@@ -39,8 +41,11 @@ const OrderCard = ({ order }) => {
   async function confirmPickOrder(orderId) {
     console.log("oreder ind", orderId);
     if (window.confirm("are you sure You want to pick order?")) {
-      await dispatch(pickOrder(orderId));
-      await dispatch(getAllPrepredOrdersBydmId(data._id));
+      const res = await dispatch(pickOrder(orderId));
+      if (res.payload.success) {
+        dispatch(removeFromPreOrder(orderId));
+      }
+      // await dispatch(getAllPrepredOrdersBydmId(data._id));
     }
   }
 
@@ -49,8 +54,9 @@ const OrderCard = ({ order }) => {
     console.log(OTP);
     if (OTP) {
       const res = await dispatch(completeOrder([orderId, parseInt(OTP)]));
-      if (res?.playload?.success) {
-        await dispatch(getCurrentOrders());
+      if (res?.payload?.success) {
+        // await dispatch(getCurrentOrders());
+        dispatch(removeFromCurrentOrder(orderId));
       }
     }
   }
