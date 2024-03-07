@@ -5,28 +5,71 @@ const Customer = require("../models/Customer");
 const { getCoordinates } = require("../helpers/utils/getCoordinates");
 // const { calculateDistance } = require("../helpers/utils/calculateDistance");
 
-async function createDeliveryMan(req, res) {
-    if (!req.body) {
-        return res
-            .status(400)
-            .json({ success: false, error: "Please Enter Necessary Details" });
+// async function createDeliveryMan(req, res) {
+//     if (!req.body) {
+//         return res
+//             .status(400)
+//             .json({ success: false, error: "Please Enter Necessary Details" });
+//     }
+//     const coordinates = await getCoordinates();
+//     const newDeliveryMan = new DeliveryMan({
+//         ...req.body,
+//         user_id: req.user.id,
+//         currentLocation: {
+//             latitude: coordinates.latitude,
+//             longitude: coordinates.longitude,
+//         },
+//     });
+//     const savedDeliveryMan = await newDeliveryMan.save();
+
+//     res.status(201).json({
+//         success: true,
+//         message: "Delivery Man Created",
+//         data: savedDeliveryMan,
+//     });
+// }
+
+const createDeliveryManAndAddToRestaurants = async (req, res) => {
+    const { phoneNumber, restaurants } = req.body;
+    const { id, name } = req.user;
+
+    try {
+        // Create the delivery man
+        const deliveryMan = new DeliveryMan({
+            phoneNumber,
+            restaurants,
+            user_id: id,
+            name,
+        });
+
+        // Save the delivery man
+        await deliveryMan.save();
+
+        // Get the list of restaurant ids
+        const restaurantIds = restaurants.map(({ id }) => id);
+        const fullObjectRestaurants = await Restaurant.find({
+            _id: { $in: restaurantIds },
+        });
+        console.log(restaurantIds);
+        // Add the delivery man to each restaurant's deliveryMen list
+        fullObjectRestaurants.forEach(async (restaurant) => {
+            restaurant.deliveryMen.push({
+                id: deliveryMan._id,
+                user_id: deliveryMan.user_id,
+                name: deliveryMan.name,
+            });
+            await restaurant.save();
+        });
+        res.json({
+            success: true,
+            message: "Delivery Man created and added to restaurants",
+            data: deliveryMan,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Server Error" });
     }
-    const coordinates = await getCoordinates();
-    const newDeliveryMan = new DeliveryMan({
-        ...req.body,
-        user_id: req.user.id,
-        currentLocation: {
-            latitude: coordinates.latitude,
-            longitude: coordinates.longitude,
-        },
-    });
-    const savedDeliveryMan = await newDeliveryMan.save();
-    res.status(201).json({
-        success: true,
-        message: "Delivery Man Created",
-        data: savedDeliveryMan,
-    });
-}
+};
 
 async function deleteDeliveryMan(req, res) {
     const deletedDeliveryMan = await DeliveryMan.findByIdAndDelete(
@@ -95,79 +138,13 @@ const updateLocation = async (req, res) => {
         .json({ success: true, message: "Delivery updated successfully" });
 };
 
-const addRestaurantToDeliveryMan = async (req, res) => {
-    const { resIds } = req.body;
-    try {
-        const deliveryMan = await DeliveryMan.findOne({ user_id: req.user.id });
-
-        if (!deliveryMan) {
-            return res.status(404).json({
-                success: false,
-                error: "DeliveryMan not found",
-            });
-        }
-
-        if (deliveryMan.restaurants.length === 3) {
-            return res.status(400).json({
-                success: false,
-                error: "DeliveryMan can be associated with a maximum of 3 restaurants",
-            });
-        }
-
-        const existingRestaurantIds = deliveryMan.restaurants.map(
-            (restaurant) => restaurant.id
-        );
-
-        // Check if any of the selected restaurant IDs already exist in the delivery man's restaurants list
-        const overlap = resIds.some((id) => existingRestaurantIds.includes(id));
-        if (overlap) {
-            return res.status(400).json({
-                success: false,
-                error: "DeliveryMan is already associated with one or more of the selected restaurants",
-            });
-        }
-
-        // Fetch restaurant details using the provided IDs
-        const restaurantsToAdd = await Restaurant.find({
-            _id: { $in: resIds },
-        });
-        // Add new restaurant IDs and names to the delivery man's restaurants list
-        const updatedDeliveryMan = await DeliveryMan.findOneAndUpdate(
-            { user_id: req.user.id },
-            {
-                $push: {
-                    restaurants: {
-                        $each: restaurantsToAdd.map(
-                            ({ _id, restaurantName }) => ({
-                                id: _id,
-                                name: restaurantName,
-                            })
-                        ),
-                    },
-                },
-            },
-            { new: true }
-        );
-
-        res.json({
-            success: true,
-            message: "Successfully added restaurant(s) to DeliveryMan",
-            data: updatedDeliveryMan,
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ success: false, error: "Server Error" });
-    }
-};
-
 const getDistance = async (req, res) => {};
 
 module.exports = {
-    createDeliveryMan,
+    createDeliveryManAndAddToRestaurants,
     deleteDeliveryMan,
     getAllDeliveryMan,
     getDeliveryManById,
     updateDeliveryManDetails,
     updateLocation,
-    addRestaurantToDeliveryMan,
 };

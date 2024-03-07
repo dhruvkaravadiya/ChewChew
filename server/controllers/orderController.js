@@ -104,22 +104,26 @@ async function updateOrderStatus(req, res) {
             .status(404)
             .json({ success: false, error: "Order Not Found" });
     }
-    const restaurant = await Restaurant.findById(order.restaurant.id);
-    if (!restaurant) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Restaurant Not Found" });
-    }
+
     await io.emit("updateOrderStatus", { orderId, orderStatus });
 
-    const resDeliveryMen = restaurant.deliveryMen;
-    resDeliveryMen.forEach((deliverymanId) => {
-        () => {
-            io.emit("joinDeliveryMan", {
-                userId: deliverymanId,
+    if (updatedOrder.orderStatus === "Prepared") {
+        const restaurant = await Restaurant.findById(order.restaurant.id);
+        if (!restaurant) {
+            return res
+                .status(404)
+                .json({ success: false, error: "Restaurant Not Found" });
+        }
+
+        restaurant.deliveryMen.forEach((deliveryman) => {
+            const userId = deliveryman.user_id;
+            io.emit("orderPrepared", {
+                order: updatedOrder,
+                userId: userId,
             });
-        };
-    });
+        });
+    }
+
     res.status(221).json({
         success: true,
         message: "Order Status Updated",
@@ -394,7 +398,6 @@ const getPastOrders = async (req, res) => {
                 .status(404)
                 .json({ success: false, error: `${role} Not Found ` });
         }
-        gg;
 
         const pastOrders = userInstance.pastOrders;
 
@@ -405,7 +408,11 @@ const getPastOrders = async (req, res) => {
 
         const orders = await Order.find({ _id: { $in: pastOrders } });
 
-        return res.status(200).json({ success: true, data: orders });
+        return res.status(200).json({
+            success: true,
+            message: "Past Orders fetched Successfully",
+            data: orders,
+        });
     } catch (error) {
         return res
             .status(500)
@@ -447,7 +454,11 @@ const getCurrentOrders = async (req, res) => {
             _id: { $in: userInstance.currentOrders },
         });
 
-        return res.status(200).json({ success: true, data: currentOrders });
+        return res.status(200).json({
+            success: true,
+            message: "Current Orders fetched Successfully",
+            data: currentOrders,
+        });
     } catch (error) {
         return res
             .status(500)
@@ -458,7 +469,11 @@ const getCurrentOrders = async (req, res) => {
 const getPreparedOrders = async (req, res) => {
     try {
         const preparedOrders = await Order.find({ orderStatus: "Prepared" });
-        return res.status(200).json({ success: true, data: preparedOrders });
+        return res.status(200).json({
+            success: true,
+            message: "Prepared Orders fetched Successfully",
+            data: preparedOrders,
+        });
     } catch (error) {
         return res
             .status(500)
@@ -611,7 +626,8 @@ async function getPreparedOrderByDeliverymanId(req, res) {
 
         res.status(200).json({
             succcess: true,
-            message: "prepredOrders Fetched successfully",
+            message:
+                "prepredOrders of delivery man fetched Fetched successfully",
             data: prepredOrders,
         });
     } catch (error) {
