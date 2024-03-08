@@ -24,7 +24,7 @@ const PaymentSuccess = () => {
   useEffect(() => {
     const res = verifyPayment();
     console.log("res", res);
-    if (res?.success) {
+    if (res?.playload?.success) {
       dispatch(clearCart());
     }
   }, []);

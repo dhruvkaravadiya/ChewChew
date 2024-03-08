@@ -3,13 +3,12 @@ import axiosInstance from "../../Helpers/axiosInstance";
 import toast from "react-hot-toast";
 import { STRIPE_Publishable_key } from "../../../config";
 import { loadStripe } from "@stripe/stripe-js";
-import { Socket } from "socket.io-client";
 
 const initialState = {
   currentOrders: [],
   pastOrders: [],
   preparedOrders: [],
-  deliveryHistory: [],
+  AllPrepredOrders: [],
 };
 
 export const placeorder = createAsyncThunk(
@@ -82,7 +81,7 @@ export const getCurrentOrders = createAsyncThunk("/currentOrder", async () => {
   );
   try {
     const res = await axiosInstance.get("/order/current");
-    toast.success("current orders", { id: loadingMessage });
+    toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
   } catch (error) {
     toast.error(error?.response?.data?.error, { id: loadingMessage });
@@ -96,7 +95,8 @@ export const getPastOrders = createAsyncThunk("/pastOrders", async () => {
   );
   try {
     const res = await axiosInstance.get("/order/past");
-    toast.success("current orders", { id: loadingMessage });
+
+    toast.success("past orders", { id: loadingMessage });
     return res?.data;
   } catch (error) {
     toast.error(error?.response?.data?.error, { id: loadingMessage });
@@ -143,7 +143,6 @@ export const getPreparedOrders = createAsyncThunk(
 export const pickOrder = createAsyncThunk("/pickOrder", async (orderId) => {
   const loadingMessage = toast.loading("Please wait! pickOrder...");
   try {
-    console.log("orderId", orderId);
     const res = await axiosInstance.put(`/order/pick/${orderId}`);
     toast.success(res?.data?.message, { id: loadingMessage });
     return res?.data;
@@ -195,6 +194,23 @@ export const getOrderDistance = createAsyncThunk(
   }
 );
 
+export const getAllPrepredOrdersBydmId = createAsyncThunk(
+  "/PrepredOrders",
+  async (deliveryManId) => {
+    console.log("getAllPrepredOrdersBydmId");
+    const loadingMessage = toast.loading("Wait getting prepred orders...!");
+    try {
+      const res = await axiosInstance.get(
+        `/order/currentOrders/${deliveryManId}`
+      );
+      toast.success(res?.data?.message, { id: loadingMessage });
+      return res?.data;
+    } catch (error) {
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
+    }
+  }
+);
+
 const orderSlice = createSlice({
   name: "order",
   initialState,
@@ -203,22 +219,55 @@ const orderSlice = createSlice({
       console.log("action payload", action.payload);
       state.currentOrders.push(action.payload);
     },
+    removeFromPreOrder: (state, action) => {
+      const orderId = action.payload;
+      console.log(orderId);
+      console.log("state.AllPrepredOrders", state.AllPrepredOrders);
+      state.AllPrepredOrders = state?.AllPrepredOrders?.filter((order) => {
+        return order._id !== orderId;
+      });
+      console.log(AllPrepredOrders);
+    },
+    removeFromCurrentOrder: (state, action) => {
+      const orderId = action.payload;
+      console.log("action.payload", action.payload);
+      console.log("state.cuurrentOrders", state.currentOrders);
+      state.currentOrders = state?.currentOrders?.filter((order) => {
+        return order._id !== orderId;
+      });
+      console.log("state.cuurrentOrders after loop", state.currentOrders);
+    },
+    pushOrderToAllPrepredOrders: (state, action) => {
+      state?.AllPrepredOrders?.push(action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder
       .addCase(getCurrentOrders.fulfilled, (state, action) => {
-        console.log("payload", action.payload);
-        state.currentOrders = action.payload.data;
+        console.log("payload", action?.payload);
+        state.currentOrders = action?.payload?.data;
       })
       .addCase(getCurrentOrders.rejected, (state, action) => {
         state.currentOrders = [];
       })
       .addCase(getPreparedOrders.fulfilled, (state, action) => {
         state.preparedOrders = action.payload.data;
+      })
+      .addCase(getPastOrders.fulfilled, (state, action) => {
+        state.pastOrders = action?.payload?.data;
+      })
+      .addCase(getAllPrepredOrdersBydmId.fulfilled, (state, action) => {
+        state.AllPrepredOrders = action?.payload?.data;
       });
   },
 });
 
-export const { NewCurrentOrder } = orderSlice.actions;
+export const {
+  NewCurrentOrder,
+  removeFromPreOrder,
+  removeFromCurrentOrder,
+  pushOrderToAllPrepredOrders,
+  setIsLoading,
+} = orderSlice.actions;
 
 export default orderSlice.reducer;

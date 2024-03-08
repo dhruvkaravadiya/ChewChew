@@ -25,7 +25,7 @@ const Cart = () => {
 
   async function makePayment(event) {
     event.preventDefault();
-    const resId = cartItems[0].restaurant.resId;
+    const resId = cartItems[0]?.restaurant?.resId;
     const res = dispatch(placeorder([resId, cartItems]));
     console.log("place order res", res);
   }

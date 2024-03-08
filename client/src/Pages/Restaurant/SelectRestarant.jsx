@@ -38,7 +38,7 @@ const SelectRestarant = () => {
       );
     } else {
       // If not selected, select if not already at maximum
-      if (selectedRestaurants.length < 2) {
+      if (selectedRestaurants.length < 3) {
         setSelectedRestaurants([
           ...selectedRestaurants,
           { id: restaurantId, name: restaurantName },
@@ -56,7 +56,9 @@ const SelectRestarant = () => {
       })
     );
 
-    console.log("res", res);
+    if (res?.payload?.success) {
+      navigate("/");
+    }
   }
 
   return (

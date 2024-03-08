@@ -20,7 +20,7 @@ const RestaurantList = () => {
   const [isFilteredRestaurant, setIsFilteredRestaurant] = useState(false);
 
   async function loadAllRestaurants() {
-    if (restaurantData.length == 0) {
+    if (restaurantData?.length == 0) {
       await dispatch(getAllRestaurants());
     }
   }
@@ -65,13 +65,16 @@ const RestaurantList = () => {
           )
         ) : (
           <>
-            {restaurantData.length === 0 ? (
+            {restaurantData?.length === 0 ? (
               <RestaurantListShimmer />
             ) : (
               <>
-                {restaurantData.map((restaurant) => {
+                {restaurantData?.map((restaurant) => {
                   return (
-                    <RestaurantCard key={restaurant._id} resdata={restaurant} />
+                    <RestaurantCard
+                      key={restaurant?._id}
+                      resdata={restaurant}
+                    />
                   );
                 })}
               </>

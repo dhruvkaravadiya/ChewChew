@@ -162,7 +162,7 @@ const restaurantSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getAllRestaurants.fulfilled, (state, action) => {
-        state.restaurantData = action?.payload.data;
+        state.restaurantData = action?.payload?.data;
       })
       .addCase(fetchMenuItems.fulfilled, (state, action) => {
         state.menuItems = action?.payload?.data;
