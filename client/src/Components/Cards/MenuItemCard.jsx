@@ -10,6 +10,7 @@ import { MdDeleteOutline } from "react-icons/md";
 import {
   addItem,
   calculateTotalBill,
+  clearCart,
   removeItem,
 } from "../../Redux/Slices/cartSlice";
 
@@ -64,7 +65,9 @@ const MenuItemCard = ({ menuItem }) => {
       </div>
 
       <div className="flex gap-2">
-        {role !== "Restaurant" && (
+        {role !== "Restaurant" &&
+        cartItems.length > 0 &&
+        cartItems[0].restaurant.resId == menuItem.restaurant.resId ? (
           <div>
             {checkItemInCart(menuItem?._id) ? (
               <button
@@ -85,6 +88,30 @@ const MenuItemCard = ({ menuItem }) => {
                 className="bg-orange-300 p-2 flex items-center gap-1 rounded-md hover:bg-orange-400 text-white"
               >
                 <FaShoppingCart /> Add To Cart
+              </button>
+            )}
+          </div>
+        ) : (
+          <div>
+            {cartItems.length == 0 ? (
+              <button
+                onClick={() => {
+                  dispatch(addItem(menuItem));
+                  dispatch(calculateTotalBill());
+                }}
+                className="bg-orange-300 p-2 flex items-center gap-1 rounded-md hover:bg-orange-400 text-white"
+              >
+                <FaShoppingCart /> Add To Cart
+              </button>
+            ) : (
+              <button
+                className="bg-red-300 p-2 flex items-center gap-1 rounded-md hover:bg-red-400 text-white"
+                onClick={(event) => {
+                  event.preventDefault();
+                  dispatch(clearCart());
+                }}
+              >
+                Clear Cart
               </button>
             )}
           </div>

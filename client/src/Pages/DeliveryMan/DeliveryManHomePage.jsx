@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import OrderCard from "../../Components/Order/OrderCard";
+import OrderCard from "../../Components/Cards/OrderCard.jsx";
 import NoOrder from "../../Components/Order/NoOrder";
 import {
   getAllPrepredOrdersBydmId,

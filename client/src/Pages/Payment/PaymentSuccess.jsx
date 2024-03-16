@@ -18,16 +18,17 @@ const PaymentSuccess = () => {
 
   async function verifyPayment() {
     const resId = cartItems[0].restaurant.resId;
-    await dispatch(orderSuccess([resId, sessionId, cartItems]));
+    const res = await dispatch(orderSuccess([resId, sessionId, cartItems]));
+    if (res?.payload?.success) {
+      dispatch(clearCart());
+    }
+    console.log("resd", res);
   }
 
   useEffect(() => {
-    const res = verifyPayment();
-    console.log("res", res);
-    if (res?.playload?.success) {
-      dispatch(clearCart());
-    }
-  }, []);
+    console.log("sessionId", sessionId);
+    verifyPayment();
+  }, [sessionId]);
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">

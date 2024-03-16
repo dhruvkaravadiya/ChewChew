@@ -8,8 +8,8 @@ import {
   removeFromCurrentOrder,
   removeFromPreOrder,
   updateOrderStatus,
-} from "../../Redux/Slices/orderSlice";
-import { socket } from "../../App";
+} from "../../Redux/Slices/orderSlice.js";
+import { socket } from "../../App.jsx";
 import toast from "react-hot-toast";
 import { getAllPrepredOrdersBydmId } from "../../Redux/Slices/orderSlice.js";
 
