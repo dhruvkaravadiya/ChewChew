@@ -10,9 +10,9 @@ const PastOrdersList = () => {
     <div>
       {pastOrders.length !== 0 ? (
         <div className="flex flex-col gap-10 m-10">
-          {pastOrders.map((order) => (
-            <OrderCard key={order._id} order={order} />
-          ))}
+          {pastOrders
+            .map((order) => <OrderCard key={order._id} order={order} />)
+            .reverse()}
         </div>
       ) : (
         <NoOrder order="past" />

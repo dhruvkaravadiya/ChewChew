@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BsArrowRight } from "react-icons/bs";
 import { Link, useNavigate } from "react-router-dom";
-import LoginImage3 from "../../Assets/Login3.jpeg";
+import LoginImage3 from "../../Assets/login3.jpeg";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { login } from "../../Redux/Slices/authSlice.js";

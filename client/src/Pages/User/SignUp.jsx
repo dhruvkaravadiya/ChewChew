@@ -7,7 +7,6 @@ import { toast } from "react-hot-toast";
 import { isPassword, isEmail } from "../../Helpers/regxMatcher.js";
 import {
   createCustomer,
-  createDeliveryMan,
   createUserAccount,
 } from "../../Redux/Slices/authSlice.js";
 import SignUpImage from "../../Assets/signup.jpg";
@@ -123,8 +122,9 @@ const signUp = () => {
           setPhoneNumber("");
         }
       } else {
-        const re = await dispatch(createCustomer());
-        if (re?.payload?.success) {
+        const res = await dispatch(createCustomer());
+        if (res?.payload?.success) {
+          navigate("/");
           return;
         }
       }
@@ -257,9 +257,7 @@ const signUp = () => {
                       id="role"
                       checked={isDeliveryMan}
                       onChange={(e) => {
-                        isDeliveryMan
-                          ? setIsDeliveryMan(false)
-                          : setIsDeliveryMan(true);
+                        setIsDeliveryMan((prev) => !prev);
                         handleUserInput(e);
                       }}
                       className="form-checkbox h-5 w-5 text-blue-500"
