@@ -244,7 +244,6 @@ const orderSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getCurrentOrders.fulfilled, (state, action) => {
-        console.log("payload", action?.payload);
         state.currentOrders = action?.payload?.data;
       })
       .addCase(getCurrentOrders.rejected, (state, action) => {

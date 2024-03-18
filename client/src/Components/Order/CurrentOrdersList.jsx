@@ -1,5 +1,5 @@
 import React from "react";
-import OrderCard from "./OrderCard";
+import OrderCard from "../Cards/OrderCard";
 import NoOrder from "./NoOrder";
 import { useSelector } from "react-redux";
 

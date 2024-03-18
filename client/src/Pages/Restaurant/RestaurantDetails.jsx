@@ -8,7 +8,7 @@ import {
   deleteMenuItem,
   fetchMenuItems,
 } from "../../Redux/Slices/restaurantSlice";
-import MenuItemCard from "../../Components/Restaurant/MenuItemCard";
+import MenuItemCard from "../../Components/Cards/MenuItemCard";
 import { MdMail, MdOutlineStar } from "react-icons/md";
 import NoItemImage from "../../Assets/NoMenuItemFound.png";
 

@@ -4,7 +4,7 @@ import {
   getAllRestaurants,
   searchRestaurant,
 } from "../../Redux/Slices/restaurantSlice.js";
-import RestaurantCard from "../../Components/Restaurant/RestaurantCard.jsx";
+import RestaurantCard from "../../Components/Cards/RestaurantCard.jsx";
 import RestaurantListShimmer from "../Shimmer/RestaurantListShimmer.jsx";
 
 const RestaurantList = () => {
