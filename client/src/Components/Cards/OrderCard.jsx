@@ -12,9 +12,11 @@ import {
 import { socket } from "../../App.jsx";
 import toast from "react-hot-toast";
 import { getAllPrepredOrdersBydmId } from "../../Redux/Slices/orderSlice.js";
+import { useNavigate } from "react-router-dom";
 
 const OrderCard = ({ order }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { role, data } = useSelector((state) => state?.auth);
 
@@ -65,7 +67,7 @@ const OrderCard = ({ order }) => {
     <div
       key={order?._id}
       className="bg-white p-6 rounded-md shadow-md flex  items-center justify-between"
-      // onClick={() => handleCardClick(order._id)}
+      onClick={() => navigate("/order/details")}
     >
       <div className="mb-4">
         <p className="text-xl font-semibold mb-2">Order ID: {order?._id}</p>
