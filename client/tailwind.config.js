@@ -1,15 +1,85 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
-  theme: {
-    extend: {
-      fontFamily: {
-        custom: ["Poppins", "sans-serif"],
-      },
-      daisyui: {
-        themes: ["light", "dark", "cupcake","coffee"],
-      },
+// eslint-disable-next-line no-undef
+module.exports = {
+    darkMode: ["class"],
+    content: [
+        "./pages/**/*.{js,jsx}",
+        "./components/**/*.{js,jsx}",
+        "./app/**/*.{js,jsx}",
+        "./src/**/*.{js,jsx}",
+    ],
+    prefix: "",
+    theme: {
+        container: {
+            center: true,
+            padding: "2rem",
+            screens: {
+                "2xl": "1400px",
+            },
+        },
+        colors: {
+            "custom-red-1": "#FF1C1C",
+            "custom-red-2": "#FF5345",
+            "custom-light-red-3": "#EF7D74",
+            "custom-green": "#22C33C",
+            "custom-blue": "#5295FA",
+            white: "#FFFFFF",
+            black: "#000000",
+            "custom-light-gray": "#F5F5F5",
+            "red-100": "#FFEBEE",
+            "red-200": "#FFCDD2",
+            "red-300": "#EF9A9A",
+            "red-400": "#E57373",
+            "red-500": "#EF5350",
+            "red-600": "#E53935",
+            "red-700": "#D32F2F",
+            "red-800": "#C62828",
+            "red-900": "#B71C1C",
+            "gray-100": "#F5F5F5",
+            "gray-200": "#EEEEEE",
+            "gray-300": "#E0E0E0",
+            "gray-400": "#BDBDBD",
+            "gray-500": "#9E9E9E",
+            "gray-600": "#757575",
+            "gray-700": "#616161",
+            "gray-800": "#424242",
+            "gray-900": "#212121",
+            "blue-100": "#E3F2FD",
+            "blue-200": "#BBDEFB",
+            "blue-300": "#90CAF9",
+            "blue-400": "#64B5F6",
+            "blue-500": "#42A5F5",
+            "blue-600": "#2196F3",
+            "blue-700": "#1E88E5",
+            "blue-800": "#1976D2",
+            "blue-900": "#1565C0",
+            "green-100": "#C8E6C9",
+            "green-200": "#A5D6A7",
+            "green-300": "#81C784",
+            "green-400": "#66BB6A",
+            "green-500": "#4CAF50",
+            "green-600": "#43A047",
+            "green-700": "#388E3C",
+            "green-800": "#2E7D32",
+            "green-900": "#1B5E20",
+        },
+        extend: {
+            keyframes: {
+                "accordion-down": {
+                    from: { height: "0" },
+                    to: { height: "var(--radix-accordion-content-height)" },
+                },
+                "accordion-up": {
+                    from: { height: "var(--radix-accordion-content-height)" },
+                    to: { height: "0" },
+                },
+            },
+            animation: {
+                "accordion-down": "accordion-down 0.2s ease-out",
+                "accordion-up": "accordion-up 0.2s ease-out",
+            },
+        },
     },
-  },
-  plugins: [require("daisyui")],
+    // eslint-disable-next-line no-undef
+    plugins: [require("tailwindcss-animate")],
 };
