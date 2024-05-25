@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo } from "react";
+import { config } from "dotenv";
+config();
+import React, { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./Pages/HomePage";
 import NotFoundPage from "./Pages/NotFoundPage";
@@ -65,8 +67,8 @@ const App = () => {
           <Route path="/changePassword" element={<ChangePassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/myorder" element={<MyOrder />} />
-          <Route path="/order/details" element={<OrderDetail/>} />
-          <Route path="/order/map" element={<Map/>} />
+          <Route path="/order/details" element={<OrderDetail />} />
+          <Route path="/order/map" element={<Map />} />
         </Route>
 
         <Route element={<RequireAuth allowedRoles={["Restaurant"]} />}>
