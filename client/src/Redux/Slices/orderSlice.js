@@ -2,6 +2,8 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosInstance from "../../Helpers/axiosInstance";
 import toast from "react-hot-toast";
 import { loadStripe } from "@stripe/stripe-js";
+import { config } from "dotenv";
+config();
 
 const initialState = {
   currentOrders: [],
