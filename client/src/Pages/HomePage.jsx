@@ -6,6 +6,14 @@ import DeliveryManHomePage from "./DeliveryMan/DeliveryManHomePage";
 
 const HomePage = () => {
   const { data } = useSelector((state) => state?.auth);
+  if (!data) {
+    return (
+        <AppLayout>
+            <RestaurantList />
+        </AppLayout>
+    );
+}
+
   const { role } = data;
 
   // Render different components based on user role
