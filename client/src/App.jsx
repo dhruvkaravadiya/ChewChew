@@ -1,5 +1,3 @@
-import { config } from "dotenv";
-config();
 import React, { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./Pages/HomePage";
