@@ -20,7 +20,8 @@ import MyOrder from "./Pages/User/MyOrder";
 
 import { io } from "socket.io-client";
 import SelectRestarant from "./Pages/Restaurant/SelectRestarant";
-import OrderDetails from "./Pages/Order/OrderDetails";
+import OrderDetail from "./Pages/Order/OrderDetail";
+import Map from "./Pages/Order/Map";
 export const socket = io("http://localhost:8080/");
 
 const App = () => {
@@ -64,7 +65,8 @@ const App = () => {
           <Route path="/changePassword" element={<ChangePassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/myorder" element={<MyOrder />} />
-          <Route path="/order/details" element={<OrderDetails />} />
+          <Route path="/order/details" element={<OrderDetail/>} />
+          <Route path="/order/map" element={<Map/>} />
         </Route>
 
         <Route element={<RequireAuth allowedRoles={["Restaurant"]} />}>

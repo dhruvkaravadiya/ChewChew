@@ -20,7 +20,7 @@ const CartDetails = () => {
   return (
     <section
       aria-labelledby="summary-heading"
-      className="mt-16 shadow-xl w-96 h-96 m-10 flex-col rounded-md  lg:col-span-4 lg:mt-0 lg:p-0"
+      className="mt-16 shadow-xl w-96 h-96 m-10 flex-col rounded-md  lg:col-span-4 lg:mt-0 p-5"
     >
       <button
         className="bg-red-500 p-2 flex items-center justify-center bg-red gap-1 rounded-md hover:bg-red-400 text-white"
