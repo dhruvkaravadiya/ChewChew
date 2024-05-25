@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosInstance from "../../Helpers/axiosInstance";
 import toast from "react-hot-toast";
-import { STRIPE_Publishable_key } from "../../../config";
+import { STRIPE_Publishable_key } from "../../../config.js";
 import { loadStripe } from "@stripe/stripe-js";
 
 const initialState = {
