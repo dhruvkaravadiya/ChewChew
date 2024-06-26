@@ -140,11 +140,11 @@ async function userLogin(req, res) {
         sameSite: "none",
         secure: true,
     });
-
     res.status(200).json({
         success: true,
         message: "Login Successful",
         data: otherProperties,
+        token: token,
     });
 }
 

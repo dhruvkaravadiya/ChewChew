@@ -8,7 +8,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
     DropdownMenuItem,
 } from "../ui/dropdown-menu";
@@ -19,20 +18,20 @@ export function DropDownMenu({ data, role, handleLogout, RestaurantExist }) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <div className="cursor-pointer flex flex-row gap-3 items-center justify-center">
+                <div className="cursor-pointer flex flex-row[] gap-0 md:gap-3 lg:gap-3 items-center justify-center">
                     <Avatar>
                         <AvatarImage src={data?.photo?.photoUrl} />
                         <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     <DropdownMenuLabel>
                         {" "}
-                        <span className="text-medium text-md">
+                        <span className="text-medium text-md hidden md:flex lg:flex">
                             {data?.name}
                         </span>
                     </DropdownMenuLabel>
                 </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-auto">
+            <DropdownMenuContent className="w-auto mr-2">
                 <DropdownMenuItem asChild>
                     <Link
                         to="/profile"

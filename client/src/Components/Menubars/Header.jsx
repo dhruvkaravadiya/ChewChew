@@ -6,16 +6,6 @@ import CartButton from "./Cart.jsx";
 import Drawer from "./Drawer.jsx";
 import { DropDownMenu } from "./DropDownMenu.jsx";
 
-// export const BrandLogo = ({ role }) => {
-//     return (
-//         <Link to="/">
-//             <h1 className="bg-white rounded-full font-bold text-black p-2">
-//                 {role}
-//             </h1>
-//         </Link>
-//     );
-// };
-
 const Header = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -34,7 +24,7 @@ const Header = () => {
     return (
         <div
             className="flex items-center justify-between
-          px-4 py-2 bg-white shadow-md"
+          py-2 lg:px-4 md:py-3 bg-white shadow-md"
         >
             <div className="flex items-center gap-3">
                 {/* Side Bar */}

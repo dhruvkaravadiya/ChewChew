@@ -4,7 +4,7 @@ const CartButton = ({ cartItems }) => {
     return (
         <Link
             to="/cart"
-            className="relative flex items-center justify-center p-1 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors duration-200"
+            className="relative flex items-center justify-center p-1  text-white rounded-full hover:bg-gray-300 transition-colors duration-200"
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"

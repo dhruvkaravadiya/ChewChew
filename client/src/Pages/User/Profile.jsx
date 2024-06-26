@@ -112,8 +112,8 @@ const Profile = () => {
 
     return (
         <AppLayout>
-            <div className="min-h-min pt-12 font-custom m-2">
-                <div className="bg-gray-50 p-6 max-w-md mx-auto rounded-lg overflow-hidden shadow-md">
+            <div className="pt-12 font-custom m-2">
+                <div className="bg-gray-50 border border-1 border-gray-200 p-6 max-w-md mx-auto rounded-lg overflow-hidden shadow-md">
                     <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
                         User Profile
                     </h2>
@@ -183,13 +183,13 @@ const Profile = () => {
                             </div>
 
                             <div className="flex justify-between items-center w-full max-w-sm mt-2">
-                                <Button
+                                <button
                                     type="submit"
                                     disabled={
                                         !changeInfo.nameChange &&
                                         !changeInfo.photoChange
                                     }
-                                    className={`p-4 rounded-lg ${
+                                    className={`p-2 px-3 rounded-lg ${
                                         changeInfo.nameChange ||
                                         changeInfo.photoChange
                                             ? "bg-custom-green text-white cursor-pointer"
@@ -197,15 +197,15 @@ const Profile = () => {
                                     }`}
                                 >
                                     Save Changes
-                                </Button>
+                                </button>
 
-                                <Button
+                                <button
                                     type="button"
                                     onClick={handleCancel}
-                                    className="rounded-lg bg-red-500 text-white p-4 cursor-pointer"
+                                    className="rounded-lg bg-red-500 text-white p-2 px-3 cursor-pointer"
                                 >
                                     Cancel
-                                </Button>
+                                </button>
                             </div>
                         </form>
 
