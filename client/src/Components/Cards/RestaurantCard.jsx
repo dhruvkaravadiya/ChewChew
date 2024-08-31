@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 const RestaurantCard = ({ resdata }) => {
   const navigate = useNavigate();
-
   return (
     <div
       onClick={(e) => navigate("/restaurant/details", { state: { resdata } })}
@@ -24,7 +23,7 @@ const RestaurantCard = ({ resdata }) => {
             {/* <div className="badge badge-success">OPEN</div> */}
           </h2>
           <div className="bg-green-500 w-10 h-6 rounded-full flex items-center justify-evenly p-1">
-            <p className="text-sm">4.4</p>
+            <p className="text-sm">{resdata?.avgRating}</p>
             <MdOutlineStar />
           </div>
         </div>
