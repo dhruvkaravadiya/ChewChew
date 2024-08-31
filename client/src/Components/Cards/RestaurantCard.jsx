@@ -1,4 +1,3 @@
-import React from "react";
 import { MdOutlineStar } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 
@@ -6,7 +5,7 @@ const RestaurantCard = ({ resdata }) => {
   const navigate = useNavigate();
   return (
     <div
-      onClick={(e) => navigate("/restaurant/details", { state: { resdata } })}
+      onClick={() => navigate("/restaurant/details", { state: { resdata } })}
       className="card w-96 bg-base-100 hover:shadow-lg hover:scale-[1.01] cursor-pointer"
     >
       <figure>
