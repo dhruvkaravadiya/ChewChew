@@ -3,6 +3,7 @@
     A modern real-time food-ordering-application built with Node.js, Express, MongoDB, and React.js
 </p>
 
+New Announcements at bottom !!
 
 # 📑 Overview
 
@@ -78,5 +79,14 @@ The Food Ordering App allows users to browse and order food from various restaur
 ## Database
 
 -   **MongoDB Atlas** for cloud-hosted MongoDB database.
+
+<br>
+
+## Announcements
+
+-   Website FrontEnd is currently being re-designed and all components are being optimized.
+-   This includes adding a complete new library popularly known as ShadCN, and giving the website a modern look and optimizing other features also.
+-   The new update is not merged with the main branch, the branch for the new look updates is pushed to 'update-ui' branch.
+-   Stay Tuned for updates! completely from the old design 
 
 <br>
