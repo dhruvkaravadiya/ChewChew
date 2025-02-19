@@ -6,37 +6,23 @@ const RestaurantCard = ({ resdata }) => {
   return (
     <div
       onClick={() => navigate("/restaurant/details", { state: { resdata } })}
-      className="card w-96 bg-base-100 hover:shadow-lg hover:scale-[1.01] cursor-pointer"
+      className="w-full max-w-sm bg-white rounded-lg shadow-md overflow-hidden transition-transform transform hover:scale-105 cursor-pointer"
     >
-      <figure>
-        <img
-          className="w-96 h-60 "
-          src={resdata?.photo?.photoUrl}
-          alt="resPhoto"
-        />
-      </figure>
-      <div className="card-body flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="card-title">
-            {resdata?.restaurantName}
-            {/* <div className="badge badge-success">OPEN</div> */}
-          </h2>
-          <div className="bg-green-500 w-10 h-6 rounded-full flex items-center justify-evenly p-1">
-            <p className="text-sm">{resdata?.avgRating}</p>
+      <img className="w-full h-48 object-cover" src={resdata?.photo?.photoUrl} alt="Restaurant" />
+      <div className="p-4">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-lg font-semibold">{resdata?.restaurantName}</h3>
+          <div className="flex items-center bg-green-500 text-white px-2 py-1 rounded-md">
+            <p className="text-sm font-bold mr-1">{resdata?.avgRating}</p>
             <MdOutlineStar />
           </div>
         </div>
-        <div className="card-actions flex gap-0 justify-start">
-          {resdata?.cuisines?.map((cuisine) => {
-            return (
-              <span
-                key={cuisine}
-                className="mb-2 mr-2 inline-block rounded-full bg-gray-100 px-3 py-1 text-[10px] font-semibold text-gray-900"
-              >
-                {cuisine}
-              </span>
-            );
-          })}
+        <div className="flex flex-wrap gap-2">
+          {resdata?.cuisines?.map((cuisine) => (
+            <span key={cuisine} className="text-xs bg-gray-200 px-2 py-1 rounded-md">
+              {cuisine}
+            </span>
+          ))}
         </div>
       </div>
     </div>

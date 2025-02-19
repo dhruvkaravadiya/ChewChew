@@ -1,338 +1,254 @@
-import React, { useEffect, useState } from "react";
-import AppLayout from "../../Layout/AppLayout";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { FaPhoneAlt } from "react-icons/fa";
-import AddFoodItem from "../../Components/Restaurant/AddFoodItem";
-import {
-  deleteMenuItem,
-  fetchMenuItems,
-} from "../../Redux/Slices/restaurantSlice";
-import MenuItemCard from "../../Components/Cards/MenuItemCard";
-import { MdMail, MdOutlineStar } from "react-icons/md";
-import NoItemImage from "../../Assets/NoMenuItemFound.png";
+"use client"
 
+import { useEffect, useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
+import { Phone, Mail, Star, Search, Clock, MapPin } from "lucide-react"
+import { fetchMenuItems, deleteMenuItem } from "../../Redux/Slices/restaurantSlice"
+import AddFoodItem from "../../Components/Restaurant/AddFoodItem"
+import MenuItemCard from "../../Components/Cards/MenuItemCard"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { Avatar } from "@/components/ui/avatar"
+import AppLayout from "@/Layout/AppLayout"
+import SearchBar from "@/Components/shared/SearchBar";
+import SortSelect from "@/Components/shared/SortSelect"
+const sortOptions = [
+  { value: "default", label: "Default" },
+  { value: "priceLowToHigh", label: "Price: Low to High" },
+  { value: "priceHighToLow", label: "Price: High to Low" },
+]
 const RestaurantDetails = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { resdata } = location.state
 
-  const location = useLocation();
-  const { resdata } = location.state;
+  const { role, data } = useSelector((state) => state?.auth)
+  const { menuItems } = useSelector((state) => state?.restaurant)
 
-  const { role, data } = useSelector((state) => state?.auth);
-  const { menuItems } = useSelector((state) => state?.restaurant);
+  const [searchText, setSearchText] = useState("")
+  const [searchResults, setSearchResults] = useState([])
+  const [isVeg, setIsVeg] = useState(false)
+  const [sortBy, setSortBy] = useState("default")
 
-  const [searchText, setSearchText] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isVeg, setIsVeg] = useState(false);
-  const [sortBy, setSortBy] = useState("default");
-
-  const [editMode, setEditMode] = useState(false);
-  const [dataToEdit, setDataToEdit] = useState(null);
+  const [editMode, setEditMode] = useState(false)
+  const [dataToEdit, setDataToEdit] = useState(null)
 
   useEffect(() => {
-    console.log(resdata);
     if (!resdata) {
-      navigate("/");
+      navigate("/")
     } else {
-      fetchData();
+      dispatch(fetchMenuItems(resdata?._id))
     }
-  }, []);
+  }, [resdata, navigate, dispatch])
 
   useEffect(() => {
-    setSearchResults(menuItems);
-  }, [menuItems]);
+    setSearchResults(menuItems)
+  }, [menuItems])
 
   useEffect(() => {
-    handleSearchSortFilter();
-  }, [searchText, sortBy, isVeg]);
-
-  async function fetchData() {
-    try {
-      if (!resdata) {
-        navigate("/");
-      } else {
-        await dispatch(fetchMenuItems(resdata?._id));
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  }
+    handleSearchSortFilter()
+  }, [menuItems, searchText, sortBy, isVeg]) //Corrected dependency array
 
   function handleSearchSortFilter() {
-    let filteredMenuItems = menuItems.filter((item) => {
-      const matchesSearchText = item.name
-        .toLowerCase()
-        .includes(searchText.toLowerCase());
-      const isVegMatch = isVeg ? item.type === "Veg" : true;
-      return matchesSearchText && isVegMatch;
-    });
+    const filteredMenuItems = menuItems.filter((item) => {
+      const matchesSearchText = item.name.toLowerCase().includes(searchText.toLowerCase())
+      const isVegMatch = isVeg ? item.type === "Veg" : true
+      return matchesSearchText && isVegMatch
+    })
 
     if (sortBy === "priceHighToLow") {
-      filteredMenuItems.sort((a, b) => b.price - a.price);
+      filteredMenuItems.sort((a, b) => b.price - a.price)
     } else if (sortBy === "priceLowToHigh") {
-      filteredMenuItems.sort((a, b) => a.price - b.price);
+      filteredMenuItems.sort((a, b) => a.price - b.price)
     }
 
-    setSearchResults(filteredMenuItems);
+    setSearchResults(filteredMenuItems)
   }
 
-  function handleDeleteMenuItem(menuItemId) {
-    confirm = window.confirm("MenuItem Remove");
-    if (confirm) {
-      dispatch(deleteMenuItem(menuItemId));
+  const handleDeleteMenuItem = async (itemId) => {
+    try {
+      await dispatch(deleteMenuItem({ resId: resdata._id, itemId }))
+    } catch (error) {
+      console.error("Error deleting menu item:", error)
     }
-  }
-
-  function handleEditMenuItem(ItemToEdit) {
-    setEditMode(true);
-    setDataToEdit(ItemToEdit);
   }
 
   return (
     <AppLayout>
-      <div className="w-2/3 border border-x-gray-300 mx-auto h-auto font-custom lg:w-4/5 md:w-11/12 sm:w-full">
-        <div className="flex gap-16 w-full items-center justify-between py-4 px-10 mt-10">
-          <div className="flex gap-6">
-            <div>
+      <div className="container mx-auto px-4 py-8">
+        {/* Restaurant Details Section */}
+        <section className="mb-12">
+          <div className="grid md:grid-cols-2 gap-8 items-start">
+            <div className="relative aspect-video rounded-lg overflow-hidden">
               <img
-                src={resdata?.photo?.photoUrl}
-                className="w-60 h-36 rounded-md"
+                src={resdata?.photo?.photoUrl || "/placeholder.svg"}
+                alt={resdata?.restaurantName}
+                className="w-full h-full object-cover transition-transform hover:scale-105 duration-300"
               />
             </div>
-            <div className="flex flex-col items-start justify-between gap-2">
-              <div className="text-2xl font-extrabold">
-                {resdata?.restaurantName}
-              </div>
-              <div className="text-sm">{resdata?.quickDescription}</div>
-              <div className="text-xs">{resdata?.address}</div>
-              <div className="text-xs">
-                {resdata?.cuisines[0].split(",")?.map((cuisine) => {
-                  return (
-                    <span
-                      key={cuisine}
-                      className="mb-2 mr-2 inline-block rounded-full bg-gray-100 px-3 py-1 text-[10px] font-semibold text-gray-900"
-                    >
-                      {cuisine}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-8 items-center">
             <div>
+              <h1 className="text-3xl font-bold mb-2">{resdata?.restaurantName}</h1>
+              <p className="text-muted-foreground mb-4">{resdata?.quickDescription}</p>
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="w-4 h-4" />
+                <span>{resdata?.address}</span>
+              </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {resdata?.cuisines[0].split(",").map((cuisine) => (
+                  <Badge key={cuisine} className="outline-none shadow-none bg-gray-200 text-gray-800 rounded-full border-none">
+                    {cuisine.trim()}
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center">
+                  <Star className="w-5 h-5 text-yellow-600 fill-yellow-600" />
+                  <span className="ml-1 font-semibold">4.4</span>
+                </div>
+                <span className="text-muted-foreground">(1M+ ratings)</span>
+              </div>
+              <div className="flex items-center gap-4 mb-4">
+                <Clock className="w-4 h-4" />
+                <span>
+                  Open: {resdata?.openingHours} - {resdata?.closingHours}
+                </span>
+              </div>
+              <div className="flex flex-col gap-2 mb-4">
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  <span>{resdata?.phoneNumber}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  <span>{resdata?.email || "sc494802@gmail.com"}</span>
+                </div>
+              </div>
               {role === "Restaurant" && data?._id === resdata?.user_id && (
-                <button
-                  onClick={() =>
-                    navigate("/create/Restaurant", {
-                      state: { dataToEdit: resdata },
-                    })
-                  }
-                  className="btn btn-active btn-link"
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/create/Restaurant", { state: { dataToEdit: resdata } })}
                 >
                   Edit Restaurant Details
-                </button>
+                </Button>
               )}
             </div>
-            <div className="border border-gray-400 font-medium rounded-lg p-1 shadow-md">
-              <p>
-                OPEN <span>{resdata?.openingHours}</span> TO
-                <span>{resdata?.closingHours}</span>
-              </p>
-            </div>
-            <div className="flex flex-col p-2 border border-gray-400 w-auto gap-2 rounded-xl shadow-md">
-              <div className="text-green-400 flex items-center justify-center gap-1">
-                4.4 <MdOutlineStar />
-              </div>
-              <hr />
-              <div className="text-gray-500">1M+ Rating</div>
-            </div>
           </div>
-        </div>
-        {/* <hr /> */}
-        <div className="flex gap-32 w-full items-center justify-between py-3 px-12">
-          <div className="flex flex-col justify-between gap-3">
-            <p className="text-xl font-bold">About US</p>
-            <p className="text-sm text-gray-700">
-              {resdata?.detailedDescription}
-            </p>
-          </div>
-          <div className="flex flex-col items-start justify-between gap-2">
-            <p className="text-xl font-bold">Contact Info</p>
-            <p className="flex items-center justify-center gap-2">
-              <MdMail />
-              <p className="text-gray-700"> sc494802@gmail.com</p>
-            </p>
-            <p className="flex items-center justify-center gap-2 ">
-              <FaPhoneAlt />{" "}
-              <p className="text-gray-700"> {resdata?.phoneNumber}</p>
-            </p>
-          </div>
-        </div>
-        <hr className="mt-5 border-solid border-2 mx-10 border-grey-500" />
-        {role === "Restaurant" && data?._id === resdata?.user_id && (
-          <AddFoodItem
-            resId={resdata._id}
-            editMode={editMode}
-            dataToEdit={dataToEdit}
-            setEditMode={setEditMode}
-            setDataToEdit={setDataToEdit}
-          />
-        )}
-        <div className="flex gap-40 w-full items-center justify-center mt-5 py-5">
-          {/* Search and Sort */}
-          <div className="flex space-x-4 items-center">
-            {/* Search Input */}
-            <input
-              type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder="search by menu item name..."
-              className="input input-bordered input-md w-96 max-w-3xl "
-            />
-
-            {/* Sort Dropdown */}
-            <div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring focus:border-blue-500"
-              >
-                <option value="default">Sort By</option>
-                <option value="priceHighToLow">Price High To Low</option>
-                <option value="priceLowToHigh">Price Low To High</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Veg Only Toggle */}
+          <Separator className="my-8 custom-gray-100" />
           <div>
-            <label className="flex items-center relative w-max cursor-pointer select-none">
-              <span className="text-lg font-bold mr-3">Veg Only</span>
-              <input
-                type="checkbox"
-                className={`appearance-none transition-colors cursor-pointer w-14 h-7 rounded-full focus:outline-none  ${
-                  isVeg ? "bg-green-500 " : "bg-red-500"
-                }`}
-                checked={false}
-                onChange={() => setIsVeg((prevIsVeg) => !prevIsVeg)}
-              />
-              <span
-                className={`absolute font-medium text-xs uppercase right-1 text-white ${
-                  isVeg ? "hidden" : ""
-                }`}
-              >
-                {" "}
-                OFF{" "}
-              </span>
-              <span
-                className={`absolute font-medium text-xs uppercase right-8 text-white  ${
-                  isVeg ? "" : "hidden"
-                }`}
-              >
-                {" "}
-                ON{" "}
-              </span>
-              <span
-                className={`w-7 h-7 right-7 absolute rounded-full transform transition-transform bg-gray-200 ${
-                  isVeg ? "translate-x-7" : ""
-                }`}
-              />
-            </label>
+            <h2 className="text-2xl font-semibold mb-4">About Us</h2>
+            <p className="text-muted-foreground">{resdata?.detailedDescription}</p>
           </div>
-        </div>
+        </section>
 
-        {role != "Restaurant" ? (
-          <div className="flex flex-col justify-center items-center">
-            {searchResults.length == 0 ? (
-              <div className="flex items-center justify-center">
-                <img
-                  src={NoItemImage}
-                  alt="No Items Found"
-                  className="h-[400px] w-[500px]"
-                />
-              </div>
-            ) : (
-              searchResults?.map((item) => {
-                return <MenuItemCard key={item?._id} menuItem={item} />;
-              })
-            )}
+        {/* Menu Section */}
+        <section>
+          <h2 className="text-2xl font-semibold mb-6">Our Menu</h2>
+
+          {role === "Restaurant" && data?._id === resdata?.user_id && (
+            <AddFoodItem
+              resId={resdata._id}
+              editMode={editMode}
+              dataToEdit={dataToEdit}
+              setEditMode={setEditMode}
+              setDataToEdit={setDataToEdit}
+            />
+          )}
+
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+
+            <SearchBar searchText={searchText} setSearchText={setSearchText} placeholder="Search Menu items..." />
+            <SortSelect sortBy={sortBy} setSortBy={setSortBy} options={sortOptions} />
+            <div className="flex items-center gap-2">
+              <Switch id="veg-only" className="data-[state=checked]:bg-custom-gray-300 data-[state=checked]:text-custom-gray-300 bg-custom-gray-100 transition-colors text-custom-gray-100" checked={isVeg} onCheckedChange={setIsVeg} />
+              <label htmlFor="veg-only">Veg Only</label>
+            </div>
           </div>
-        ) : (
-          <div className="px-36">
-            <table className="table">
-              {/* head */}
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Price</th>
-                  <th>Veg / Non-Veg</th>
-                  <th>Oprations</th>
-                </tr>
-              </thead>
-              <tbody>
-                {searchResults.length == 0 ? (
-                  <tr>No Item Found</tr>
-                ) : (
-                  <>
-                    {searchResults.map((item) => {
-                      return (
+
+          {role !== "Restaurant" ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 md:grid-cols-3 gap-6">
+              {searchResults.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-xl font-semibold text-custom-gray-200">No menu items found</p>
+                </div>
+              ) : (
+                searchResults.map((item) => <MenuItemCard key={item?._id} menuItem={item} />)
+              )}
+            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Menu Items</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <table className="w-full">
+                  <thead>
+                    <tr>
+                      <th className="text-left p-2">Name</th>
+                      <th className="text-left p-2">Price</th>
+                      <th className="text-left p-2">Type</th>
+                      <th className="text-left p-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {searchResults.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="text-center py-4">
+                          No items found
+                        </td>
+                      </tr>
+                    ) : (
+                      searchResults.map((item) => (
                         <tr key={item._id}>
-                          <td>
-                            <div className="flex items-center gap-3">
-                              <div className="avatar">
-                                <div className="mask mask-squircle w-12 h-12">
-                                  <img
-                                    src={item?.foodImg?.url}
-                                    alt="Food Image"
-                                    className="rounded-md h-28 w-36"
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <div className="font-bold">{item.name}</div>
-                                <div className="text-sm opacity-50">
-                                  {item._id}
-                                </div>
-                              </div>
+                          <td className="p-2">
+                            <div className="flex items-center gap-2">
+                              <Avatar>
+                                <img
+                                  src={item?.foodImg?.url || "/placeholder.svg"}
+                                  alt={item.name}
+                                  className="w-12 h-12 object-cover rounded"
+                                />
+                              </Avatar>
+                              <span>{item.name}</span>
                             </div>
                           </td>
-                          <td>
-                            {item.price}
-                            <span className="badge badge-ghost badge-sm">
-                              RS
-                            </span>
-                          </td>
-                          <td className="flex gap-2">
-                            <span>{item.type}</span>
-                          </td>
-                          <td>
-                            <button
-                              onClick={() => handleEditMenuItem({ ...item })}
-                              className="btn btn-info btn-sm mx-3"
+                          <td className="p-2">₹{item.price}</td>
+                          <td className="p-2">{item.type}</td>
+                          <td className="p-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="mr-2"
+                              onClick={() => {
+                                setEditMode(true)
+                                setDataToEdit(item)
+                              }}
                             >
                               Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteMenuItem(item._id)}
-                              className="btn bg-red-300 btn-sm"
-                            >
+                            </Button>
+                            <Button variant="destructive" size="sm" onClick={() => handleDeleteMenuItem(item._id)}>
                               Delete
-                            </button>
+                            </Button>
                           </td>
                         </tr>
-                      );
-                    })}
-                  </>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </AppLayout>
-  );
-};
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+      </div >
+    </AppLayout >
+  )
+}
 
-export default RestaurantDetails;
+export default RestaurantDetails
+

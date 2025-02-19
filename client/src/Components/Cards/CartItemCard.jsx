@@ -1,43 +1,33 @@
-import React from "react";
 import { FaMinus, FaPlus, FaTrash } from "react-icons/fa";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import { removeItem, updateQuantity } from "../../Redux/Slices/cartSlice.js";
 import { useDispatch } from "react-redux";
+import { updateQuantity, removeItem } from "../../Redux/Slices/cartSlice.js";
 
 const CartItemCard = ({ cItem }) => {
   const dispatch = useDispatch();
 
   return (
-    <>
-      <div className=" flex items-center gap-10">
-        <img
-          src={cItem?.foodImg?.url}
-          alt="Food Image"
-          className="rounded-md w-28 h-20"
-        />
-        <div className="flex flex-col items-start justify-center gap-2">
-          <div
-            className={`w-5 h-5 flex items-center justify-center border-2 border-600`}
-          >
-            {cItem?.type === "Veg" ? (
-              <span className="w-3 h-3 bg-green-600 rounded-full"></span>
-            ) : (
-              <span className="w-3 h-3 bg-red-600  rounded-full"></span>
-            )}
-          </div>
-          <h1 className="text-base text-gray-800 font-semibold">
-            {cItem?.name}
-          </h1>
-          <h2 className="text-xs text-gray-600 flex items-center">
-            <FaIndianRupeeSign className="text-xs" /> {cItem?.price}
-          </h2>
-        </div>
+    <div className="flex items-center gap-6 p-4 border-b border-gray-200">
+      <img
+        src={cItem?.foodImg?.url}
+        alt="Food Image"
+        className="rounded-md w-20 h-20 object-cover"
+      />
+      <div className="flex flex-col items-start justify-center gap-2">
+        {/* <div className={`w-5 h-5 flex items-center justify-center border-2 ${cItem?.type === "Veg" ? "border-green-600" : "border-red-600"}`}>
+          <span className={`w-3 h-3 ${cItem?.type === "Veg" ? "bg-green-600" : "bg-red-600"} rounded-full`}></span>
+        </div> */}
+        <h1 className="text-base text-gray-800 font-semibold">{cItem?.name}</h1>
+        <h2 className="text-xs text-gray-600 flex items-center">
+          <FaIndianRupeeSign className="text-xs" /> {cItem?.price}&nbsp; each
+        </h2>
       </div>
-      <div className="mb-4 flex gap-5">
-        <div className="min-w-24 flex items-center justify-center">
+
+      <div className="flex flex-col items-center justify-between gap-1 lg:gap-2 ml-auto">
+        <div className="flex items-center justify-center">
           <button
             type="button"
-            className="h-7 w-7"
+            className="rounded-full text-gray-600"
             onClick={() =>
               dispatch(
                 updateQuantity({
@@ -47,14 +37,14 @@ const CartItemCard = ({ cItem }) => {
               )
             }
           >
-            <FaMinus />
+            <FaMinus className="h-3 w-3" />
           </button>
           <p className="h-9 w-9 rounded-md flex items-center justify-center">
             {cItem.quantity}
           </p>
           <button
             type="button"
-            className="flex h-7 w-7 items-center justify-center"
+            className="rounded-full  text-gray-600"
             onClick={() =>
               dispatch(
                 updateQuantity({
@@ -64,21 +54,20 @@ const CartItemCard = ({ cItem }) => {
               )
             }
           >
-            <FaPlus />
+            <FaPlus className="h-3 w-3" />
           </button>
         </div>
-        <div className="ml-6 flex text-sm">
-          <button
-            onClick={() => dispatch(removeItem(cItem?._id))}
-            type="button"
-            className="flex items-center space-x-1 px-2 py-1 pl-0"
-          >
-            <FaTrash size={12} className="text-red-500" />
-            <span className="text-xs font-medium text-red-500">Remove</span>
-          </button>
-        </div>
+
+        <button
+          onClick={() => dispatch(removeItem(cItem?._id))}
+          type="button"
+          className="flex items-center space-x-1 text-red-500 hover:text-red-800"
+        >
+          <FaTrash size={16} />
+          <span className="text-xs font-medium">Remove</span>
+        </button>
       </div>
-    </>
+    </div>
   );
 };
 

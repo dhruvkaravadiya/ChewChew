@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { Card, CardHeader, CardFooter, CardTitle } from "../ui/card";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+
 const CartDetails = () => {
     const { cartItems } = useSelector((state) => state?.cart);
     const { totalBill } = useSelector((state) => state.cart);
@@ -31,7 +32,7 @@ const CartDetails = () => {
     }
 
     return (
-        <Card className="border-none shadow-xl w-full max-w-md mx-auto lg:max-w-lg rounded-md lg:col-span-4 lg:mt-0 lg:p-0">
+        <Card className="border-none bg-white shadow-md w-full max-w-md mx-auto lg:max-w-lg rounded-md lg:col-span-4 lg:mt-0 lg:p-0">
             <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                     <span>Price Details</span>
@@ -61,7 +62,7 @@ const CartDetails = () => {
                             Discount
                         </dt>
                         <dd className="text-sm font-medium text-green-700">
-                        &#8377; 0
+                            &#8377; 0
                         </dd>
                     </div>
                     <div className="flex items-center justify-between">
@@ -69,7 +70,7 @@ const CartDetails = () => {
                             Delivery Charges
                         </dt>
                         <dd className="text-sm font-medium text-green-700">
-                        ₹<s> 40</s>&nbsp;&nbsp;&nbsp; Free
+                            ₹<s> 40</s>&nbsp;&nbsp; Free
                         </dd>
                     </div>
                     <div className="flex items-center justify-between border-y border-dashed py-4">
@@ -85,36 +86,34 @@ const CartDetails = () => {
             <CardFooter>
                 <div className="flex flex-col w-full">
                     <div>
-                {isLoggedIn && role === "Customer" ? (
+                        {isLoggedIn && role === "Customer" ? (
+                            <Button
+                                onClick={makePayment}
+                                className="py-2 mt-7 w-full bg-green-500 text-white rounded-md font-medium"
+                            >
+                                Order Now
+                            </Button>
+                        ) : (
+                            <Button
+                                onClick={() =>
+                                    toast.error(
+                                        "Please log in as a customer to place an order."
+                                    )
+                                }
+                                className="py-2 mt-7 w-full bg-green-500 text-white rounded-md font-medium"
+                            >
+                                Order Now
+                            </Button>
+                        )}
+                    </div>
                     <Button
-                        onClick={makePayment}
-                        className="py-2 mt-7 w-full bg-green-500 text-white rounded-md font-medium"
+                        type="button"
+                        onClick={() => navigate("/")}
+                        className="w-full mt-4 rounded-lg text-sm font-medium hover:underline text-custom-red-2 p-0 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                        ORDER NOW
+                        Continue Shopping
                     </Button>
-                ) : (
-                    <Button
-                        onClick={() =>
-                            toast.error(
-                                "Please log in as a customer to place an order."
-                            )
-                        }
-                        className="py-2 w-full bg-green-500 text-white rounded-md font-medium"
-                    >
-                        ORDER NOW
-                    </Button>
-                )}
-                
-</div>
-                   <Button
-                            type="button"
-                            onClick={() => navigate("/")}
-                            className="w-full mt-4 rounded-lg text-sm font-medium hover:underline text-custom-red-2 p-0 flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                            Continue Shopping
-                        </Button>
-             </div>
-                        
+                </div>
             </CardFooter>
         </Card>
     );

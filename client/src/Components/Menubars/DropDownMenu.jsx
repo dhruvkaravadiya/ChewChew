@@ -1,6 +1,3 @@
-/* eslint-disable react/prop-types */
-"use client";
-
 import * as React from "react";
 import { Link } from "react-router-dom";
 
@@ -31,37 +28,38 @@ export function DropDownMenu({ data, role, handleLogout, RestaurantExist }) {
                     </DropdownMenuLabel>
                 </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-auto mr-2">
+            <DropdownMenuContent className="w-auto mr-2 border-custom-gray-200">
                 <DropdownMenuItem asChild>
                     <Link
                         to="/profile"
-                        className="justify-between cursor-pointer hover:bg-custom-light-gray px-4 py-2 w-full text-left"
+                        className="justify-between cursor-pointer bg-white hover:bg-custom-gray-100 px-4 py-2 w-full text-left"
                     >
                         Profile
                     </Link>
                 </DropdownMenuItem>
                 {role === "Restaurant" && !RestaurantExist(data?._id) && (
-                    <DropdownMenuItem asChild>
+                    <DropdownMenuItem asChild className="w-full">
                         <Link
                             to="/create/Restaurant"
-                            className="justify-between cursor-pointer hover:bg-custom-light-gray px-4 py-2 w-full text-left"
+                            className="justify-between cursor-pointer  px-4 py-2 w-full text-left"
                         >
                             Add Restaurant
                         </Link>
                     </DropdownMenuItem>
                 )}
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="w-full">
                     <Link
                         to="/myorder"
-                        className="justify-between cursor-pointer hover:bg-custom-light-gray px-4 py-2 w-full text-left"
+                        className="justify-between cursor-pointer px-4 py-2 w-full text-left"
                     >
                         My Order
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="w-full">
                     <Button
                         onClick={handleLogout}
-                        className="justify-between cursor-pointer hover:bg-custom-light-gray px-4 py-2 w-full text-left"
+                        variant="link"
+                        className="justify-between text-custom-red-2 cursor-pointer px-4 py-2 w-full text-left"
                     >
                         Logout
                     </Button>
