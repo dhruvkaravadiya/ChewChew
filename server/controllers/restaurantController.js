@@ -322,6 +322,14 @@ const fetchmenuItems = async (req, res) => {
     });
 };
 
+const getRestaurantByUserId = async (userId) => {
+    const restaurant = await Restaurant.findOne({ user_id: userId });
+    if (!restaurant) {
+        return res.status(404).json({ message: "Restaurant not found" });
+    }
+    res.status(200).json({ success: true, data: restaurant, message: "Restaurant found" });
+}
+
 module.exports = {
     createRestaurant,
     getAllRestaurants,
@@ -332,4 +340,5 @@ module.exports = {
     updateMenuItem,
     deleteMenuItem,
     fetchmenuItems,
+    getRestaurantByUserId
 };

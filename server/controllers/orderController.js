@@ -57,7 +57,6 @@ async function createOrder(req, res) {
             message: "Payment session created successfully",
         });
     } catch (error) {
-        console.error("Error creating payment session:", error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -490,7 +489,6 @@ const getOrderDistance = async (req, res) => {
         customerLocation.latitude,
         customerLocation.longitude
     );
-    console.log(kms);
     return res.status(200).json({ success: true, data: kms });
 };
 
@@ -589,7 +587,6 @@ async function handleSuccessfulPayment(req, res) {
             });
         }
     } catch (error) {
-        console.error("Error handling successful payment:", error.message);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -612,7 +609,6 @@ async function getPreparedOrderByDeliverymanId(req, res) {
             const restaurantId = restaurantObj.id;
             const restaurant = await Restaurant.findById(restaurantId);
             if (!restaurant) {
-                console.log(`Restaurant with ID ${restaurantId} not found`);
                 continue;
             }
 
@@ -631,7 +627,6 @@ async function getPreparedOrderByDeliverymanId(req, res) {
             data: prepredOrders,
         });
     } catch (error) {
-        console.error("Error:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 }

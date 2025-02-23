@@ -40,7 +40,7 @@ module.exports = isLoggedIn = async (req, res, next) => {
         req.user = await User.findById(decoded.id);
         next();
     } catch (error) {
-        console.error("Error in isLoggedIn middleware:", error);
+
         return res
             .status(500)
             .json({ success: false, error: "Internal server error" });

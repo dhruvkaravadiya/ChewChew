@@ -103,7 +103,6 @@ async function userSignUp(req, res) {
                 .json({ success: false, error: "Photo is required" });
         }
     } catch (error) {
-        console.error("Error during User SignUp:", error);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -112,8 +111,7 @@ async function userLogin(req, res) {
     const user = await User.findOne({ email: req.body.email }).select(
         "+password"
     );
-    // console.log(req.body.email);
-    // console.log(user);
+
     if (!user) {
         return res
             .status(404)
@@ -129,7 +127,7 @@ async function userLogin(req, res) {
         expiresIn: JWT_EXPIRY,
     });
     const { password, ...otherProperties } = user._doc;
-    console.log("Login successful");
+
 
     // Emit event when user logs in
     io.emit("userLoggedIn", "User Logged In");
@@ -260,7 +258,7 @@ async function updateLoggedInUserPassword(req, res) {
 
         await cookieToken(user, res, "Password Update Successfully");
     } catch (error) {
-        console.error(error);
+
         return res
             .status(500)
             .json({ success: false, error: "Internal Server Error" });
@@ -331,7 +329,7 @@ async function updateUser(req, res) {
             data: updatedUser,
         });
     } catch (error) {
-        console.error("Error during User Update:", error);
+
         return res
             .status(500)
             .json({ success: false, error: "Internal Server Error" });
@@ -344,7 +342,7 @@ async function changeRole(req, res) {
     if (!roles.includes(newRole)) {
         return res.status(400).json({ success: false, error: "Invalid role" });
     }
-    console.log(req.user);
+
     const userId = req.user.id;
     const user = await User.findByIdAndUpdate(
         userId,

@@ -50,7 +50,6 @@ const createDeliveryManAndAddToRestaurants = async (req, res) => {
         const fullObjectRestaurants = await Restaurant.find({
             _id: { $in: restaurantIds },
         });
-        console.log(restaurantIds);
         // Add the delivery man to each restaurant's deliveryMen list
         fullObjectRestaurants.forEach(async (restaurant) => {
             restaurant.deliveryMen.push({
@@ -66,7 +65,6 @@ const createDeliveryManAndAddToRestaurants = async (req, res) => {
             data: deliveryMan,
         });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ success: false, error: "Server Error" });
     }
 };
@@ -138,7 +136,7 @@ const updateLocation = async (req, res) => {
         .json({ success: true, message: "Delivery updated successfully" });
 };
 
-const getDistance = async (req, res) => {};
+const getDistance = async (req, res) => { };
 
 module.exports = {
     createDeliveryManAndAddToRestaurants,
