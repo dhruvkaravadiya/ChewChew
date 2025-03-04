@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./Pages/HomePage";
 import NotFoundPage from "./Pages/NotFoundPage";
@@ -17,9 +17,10 @@ import AboutUs from "./Pages/AboutUs";
 import PaymentSuccess from "./Pages/Payment/PaymentSuccess";
 import PaymentFail from "./Pages/Payment/PaymentFail";
 import MyOrder from "./Pages/User/MyOrder";
-
 import { io } from "socket.io-client";
 import SelectRestarant from "./Pages/Restaurant/SelectRestarant";
+import RestaurantDeliveryMan from "./Pages/Restaurant/RestaurantDeliveryMan";
+import OrderTrackingPage from "./Components/Order/OrderDetailsCard";
 export const socket = io("http://localhost:8080/");
 
 const App = () => {
@@ -66,7 +67,10 @@ const App = () => {
         </Route>
 
         <Route element={<RequireAuth allowedRoles={["Restaurant"]} />}>
+          {/* <Route path="/" element={<RestaurantHomePage />} /> */}
           <Route path="/create/Restaurant" element={<CreateRestaurant />} />
+          <Route path="/restaurant/deliverymen" element={<RestaurantDeliveryMan />} />
+          <Route path="/order-details/:id" element={<OrderTrackingPage />} />
         </Route>
 
         {/* <Route element={<RequireAuth allowedRoles={[""]} />}> */}
