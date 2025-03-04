@@ -322,7 +322,9 @@ const fetchmenuItems = async (req, res) => {
     });
 };
 
-const getRestaurantByUserId = async (userId) => {
+const getRestaurantByUserId = async (req, res) => {
+    const userId = req.params.id;
+    console.log("User Id : " + userId);
     const restaurant = await Restaurant.findOne({ user_id: userId });
     if (!restaurant) {
         return res.status(404).json({ message: "Restaurant not found" });

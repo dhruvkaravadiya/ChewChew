@@ -3,9 +3,10 @@ import axiosInstance from "../../Helpers/axiosInstance";
 import toast from "react-hot-toast";
 
 const initialState = {
-  restaurantData: [],
+  restaurantData: null,
   filteredRestaurant: [],
   menuItems: [],
+  restaurants: []
 };
 
 export const getAllRestaurants = createAsyncThunk(
@@ -21,6 +22,21 @@ export const getAllRestaurants = createAsyncThunk(
     }
   }
 );
+
+export const getRestaurantByResId = createAsyncThunk(
+  "/restaurant/:id",
+  async (resId) => {
+    const loadingMessage = toast.loading("fetching restaurant! ...");
+    try {
+      const res = await axiosInstance.get(`/restaurants/find/${resId}`);
+      toast.success("restaurant", { id: loadingMessage });
+      return res?.data;
+    } catch (error) {
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
+    }
+  }
+);
+
 
 export const createRestaurant = createAsyncThunk(
   "/create/restaurant",
@@ -129,11 +145,12 @@ export const updateMenuItem = createAsyncThunk(
 
 export const deleteMenuItem = createAsyncThunk(
   "/delete/menuItem",
-  async (foodId) => {
+  async (data) => {
     const loadingMessage = toast.loading("Wait deleting MenuItem...!");
     try {
+      console.log(data);
       const res = await axiosInstance.delete(
-        `/restaurants/menu/delete/${foodId}`
+        `/restaurants/menu/delete/${data.itemId}`
       );
       toast.success(res?.data?.message, { id: loadingMessage });
       return res?.data;
@@ -143,6 +160,20 @@ export const deleteMenuItem = createAsyncThunk(
   }
 );
 
+
+export const getRestaurantByUserId = createAsyncThunk(
+  "/restaurant/find/user/:id",
+  async (userId) => {
+    const loadingMessage = toast.loading("fetching restaurant! ...");
+    try {
+      const res = await axiosInstance.get(`/restaurants/find/user/${userId}`);
+      toast.success("restaurant", { id: loadingMessage });
+      return res?.data;
+    } catch (error) {
+      toast.error(error?.response?.data?.error, { id: loadingMessage });
+    }
+  }
+);
 const restaurantSlice = createSlice({
   name: "restaurant",
   initialState,
@@ -162,7 +193,7 @@ const restaurantSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getAllRestaurants.fulfilled, (state, action) => {
-        state.restaurantData = action?.payload?.data;
+        state.restaurants = action?.payload?.data;
       })
       .addCase(fetchMenuItems.fulfilled, (state, action) => {
         state.menuItems = action?.payload?.data;
@@ -171,6 +202,16 @@ const restaurantSlice = createSlice({
         console.log("payload in add menu", action?.payload);
         state.menuItems = [...state.menuItems, action?.payload?.newItem];
       });
+    builder
+      .addCase(deleteMenuItem.fulfilled, (state, action) => {
+        state.menuItems = state.menuItems.filter(item => item._id !== action.meta.arg.itemId);
+      });
+    builder
+      .addCase(getRestaurantByUserId.fulfilled, (state, action) => {
+        state.restaurantData = action?.payload?.data;
+      })
+
+
   },
 });
 

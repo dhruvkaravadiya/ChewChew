@@ -53,7 +53,7 @@ const createDeliveryManAndAddToRestaurants = async (req, res) => {
         // Add the delivery man to each restaurant's deliveryMen list
         fullObjectRestaurants.forEach(async (restaurant) => {
             restaurant.deliveryMen.push({
-                id: deliveryMan._id,
+                deliveryman_id: deliveryMan._id,
                 user_id: deliveryMan.user_id,
                 name: deliveryMan.name,
             });

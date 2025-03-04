@@ -88,4 +88,10 @@ router.get(
     asyncErrorHandler(orderController.getPreparedOrderByDeliverymanId)
 );
 
+// get order by order id 
+router.get(
+    "/:id",
+    asyncErrorHandler(orderController.getOrderById)
+);
+
 module.exports = router;

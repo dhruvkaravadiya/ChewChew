@@ -73,4 +73,10 @@ router.get(
     asyncErrorHandler(restaurantController.fetchmenuItems)
 );
 
+// find restaurant by user_id
+router.get(
+    "/find/user/:id",
+    asyncErrorHandler(restaurantController.getRestaurantByUserId)
+);
+
 module.exports = router;

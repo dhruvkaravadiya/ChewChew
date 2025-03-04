@@ -492,6 +492,26 @@ const getOrderDistance = async (req, res) => {
     return res.status(200).json({ success: true, data: kms });
 };
 
+// get order by order id
+const getOrderById = async (req, res) => {
+    const orderId = req.params.id;
+    try {
+        const order = await Order.findById
+            (orderId);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Order fetched successfully",
+            data: order,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
 // Handle successful payment and create database order
 async function handleSuccessfulPayment(req, res) {
     try {

@@ -113,7 +113,8 @@ const restaurantSchema = mongoose.Schema(
         },
         deliveryMen: [
             {
-                id: {
+                _id: false,
+                deliveryman_id: {
                     type: mongoose.SchemaTypes.ObjectId,
                     ref: "DeliveryMan",
                 },
