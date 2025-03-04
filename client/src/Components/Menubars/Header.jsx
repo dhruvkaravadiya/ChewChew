@@ -12,19 +12,19 @@ const Header = () => {
     const { isLoggedIn, role, data } = useSelector((state) => state.auth);
     const { restaurantData } = useSelector((state) => state.restaurant);
     const { cartItems } = useSelector((state) => state.cart);
-
+    //console.log("res in state header  : ", restaurantData);
     async function handleLogout() {
         await dispatch(logout());
     }
 
-    function RestaurantExist(userId) {
-        return restaurantData?.some((res) => res?.user_id === userId);
+    function RestaurantExist() {
+        return restaurantData == null;
     }
 
     return (
         <div
             className="flex items-center justify-between
-          py-2 lg:px-4 md:py-3 bg-white shadow-md"
+          py-2 lg:px-4 md:py-3 bg-white shadow-md fixed w-full"
         >
             <div className="flex items-center gap-3">
                 {/* Side Bar */}

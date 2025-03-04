@@ -19,11 +19,10 @@ export default function MenuBarTab({ itemname, link, icon }) {
                 onClick={() => {
                     navigate(`${link}`);
                 }}
-                className={`flex items-center text-md justify-start gap-4 rounded-lg font-medium ${
-                    isActiveTab
-                        ? "bg-custom-red-2 text-white"
-                        : "bg-white text-black"
-                }`}
+                variant={`${isActiveTab ? "destructive" : "white"}`}
+                className={`flex border-none items-center text-md justify-start text-white gap-4 rounded-lg font-medium 
+                    ${isActiveTab ? "text-white" : "text-gray-800"}
+                `}
             >
                 {clonedIcon} {itemname}
             </Button>
