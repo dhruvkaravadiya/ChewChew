@@ -5,6 +5,7 @@
 <p align="center">
   <a href="#announcements" style="display: inline-block; padding: 12px 24px; font-size: 16px; font-weight: bold; color: white; background-color: #ff4500; border-radius: 8px; text-decoration: none; animation: pulse 1.5s infinite;">🔔 Go to Announcements 🔔</a>
 </p>
+
 ---
 
 ## 📑 Overview
