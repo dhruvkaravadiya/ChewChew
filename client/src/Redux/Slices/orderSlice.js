@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosInstance from "../../Helpers/axiosInstance";
 import toast from "react-hot-toast";
-import { STRIPE_Publishable_key } from "../../../config";
 import { loadStripe } from "@stripe/stripe-js";
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
 const initialState = {
   currentOrders: [],
@@ -16,7 +16,7 @@ export const placeorder = createAsyncThunk(
   async ([resId, cartItems]) => {
     const loadingMessage = toast.loading("Please wait! Placing your order...");
     try {
-      const stripe = await loadStripe(STRIPE_Publishable_key);
+      const stripe = await loadStripe(stripeKey);
 
       const session = await axiosInstance.post(`/order/placeorder/${resId}`, {
         items: cartItems,
