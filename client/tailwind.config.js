@@ -3,10 +3,11 @@
 module.exports = {
 	darkMode: ["class"],
 	content: [
-		"./pages/**/*.{js,jsx}",
-		"./components/**/*.{js,jsx}",
-		"./app/**/*.{js,jsx}",
-		"./src/**/*.{js,jsx}",
+		"./pages/**/*.{js,jsx,ts,tsx}",
+		"./components/**/*.{js,jsx,ts,tsx}",
+		"./app/**/*.{js,jsx,ts,tsx}",
+		"./src/**/*.{js,jsx,ts,tsx}",
+		"*.{js,ts,jsx,tsx,mdx}"
 	],
 	prefix: "",
 	theme: {
@@ -32,6 +33,7 @@ module.exports = {
 			'custom-gray-200': "#9e9e9e",
 			// gray - 700: #616161
 			'custom-gray-300': "#616161",
+			'red-50': '#FFEBEE',
 			'red-100': '#FFEBEE',
 			'red-200': '#FFCDD2',
 			'red-300': '#EF9A9A',
@@ -50,6 +52,7 @@ module.exports = {
 			'yellow-700': '#FBC02D',
 			'yellow-800': '#F9A825',
 			'yellow-900': '#F57F17',
+			'gray-50': '#FAFAFA',
 			'gray-100': '#F5F5F5',
 			'gray-200': '#EEEEEE',
 			'gray-300': '#E0E0E0',
@@ -95,7 +98,29 @@ module.exports = {
 			'orange-700': '#F57C00',
 			'orange-800': '#EF6C00',
 			'orange-900': '#E65100',
+			border: "hsl(var(--border))",
+			input: "hsl(var(--input))",
+			ring: "hsl(var(--ring))",
+			background: "hsl(var(--background))",
+			foreground: "hsl(var(--foreground))",
 
+
+			muted: {
+				DEFAULT: "hsl(var(--muted))",
+				foreground: "hsl(var(--muted-foreground))",
+			},
+			accent: {
+				DEFAULT: "hsl(var(--accent))",
+				foreground: "hsl(var(--accent-foreground))",
+			},
+			popover: {
+				DEFAULT: "hsl(var(--popover))",
+				foreground: "hsl(var(--popover-foreground))",
+			},
+			card: {
+				DEFAULT: "hsl(var(--card))",
+				foreground: "hsl(var(--card-foreground))",
+			},
 		},
 		extend: {
 			keyframes: {
@@ -125,7 +150,6 @@ module.exports = {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
-			colors: {}
 		}
 	},
 	// eslint-disable-next-line no-undef
