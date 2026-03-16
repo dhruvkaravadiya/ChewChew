@@ -1,25 +1,41 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import { PackageSearch } from "lucide-react"
+import { motion } from "framer-motion"
 
-const NoOrder = ({ order }) => {
+
+function NoOrder({ type }) {
+  const messages = {
+    current: {
+      title: "No Current Orders",
+      description: "You don't have any active orders at the moment.",
+    },
+    past: {
+      title: "No Past Orders",
+      description: "Your order history is empty.",
+    },
+    prepared: {
+      title: "No Prepared Orders",
+      description: "No prepared orders available at the moment."
+    }
+  }
+
   return (
-    <div className="h-96 flex items-center justify-center mb-28">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">No {order} Orders Available</h1>
-        <p className="text-gray-600 mb-8">
-          It looks like you haven't placed any orders yet. Start exploring our
-          menu and place your first order!
-        </p>
-        {/* You can add a link or button to navigate to the menu page */}
-        <Link
-          to="/"
-          className="bg-red-200 hover:bg-red-300 text-black py-2 px-4 rounded"
-        >
-          Explore Menu
-        </Link>
-      </div>
-    </div>
-  );
-};
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center  justify-center min-h-[500px] p-8 rounded-lg border border-dashed"
+    >
+      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2 }} className="relative">
+        <div className="absolute -inset-1 rounded-full bg-muted/50 blur-sm" />
+        <div className="relative bg-background p-4 rounded-full">
+          <PackageSearch className="w-12 h-12 text-muted-foreground" />
+        </div>
+      </motion.div>
+      <h3 className="mt-6 text-2xl font-semibold text-foreground">{messages[type].title}</h3>
+      <p className="mt-2 text-center text-muted-foreground">{messages[type].description}</p>
+    </motion.div>
+  )
+}
+
+
 
 export default NoOrder;
