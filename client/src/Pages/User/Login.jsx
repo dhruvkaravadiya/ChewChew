@@ -3,23 +3,27 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { login } from "../../Redux/Slices/authSlice.js";
-import LoginImage3 from "../../Assets/login3.jpeg";
 import { Button } from "../../Components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "../../Components/ui/card";
 import { Input } from "../../Components/ui/input";
 import { Label } from "../../Components/ui/label";
 import { Checkbox } from "../../Components/ui/checkbox";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+
+const FOOD_IMAGES = [
+    "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=800&q=80", // dal makhani
+    "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=800&q=80", // paneer
+    "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80", // samosa
+    "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=800&q=80", // biryani veg
+];
 
 function Login() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    // Pick a random food image each load
+    const [bgImage] = useState(
+        () => FOOD_IMAGES[Math.floor(Math.random() * FOOD_IMAGES.length)]
+    );
 
     const [loginData, setLoginData] = useState({
         email: "",
@@ -29,29 +33,20 @@ function Login() {
 
     const handleUserInput = (e) => {
         const { name, value } = e.target;
-        setLoginData({
-            ...loginData,
-            [name]: value,
-        });
+        setLoginData({ ...loginData, [name]: value });
     };
 
     const handleCheckboxChange = () => {
-        setLoginData((previousData) => ({
-            ...loginData,
-            rememberMe: !previousData.checked,
-        }));
+        setLoginData((prev) => ({ ...prev, rememberMe: !prev.rememberMe }));
     };
 
     const onLogin = async (e) => {
         e.preventDefault();
-
         if (!loginData.email || !loginData.password) {
             toast.error("Please enter details");
             return;
         }
-
         const response = await dispatch(login(loginData));
-
         if (response?.payload?.success) {
             const token = response.payload.token;
             if (loginData.rememberMe) {
@@ -59,108 +54,166 @@ function Login() {
             } else {
                 sessionStorage.setItem("__session", token);
             }
-
             navigate("/");
         } else {
             toast.error(response?.payload?.message || "Login failed");
         }
-
-        setLoginData({
-            email: "",
-            password: "",
-            rememberMe: false,
-        });
+        setLoginData({ email: "", password: "", rememberMe: false });
     };
 
     return (
-        <section
-            className="relative flex p-4 items-center justify-center min-h-screen bg-cover bg-center"
-            style={{ backgroundImage: `url(${LoginImage3})` }}
-        >
-            <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+        <div className="min-h-screen flex">
 
-            <Card className="relative z-10 w-full max-w-md p-3 sm:p-3 md:p-4 lg:p-6 bg-white border-none bg-opacity-15 backdrop-blur-md rounded-lg shadow-lg">
-                <CardHeader>
-                    <CardTitle>
-                        <span className="text-4xl font-extrabold text-custom-red-1">
-                            Sign in
-                        </span>
-                    </CardTitle>
-                    <CardDescription>
-                        <span className="text-custom-red-1">
-                            Access your account
-                        </span>
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={onLogin} className="space-y-4">
-                        <div className="flex flex-col space-y-1.5 text-white">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                type="email"
-                                id="email"
-                                name="email"
-                                placeholder="Email"
-                                onChange={handleUserInput}
-                                value={loginData.email}
-                                className="h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1"
-                            />
+            {/* Left panel — food image */}
+            <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
+                <img
+                    src={bgImage}
+                    alt="delicious food"
+                    className="w-full h-full object-cover"
+                />
+                {/* Dark overlay at bottom for text */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+                {/* Logo top left */}
+                <div className="absolute top-8 left-8 flex items-center gap-2">
+                    <img
+                        src="https://res.cloudinary.com/ddxq9mouk/image/upload/v1715963080/Portfolio/Food%20Ordering%20App/z47evx2lisarubrteuxm.jpg"
+                        width="36"
+                        height="36"
+                        alt="logo"
+                        className="rounded-xl"
+                    />
+                    <span className="text-white text-xl font-bold drop-shadow">Chew Chew</span>
+                </div>
+
+                {/* Bottom text */}
+                <div className="absolute bottom-10 left-8 right-8">
+                    <p className="text-white text-3xl font-bold leading-snug mb-2">
+                        Pure veg. Pure delicious.
+                    </p>
+                    <p className="text-white/70 text-sm">
+                        Order from the best vegetarian restaurants around you.
+                    </p>
+                </div>
+            </div>
+
+            {/* Right panel — form */}
+            <div className="flex-1 flex items-center justify-center bg-gray-50/50 p-6 md:p-12">
+                <div className="w-full max-w-md">
+
+                    {/* Mobile logo */}
+                    <div className="flex items-center gap-2 mb-8 lg:hidden">
+                        <img
+                            src="https://res.cloudinary.com/ddxq9mouk/image/upload/v1715963080/Portfolio/Food%20Ordering%20App/z47evx2lisarubrteuxm.jpg"
+                            width="32"
+                            height="32"
+                            alt="logo"
+                            className="rounded-lg"
+                        />
+                        <span className="text-gray-900 text-lg font-bold">Chew Chew</span>
+                    </div>
+
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+                        <p className="text-sm text-gray-500 mt-1">
+                            Sign in to your account to continue
+                        </p>
+                    </div>
+
+                    <form onSubmit={onLogin} className="space-y-5">
+
+                        {/* Email */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                                Email
+                            </Label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="you@example.com"
+                                    onChange={handleUserInput}
+                                    value={loginData.email}
+                                    className="pl-10 h-11 border-gray-200 focus:ring-2 focus:ring-custom-red-1/20 focus:border-custom-red-1 rounded-xl bg-white"
+                                />
+                            </div>
                         </div>
-                        <div className="flex flex-col space-y-1.5 text-white">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder="Password"
-                                onChange={handleUserInput}
-                                value={loginData.password}
-                                className="h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1"
-                            />
+
+                        {/* Password */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                                Password
+                            </Label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    name="password"
+                                    placeholder="••••••••"
+                                    onChange={handleUserInput}
+                                    value={loginData.password}
+                                    className="pl-10 pr-10 h-11 border-gray-200 focus:ring-2 focus:ring-custom-red-1/20 focus:border-custom-red-1 rounded-xl bg-white"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                    {showPassword
+                                        ? <EyeOff className="w-4 h-4" />
+                                        : <Eye className="w-4 h-4" />
+                                    }
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-2">
+
+                        {/* Remember me + Forgot password */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
                                 <Checkbox
                                     id="rememberMe"
                                     checked={loginData.rememberMe}
                                     onCheckedChange={handleCheckboxChange}
-                                    className="bg-white border border-gray-300 rounded-sm focus:ring-1 focus:ring-gray-400 focus:ring-offset-1"
+                                    className="border-gray-300 data-[state=checked]:bg-custom-red-1 data-[state=checked]:border-custom-red-1"
                                 />
-                                <label
-                                    htmlFor="rememberMe"
-                                    className="text-sm font-medium leading-none text-white"
-                                >
+                                <label htmlFor="rememberMe" className="text-sm text-gray-600 cursor-pointer">
                                     Remember me
                                 </label>
                             </div>
                             <Link
                                 to="/forgotPassword"
-                                className="text-sm font-medium text-blue-600 hover:underline"
+                                className="text-sm font-medium text-custom-red-1 hover:text-custom-red-2 transition-colors"
                             >
                                 Forgot password?
                             </Link>
                         </div>
+
+                        {/* Submit */}
                         <Button
                             type="submit"
-                            className="bg-custom-red-1 text-white  font-bold hover:bg-custom-red-1/80 w-full shadow-md"
+                            className="w-full h-11 bg-custom-red-1 hover:bg-custom-red-2 text-white font-semibold rounded-xl shadow-sm transition-colors"
                         >
                             Sign In
                         </Button>
                     </form>
-                </CardContent>
-                <CardFooter className="flex justify-center items-center">
-                    <p className="text-sm text-white">
-                        Don`t have an account?{" "}
+
+                    {/* Sign up link */}
+                    <p className="text-center text-sm text-gray-500 mt-6">
+                        Don't have an account?{" "}
                         <Link
                             to="/signup"
-                            className="font-semibold ml-2 text-blue-600 transition duration-200 hover:underline"
+                            className="font-semibold text-custom-red-1 hover:text-custom-red-2 transition-colors"
                         >
                             Sign Up
                         </Link>
                     </p>
-                </CardFooter>
-            </Card>
-        </section>
+
+                </div>
+            </div>
+        </div>
     );
 }
 
