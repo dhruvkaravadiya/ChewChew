@@ -37,7 +37,8 @@ const CartDetails = () => {
                 <CardTitle className="flex justify-between items-center">
                     <span>Price Details</span>
                     <Button
-                        className="bg-red-500 text-white flex gap-2 items-center justify-center rounded-md font-semibold"
+                        variant="destructive"
+                        className="flex gap-2 items-center justify-center rounded-md font-semibold"
                         onClick={(event) => {
                             event.preventDefault();
                             dispatch(clearCart());
@@ -88,8 +89,9 @@ const CartDetails = () => {
                     <div>
                         {isLoggedIn && role === "Customer" ? (
                             <Button
+                                variant="success"
                                 onClick={makePayment}
-                                className="py-2 mt-7 w-full bg-green-500 text-white rounded-md font-medium"
+                                className="py-2 mt-7 w-full  rounded-md font-medium"
                             >
                                 Order Now
                             </Button>
@@ -109,6 +111,7 @@ const CartDetails = () => {
                     <Button
                         type="button"
                         onClick={() => navigate("/")}
+                        variant="link"
                         className="w-full mt-4 rounded-lg text-sm font-medium hover:underline text-custom-red-2 p-0 flex items-center justify-center gap-2 cursor-pointer"
                     >
                         Continue Shopping
