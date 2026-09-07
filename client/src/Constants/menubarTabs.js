@@ -1,12 +1,12 @@
 export const notRestaurantTabs = {};
 
 export const RestaurantTabs = {
-    home: "/dashboard",
+    home: "/",
     myRestaurant: "/myrestaurant",
-    menuItems: "/menuitems",
-    orders: "/orders",
-    deliveryMen: "/deliverymen",
-    reports: "/reports",
+    //menuItems: "/menuitems",
+    orders: "/myorder",
+    // deliveryMen: "/deliverymen",
+    // reports: "/reports",
 };
 
 export const DeliveryManTabs = {};

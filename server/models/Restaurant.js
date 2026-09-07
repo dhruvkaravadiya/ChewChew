@@ -15,8 +15,8 @@ const restaurantSchema = mongoose.Schema(
             unique: true,
         },
         user_id: {
-            type: mongoose.Schema.Types.ObjectId, // Use ObjectId type for references
-            ref: "User", // Assuming User is the model name for restaurant owners
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
             required: [true, "Restaurant's Owner Id is required"],
             unique: true,
         },

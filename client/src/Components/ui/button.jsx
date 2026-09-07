@@ -18,6 +18,7 @@ const buttonVariants = cva(
         dark: "bg-black text-white hover:bg-gray-900 focus:ring-gray-600",
         white: "bg-white text-black border border-gray-300 hover:bg-gray-100 focus:ring-gray-400",
         outline: "border border-gray-400 text-gray-900 hover:bg-gray-100 focus:ring-gray-500",
+        success: "bg-green-500 text-white hover:bg-green-600 focus:ring-green-400",
       },
       size: {
         default: "h-9 px-4 py-2",

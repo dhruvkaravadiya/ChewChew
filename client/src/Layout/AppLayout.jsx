@@ -1,4 +1,3 @@
-// Updated AppLayout without fetching logic
 import Header from "../Components/Menubars/Header"
 import Sidebar from "@/Components/Menubars/Sidebar"
 import { useEffect } from "react"
@@ -10,19 +9,19 @@ const AppLayout = ({ children }) => {
     const { isLoggedIn, role } = useSelector((state) => state.auth)
 
     useEffect(() => {
-        if (!isLoggedIn || role !== "Restaurant") {
+        if (!isLoggedIn) {
             navigate("/login")
         }
-    }, [isLoggedIn, role, navigate])
+    }, [isLoggedIn, navigate])
 
     switch (role) {
         case "Restaurant":
             return (
                 <div className="h-auto min-h-screen bg-white flex flex-col">
                     <Header />
-                    <div className="flex flex-1">
+                    <div className="flex flex-1 pt-16">
                         <Sidebar />
-                        <main className="flex-1 p-4 pt-16">{children}</main>
+                        <main className="flex-1">{children}</main>
                     </div>
                 </div>
             )
@@ -30,7 +29,7 @@ const AppLayout = ({ children }) => {
             return (
                 <div className="h-auto min-h-screen bg-white flex flex-col">
                     <Header />
-                    <main className="flex-1 p-4 pt-16">{children}</main>
+                    <main className="flex-1 pt-16">{children}</main>
                 </div>
             )
     }

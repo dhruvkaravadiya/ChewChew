@@ -11,7 +11,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 export function DropDownMenu({ data, role, handleLogout, RestaurantExist }) {
-    console.log(data.photo.photoUrl);
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -1,28 +1,24 @@
-// PopupForm.js
-import React, { useEffect, useState } from "react";
-import { MdClear, MdPhotoSizeSelectActual } from "react-icons/md";
-import {
-  addMenuItem,
-  fetchMenuItems,
-  updateMenuItem,
-} from "../../Redux/Slices/restaurantSlice";
-import { useDispatch } from "react-redux";
-import toast from "react-hot-toast";
+import { useState, useEffect } from "react"
+import { useDispatch } from "react-redux"
+import { toast } from "react-hot-toast"
+import { Image } from 'lucide-react'
+import { addMenuItem, fetchMenuItems, updateMenuItem } from "../../Redux/Slices/restaurantSlice"
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
 
-const AddFoodItem = ({
-  resId,
-  editMode,
-  dataToEdit,
-  setEditMode,
-  setDataToEdit,
-}) => {
+const AddFoodItem = ({ resId, editMode, dataToEdit, setEditMode, setDataToEdit }) => {
+  const [open, setOpen] = useState(false)
   const [foodItemData, setFoodItemData] = useState({
     photo: "",
     previewImage: "",
     name: "",
     price: "",
     type: "Veg",
-  });
+  })
+
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (editMode && dataToEdit) {
@@ -32,7 +28,8 @@ const AddFoodItem = ({
         name: dataToEdit.name || "",
         price: dataToEdit.price || "",
         type: dataToEdit.type || "Veg",
-      });
+      })
+      setOpen(true)
     } else {
       setFoodItemData({
         photo: "",
@@ -40,197 +37,160 @@ const AddFoodItem = ({
         name: "",
         price: "",
         type: "Veg",
-      });
+      })
     }
-  }, [editMode, dataToEdit]);
-
-  useEffect(() => {
-    console.log("editMode in add", editMode);
-    console.log("data to Edit", dataToEdit);
-  }, []);
-
-  const dispatch = useDispatch();
+  }, [editMode, dataToEdit])
 
   function handleImageUpload(e) {
-    e.preventDefault();
-    const uploadedImage = e.target.files[0];
+    const uploadedImage = e.target.files[0]
     if (uploadedImage) {
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(uploadedImage);
+      const fileReader = new FileReader()
+      fileReader.readAsDataURL(uploadedImage)
       fileReader.addEventListener("load", function () {
         setFoodItemData({
           ...foodItemData,
           previewImage: this.result,
           photo: uploadedImage,
-        });
-      });
+        })
+      })
     }
   }
 
   function handleInputChange(e) {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFoodItemData({
       ...foodItemData,
       [name]: value,
-    });
+    })
   }
 
-  async function handleAddItem(e) {
-    e.preventDefault();
+  async function handleSubmit(e) {
+    e.preventDefault()
 
-    if (
-      !foodItemData.photo ||
-      !foodItemData.name ||
-      !foodItemData.price ||
-      !foodItemData.type
-    ) {
-      toast.error("All Field are required");
-      return;
+    if (!foodItemData.photo || !foodItemData.name || !foodItemData.price || !foodItemData.type) {
+      toast.error("All fields are required")
+      return
     }
 
-    const formData = new FormData();
+    const formData = new FormData()
+    formData.append("photo", foodItemData.photo)
+    formData.append("name", foodItemData.name)
+    formData.append("price", foodItemData.price)
+    formData.append("type", foodItemData.type)
 
-    formData.append("photo", foodItemData.photo);
-    formData.append("name", foodItemData.name);
-    formData.append("price", foodItemData.price);
-    formData.append("type", foodItemData.type);
-
-    const response = await dispatch(addMenuItem(formData));
+    const action = editMode ? updateMenuItem([dataToEdit._id, formData]) : addMenuItem(formData)
+    const response = await dispatch(action)
 
     if (response?.payload?.success) {
-      if (response?.payload?.success) {
-        setFoodItemData({
-          photo: "",
-          previewImage: "",
-          name: "",
-          price: "",
-          type: "Veg",
-        });
-      }
-    }
-  }
-
-  function handleClear() {
-    console.log("clear");
-    setEditMode(false);
-    setDataToEdit(null);
-  }
-
-  async function handleEditItem(e) {
-    e.preventDefault();
-
-    const formData = new FormData();
-
-    console.log("foodItemData?.photo", typeof foodItemData?.photo);
-
-    if (typeof foodItemData?.photo !== "string") {
-      formData.append("photo", foodItemData.photo);
-    }
-
-    formData.append("name", foodItemData.name);
-    formData.append("price", foodItemData.price);
-    formData.append("type", foodItemData.type);
-
-    const response = await dispatch(updateMenuItem([dataToEdit._id, formData]));
-
-    if (response?.payload?.success) {
-      if (response?.payload?.success) {
-        setFoodItemData({
-          photo: "",
-          previewImage: "",
-          name: "",
-          price: "",
-          type: "Veg",
-        });
-      }
-      await dispatch(fetchMenuItems(resId));
+      setFoodItemData({
+        photo: "",
+        previewImage: "",
+        name: "",
+        price: "",
+        type: "Veg",
+      })
+      setEditMode(false)
+      setDataToEdit(null)
+      dispatch(fetchMenuItems(resId))
+      toast.success(editMode ? "Item updated successfully" : "Item added successfully")
+      setOpen(false)
+    } else {
+      toast.error("Failed to process item. Please try again.")
     }
   }
 
   return (
-    <div className="flex items-center justify-center ">
-      <div className="flex w-3/4 p-4 gap-4 mx-5 items-center justify-between rounded-lg my-8">
-        <div className="border-2 border-black w-36 h-20 flex items-center justify-center rounded-md overflow-hidden">
-          <label htmlFor="photo" className="cursor-pointer">
-            {foodItemData?.previewImage ? (
-              <img
-                src={foodItemData?.previewImage}
-                className="w-full h-full object-cover"
-                alt="Food Preview"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <MdPhotoSizeSelectActual className="w-20 h-12" />
-                <span className="text-xs ml-2">Food Image</span>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          setEditMode(false)
+          setDataToEdit(null)
+        }
+        setOpen(isOpen)
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button>{editMode ? "Edit Food Item" : "Add Food Item"}</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{editMode ? "Edit Food Item" : "Add Food Item"}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex items-center justify-center">
+            <label htmlFor="photo" className="cursor-pointer">
+              <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-hidden">
+                {foodItemData?.previewImage ? (
+                  <img
+                    src={foodItemData?.previewImage || "/placeholder.svg"}
+                    className="w-full h-full object-cover"
+                    alt="Food Preview"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-gray-400">
+                    <Image className="w-8 h-8 mb-2" />
+                    <span className="text-sm">Upload Image</span>
+                  </div>
+                )}
               </div>
-            )}
-          </label>
-          {/* Hidden file input for photo upload */}
-          <input
-            type="file"
-            id="photo"
-            name="photo"
-            onChange={handleImageUpload}
-            className="hidden"
-            accept=".jpg, .png, .svg, .jpeg"
+            </label>
+            <input
+              type="file"
+              id="photo"
+              name="photo"
+              onChange={handleImageUpload}
+              className="hidden"
+              accept=".jpg, .png, .svg, .jpeg"
+            />
+          </div>
+          <Input
+            type="text"
+            name="name"
+            id="name"
+            value={foodItemData.name}
+            onChange={handleInputChange}
+            placeholder="Enter Food Name"
           />
-        </div>
-        <input
-          type="text"
-          name="name"
-          id="name"
-          onChange={handleInputChange}
-          value={foodItemData.name}
-          placeholder="Enter Food Name"
-          className="border border-gray-300 p-2 w-72 rounded-md outline-none"
-        />
-        <input
-          type="number"
-          name="price"
-          id="price"
-          onChange={handleInputChange}
-          value={foodItemData.price}
-          placeholder="Food Price (RS)"
-          className="border border-gray-300 p-2 w-40 rounded-md outline-none"
-          min={1}
-        />
-        <select
-          id="foodType"
-          className="p-2 border rounded-md"
-          value={foodItemData.type}
-          onChange={(e) =>
-            setFoodItemData({ ...foodItemData, type: e.target.value })
-          }
-        >
-          <option value="Veg">Veg</option>
-          <option value="Non-Veg">Non-Veg</option>
-        </select>
-
-        {editMode ? (
-          <>
-            <button
-              type="submit"
-              onClick={handleEditItem}
-              className="btn btn-md bg-red-400"
-            >
-              Edit Item
-            </button>
-            <button onClick={() => handleClear()} className="text-black">
-              <MdClear />
-            </button>
-          </>
-        ) : (
-          <button
-            type="submit"
-            onClick={handleAddItem}
-            className="btn btn-md bg-red-400"
+          <Input
+            type="number"
+            name="price"
+            id="price"
+            value={foodItemData.price}
+            onChange={handleInputChange}
+            placeholder="Food Price (RS)"
+            min={1}
+          />
+          <Select
+            value={foodItemData.type}
+            onValueChange={(value) => setFoodItemData({ ...foodItemData, type: value })}
           >
-            Add Item
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
+            <SelectTrigger>
+              <SelectValue placeholder="Select food type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Veg">Veg</SelectItem>
+              <SelectItem value="Non-Veg">Non-Veg</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setEditMode(false)
+                setDataToEdit(null)
+                setOpen(false)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">{editMode ? "Update Item" : "Add Item"}</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
-export default AddFoodItem;
+export default AddFoodItem

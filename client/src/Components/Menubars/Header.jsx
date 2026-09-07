@@ -12,30 +12,21 @@ const Header = () => {
     const { isLoggedIn, role, data } = useSelector((state) => state.auth);
     const { restaurantData } = useSelector((state) => state.restaurant);
     const { cartItems } = useSelector((state) => state.cart);
-    //console.log("res in state header  : ", restaurantData);
+
     async function handleLogout() {
         await dispatch(logout());
     }
-
     function RestaurantExist() {
         return restaurantData == null;
     }
 
     return (
-        <div
-            className="flex items-center justify-between
-          py-2 lg:px-4 md:py-3 bg-white shadow-md fixed w-full"
-        >
+        <div className="flex items-center justify-between h-16 px-4 bg-white shadow-md fixed w-full z-50">
             <div className="flex items-center gap-3">
-                {/* Side Bar */}
                 <Drawer />
-                <div className="">
-                    {" "}
-                    <Link
-                        to="/"
-                        className="flex items-center justify-center gap-2"
-                    >
-                        <SiteIcon className="" />
+                <div>
+                    <Link to="/" className="flex items-center justify-center gap-2">
+                        <SiteIcon />
                         <span className="text-lg font-semibold">Chew Chew</span>
                     </Link>
                 </div>
@@ -46,7 +37,6 @@ const Header = () => {
                         <CartButton cartItems={cartItems} />
                     )}
                 </div>
-
                 <div className="flex items-center">
                     {isLoggedIn ? (
                         <DropDownMenu
@@ -60,7 +50,7 @@ const Header = () => {
                             <Button
                                 onClick={() => navigate("/login")}
                                 variant="link"
-                                className=" hover:text-custom-red-2 text-custom-red-1 font-semibold "
+                                className="hover:text-custom-red-2 text-custom-red-1 font-semibold"
                             >
                                 Login
                             </Button>
@@ -77,15 +67,14 @@ const Header = () => {
         </div>
     );
 };
+
 export default Header;
 
-// eslint-disable-next-line react/prop-types
 export const SiteIcon = () => {
-    // eslint-disable-next-line react/jsx-no-undef
     return (
-        <div className=" sm:hidden lg:flex md:flex hidden">
+        <div className="sm:hidden lg:flex md:flex hidden">
             <img
-                src="https://res.cloudinary.com/ddxq9mouk/image/upload/v1715963080/Portfolio/Food%20Ordering%20App/z47evx2lisarubrteuxm.jpg"
+                src="./public/cropped_circle_image.png"
                 width="34"
                 height="34"
                 alt="sitelogo"

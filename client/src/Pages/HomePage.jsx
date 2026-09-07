@@ -3,6 +3,7 @@ import AppLayout from "../Layout/AppLayout";
 import RestaurantList from "./Restaurant/RestaurantList";
 import { useSelector } from "react-redux";
 import DeliveryManHomePage from "./DeliveryMan/DeliveryManHomePage";
+import RestaurantHomePage from "./Restaurant/RestaurantHomePage";
 
 const HomePage = () => {
     const { data } = useSelector((state) => state?.auth);
@@ -13,7 +14,7 @@ const HomePage = () => {
         case "Restaurant":
             return (
                 <AppLayout>
-                    <RestaurantList />;
+                    <RestaurantHomePage />;
                 </AppLayout>
             );
         case "DeliveryMan":

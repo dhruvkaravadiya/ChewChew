@@ -295,7 +295,7 @@ export default function OrderMapPage() {
                                                 {routePoints.length > 0 && (
                                                       <Polyline
                                                             positions={routePoints}
-                                                            pathOptions={{ color: "#e5e7eb", weight: 6, opacity: 1 }}
+                                                            pathOptions={{ color: "#5e91f7", weight: 6, opacity: 1 }}
                                                       />
                                                 )}
 

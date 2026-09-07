@@ -1,3 +1,6 @@
+const { setServers } = require("node:dns/promises");
+setServers(["1.1.1.1", "8.8.8.8"]);
+
 const mongoose = require("mongoose");
 const cookieparser = require("cookie-parser");
 const cors = require("cors");
@@ -13,9 +16,10 @@ const customerRoutes = require("./routes/Customers");
 const orderRoutes = require("./routes/Orders");
 const fileUpload = require("express-fileupload");
 const path = require("path");
+// const MONGO_STRING = process.env.DB_CONNECTION_STRING;
 
 const { io, app, server, express } = require("./startup/io");
-
+// console.log("DB STRING:", MONGO_STRING);
 mongoose
     .connect(DB_CONNECTION_STRING, { useUnifiedTopology: true })
     .then(() => {
@@ -32,11 +36,23 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Enable cross-origin resource sharing using cors() middleware
+const allowedOrigins = [
+    LOCALHOST_ORIGIN,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+].filter(Boolean);
+
 app.use(
     cors({
-        origin: LOCALHOST_ORIGIN,
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(null, true);
+            }
+        },
         credentials: true,
-        methods: "GET,POST,DELETE,PUT",
+        methods: ["GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"],
     })
 );
 

@@ -2,10 +2,11 @@ import { MdOutlineStar } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 
 const RestaurantCard = ({ resdata }) => {
+  const id = resdata._id;
   const navigate = useNavigate();
   return (
     <div
-      onClick={() => navigate("/restaurant/details", { state: { resdata } })}
+      onClick={() => navigate("/restaurant-details/" + id, { state: { resdata } })}
       className="w-full max-w-sm bg-white rounded-lg shadow-md overflow-hidden transition-transform transform hover:scale-105 cursor-pointer"
     >
       <img className="w-full h-48 object-cover" src={resdata?.photo?.photoUrl} alt="Restaurant" />

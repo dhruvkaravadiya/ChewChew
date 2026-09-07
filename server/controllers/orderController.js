@@ -21,32 +21,25 @@ async function createOrder(req, res) {
     try {
         const { items } = req.body;
         let orderTotal = 0;
-
         items.forEach((item) => {
             orderTotal += item.quantity * item.price;
         });
-
         const line_items = items.map((item) => ({
             price_data: {
                 currency: "inr",
-                product_data: {
-                    name: item.name,
-                },
+                product_data: { name: item.name },
                 unit_amount: item.price * 100,
             },
             quantity: item.quantity,
         }));
-
         const stripeSession = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
-            line_items: line_items,
+            line_items,
             mode: "payment",
             success_url: `${PAYMENT_SUCCESS_URL}?sessionId={CHECKOUT_SESSION_ID}`,
             cancel_url: PAYMENT_FAIL_URL,
             billing_address_collection: "required",
-            shipping_address_collection: {
-                allowed_countries: ["IN"],
-            },
+            shipping_address_collection: { allowed_countries: ["IN"] },
         });
         res.status(201).json({
             success: true,
@@ -66,32 +59,28 @@ async function updateOrderStatus(req, res) {
     const userId = req.user.id;
     const user = await User.findById(userId);
     if (!user) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Restaurant Not Found" });
+        return res.status(404).json({ success: false, error: "Restaurant Not Found" });
     }
+
     const { orderStatus } = req.body;
     const orderId = req.params.id;
     const order = await Order.findById(orderId);
+
     if (!order) {
-        return res
-            .status(400)
-            .json({ success: false, error: "Order Not Found" });
+        return res.status(400).json({ success: false, error: "Order Not Found" });
     }
     if (order.orderStatus != "Placed" && order.orderStatus != "Preparing") {
         return res.status(400).json({
             success: false,
-            error: "Sorry 🙏🙏 after Prepared you can't change the order Status",
+            error: "Sorry 🙏 after Prepared you can't change the order Status",
         });
     }
+
     const allowedOrderStatuses = ["Prepared", "Preparing"];
-    const isValidOrderStatus = allowedOrderStatuses.includes(orderStatus);
-    if (!isValidOrderStatus) {
-        return res.status(400).json({
-            success: false,
-            error: "Invalid Order Status Value",
-        });
+    if (!allowedOrderStatuses.includes(orderStatus)) {
+        return res.status(400).json({ success: false, error: "Invalid Order Status Value" });
     }
+
     const updatedOrder = await Order.findByIdAndUpdate(
         orderId,
         { $set: { orderStatus } },
@@ -99,31 +88,30 @@ async function updateOrderStatus(req, res) {
     );
 
     if (!updatedOrder) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Order Not Found" });
+        return res.status(404).json({ success: false, error: "Order Not Found" });
     }
 
-    await io.emit("updateOrderStatus", { orderId, orderStatus });
+    // Emit status update to the customer's room only
+    io.to(order.customer.id.toString()).emit("updateOrderStatus", {
+        orderId,
+        orderStatus,
+    });
 
+    // If order is Prepared — notify each delivery man in their own room
     if (updatedOrder.orderStatus === "Prepared") {
         const restaurant = await Restaurant.findById(order.restaurant.id);
         if (!restaurant) {
-            return res
-                .status(404)
-                .json({ success: false, error: "Restaurant Not Found" });
+            return res.status(404).json({ success: false, error: "Restaurant Not Found" });
         }
-
         restaurant.deliveryMen.forEach((deliveryman) => {
-            const userId = deliveryman.user_id;
-            io.emit("orderPrepared", {
+            io.to(deliveryman.user_id.toString()).emit("orderPrepared", {
                 order: updatedOrder,
-                userId: userId,
+                deliverymanId: deliveryman.user_id,
             });
         });
     }
 
-    res.status(221).json({
+    res.status(200).json({
         success: true,
         message: "Order Status Updated",
         orderstatus: updatedOrder.orderStatus,
@@ -132,425 +120,176 @@ async function updateOrderStatus(req, res) {
 
 // PICK THE ORDER
 const pickOrder = async (req, res) => {
+    console.log("pickOrder called");
     const user = req.user;
     const id = req.params.id;
 
-    // Find the order
     const order = await Order.findById(id);
-
-    // Check if the order exists
     if (!order) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Order not found" });
+        return res.status(404).json({ success: false, error: "Order not found" });
     }
-
-    // Check if the order status is not "Prepared"
     if (order.orderStatus !== "Prepared") {
-        return res
-            .status(400)
-            .json({ success: false, error: "Order is not prepared" });
+        return res.status(400).json({ success: false, error: "Order is not prepared" });
     }
 
-    // Find the delivery man
     const deliveryMan = await DeliveryMan.findOne({ user_id: user.id });
     if (!deliveryMan) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Delivery Man not found" });
+        return res.status(404).json({ success: false, error: "Delivery Man not found" });
     }
 
-    // Check if the order status is "Prepared"
-    if (order.orderStatus === "Prepared") {
-        // Update the delivery man's currentOrders and the order's status
-        await DeliveryMan.updateOne(
-            { _id: deliveryMan.id },
-            {
-                $push: {
-                    currentOrders: order._id,
-                },
-            }
-        );
-        // Generate OTP
-        const OTP = await order.generateOTP();
-        order.deliveryManId = deliveryMan._id;
-        // Save the order
-        await order.save();
+    await DeliveryMan.updateOne(
+        { _id: deliveryMan.id },
+        { $push: { currentOrders: order._id } }
+    );
 
-        // Load HTML template for email
-        const htmlFilePath = path.join(
-            __dirname,
-            "../helpers/mailer/OTP_Code.html"
-        );
-        const otpTemplate = fs.readFileSync(htmlFilePath, "utf-8");
+    const OTP = await order.generateOTP();
+    order.deliveryManId = deliveryMan._id;
+    await order.save();
 
-        // Find the customer for email
-        const customer = await Customer.findById(order.customer.id);
-        if (!customer) {
-            return res
-                .status(404)
-                .json({ success: false, error: "Customer not found" });
-        }
+    const htmlFilePath = path.join(__dirname, "../helpers/mailer/OTP_Code.html");
+    const otpTemplate = fs.readFileSync(htmlFilePath, "utf-8");
 
-        // Find the user for email
-        const user = await User.findById(customer.user_id);
-        if (!user) {
-            return res
-                .status(404)
-                .json({ success: false, error: "User not found" });
-        }
-
-        // Send email to the customer
-        await sendEmailToGmail({
-            email: user.email,
-            subject: "OTP for Delivery Verification",
-            html: otpTemplate.replace("{{otp}}", OTP),
-        });
-
-        // Update order status
-        await Order.updateOne(
-            { _id: order._id },
-            { $set: { orderStatus: "Picked" } }
-        );
-
-        // Emit order status update
-        await io.emit("orderStatusUpdate", "Picked");
-    } else {
-        return res.status(400).json({
-            success: false,
-            error: "Order is not prepared for picking",
-        });
+    const customer = await Customer.findById(order.customer.id);
+    if (!customer) {
+        return res.status(404).json({ success: false, error: "Customer not found" });
     }
+    const customerUser = await User.findById(customer.user_id);
+    if (!customerUser) {
+        return res.status(404).json({ success: false, error: "User not found" });
+    }
+    console.log("Sending OTP email to:", customerUser.email);
+    await sendEmailToGmail({
+        email: customerUser.email,
+        subject: "OTP for Delivery Verification",
+        html: otpTemplate.replace("{{otp}}", OTP),
+    });
+
+    await Order.updateOne({ _id: order._id }, { $set: { orderStatus: "Picked" } });
+
+    // Notify customer in their room
+    io.to(order.customer.id.toString()).emit("updateOrderStatus", {
+        orderId: order._id,
+        orderStatus: "Picked",
+    });
 
     res.status(201).json({ success: true, message: "Order Picked" });
 };
 
 // COMPLETE / VERIFY THE ORDER
 const completeOrder = async (req, res) => {
+    console.log("completeOrder called");
     const orderId = req.params.id;
     const OTP = req.body.OTP;
 
-    // Find the order
     const order = await Order.findById(orderId);
+    if (!order) throw new Error("Order not found");
 
-    if (!order) {
-        throw new Error("Order not found");
-    }
-
-    // Verify OTP
     const isOTPVerified = await order.verifyOTP(OTP);
+    if (!isOTPVerified) throw new Error("Invalid OTP");
 
-    if (!isOTPVerified) {
-        throw new Error("Invalid OTP");
-    }
-
-    // Update order status to "Completed"
     order.orderStatus = "Completed";
     order.OTP = undefined;
     order.OTPExpiry = undefined;
     await order.save();
 
-    // Move order from current orders to past orders for customer
-    const updatedCustomer = await Customer.findByIdAndUpdate(
-        order.customer.id,
-        {
-            $pull: { currentOrders: order._id },
-            $push: { pastOrders: order._id },
-        }
-    );
-    if (!updatedCustomer) {
-        throw new Error("Customer not updated");
-    }
+    const updatedCustomer = await Customer.findByIdAndUpdate(order.customer.id, {
+        $pull: { currentOrders: order._id },
+        $push: { pastOrders: order._id },
+    });
+    if (!updatedCustomer) throw new Error("Customer not updated");
 
-    // Move order from current orders to past orders for restaurant
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
-        order.restaurant.id,
-        {
-            $pull: { currentOrders: order._id },
-            $push: { pastOrders: order._id },
-            $inc: { income: order.orderTotal - order.orderTotal / 10 },
-        }
-    );
-    if (!updatedRestaurant) {
-        throw new Error("Restaurant not updated");
-    }
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(order.restaurant.id, {
+        $pull: { currentOrders: order._id },
+        $push: { pastOrders: order._id },
+        $inc: { income: order.orderTotal - order.orderTotal / 10 },
+    });
+    if (!updatedRestaurant) throw new Error("Restaurant not updated");
 
-    // Move order from current orders to delivery history for delivery man
-    const updatedDeliveryMan = await DeliveryMan.findByIdAndUpdate(
-        order.deliveryManId,
-        {
-            $pull: { currentOrders: orderId },
-            $push: { pastOrders: orderId },
-        }
-    );
-    if (!updatedDeliveryMan) {
-        throw new Error("Delivery Man not updated");
-    }
-    await io.emit("orderStatusUpdate", "Completed");
+    const updatedDeliveryMan = await DeliveryMan.findByIdAndUpdate(order.deliveryManId, {
+        $pull: { currentOrders: orderId },
+        $push: { pastOrders: orderId },
+    });
+    if (!updatedDeliveryMan) throw new Error("Delivery Man not updated");
 
-    // Return success response
-    return res
-        .status(200)
-        .json({ success: true, message: "Order completed successfully" });
+    // Notify customer in their room
+    io.to(order.customer.id.toString()).emit("updateOrderStatus", {
+        orderId: order._id,
+        orderStatus: "Completed",
+    });
+
+    return res.status(200).json({ success: true, message: "Order completed successfully" });
 };
 
 // CANCEL THE ORDER
 const cancelOrder = async (req, res) => {
     const orderId = req.params.id;
     const order = await Order.findById(orderId);
+
     if (!order) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Order not found" });
+        return res.status(404).json({ success: false, error: "Order not found" });
     }
     if (order.orderStatus !== "Placed") {
-        return res.status(400).json({
-            success: false,
-            error: "Order cannot be canceled",
-        });
-    }
-    const deliveryMan = await DeliveryMan.findByIdAndUpdate(
-        order.deliveryMan.id,
-        {
-            $push: { cancelledOrders: order._id },
-            $pull: { currentOrders: order._id },
-        }
-    );
-    if (!deliveryMan) {
-        return res.status(404).json({
-            success: false,
-            error: "No delivery man has picked your order",
-        });
-    }
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
-        order.restaurant.id,
-        {
-            $push: { cancelledOrders: order._id },
-            $pull: { currentOrders: order._id },
-        }
-    );
-    if (!updatedRestaurant) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Restaurant not found" });
+        return res.status(400).json({ success: false, error: "Order cannot be canceled" });
     }
 
-    const updatedCustomer = await Customer.findByIdAndUpdate(
-        order.customer.id,
-        {
-            $pull: { currentOrders: order._id },
-        }
-    );
+    const deliveryMan = await DeliveryMan.findByIdAndUpdate(order.deliveryMan?.id, {
+        $push: { cancelledOrders: order._id },
+        $pull: { currentOrders: order._id },
+    });
+
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(order.restaurant.id, {
+        $push: { cancelledOrders: order._id },
+        $pull: { currentOrders: order._id },
+    });
+    if (!updatedRestaurant) {
+        return res.status(404).json({ success: false, error: "Restaurant not found" });
+    }
+
+    const updatedCustomer = await Customer.findByIdAndUpdate(order.customer.id, {
+        $pull: { currentOrders: order._id },
+    });
     if (!updatedCustomer) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Customer not found" });
+        return res.status(404).json({ success: false, error: "Customer not found" });
     }
 
     const deletedOrder = await Order.findByIdAndDelete(orderId);
     if (!deletedOrder) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Order not deleted" });
+        return res.status(404).json({ success: false, error: "Order not deleted" });
     }
 
-    // Commit the transaction here after successful deletion
-    await session.commitTransaction();
-    //emit on delete order
-    await io.emit("orderStatusUpdate", "Canceled");
-    // Return success response after successful deletion
-    return res
-        .status(200)
-        .json({ success: true, message: "Order deleted successfully" });
+    // Notify customer
+    io.to(order.customer.id.toString()).emit("updateOrderStatus", {
+        orderId: order._id,
+        orderStatus: "Canceled",
+    });
+
+    return res.status(200).json({ success: true, message: "Order deleted successfully" });
 };
-
-// GET ROLE WISE PAST ORDERS
-const getPastOrders = async (req, res) => {
-    const role = req.user.role;
-    const userId = req.user._id;
-
-    try {
-        let model, fieldName;
-
-        switch (role) {
-            case "Restaurant":
-                model = Restaurant;
-                fieldName = "user_id";
-                break;
-            case "DeliveryMan":
-                model = DeliveryMan;
-                fieldName = "user_id";
-                break;
-            case "Customer":
-                model = Customer;
-                fieldName = "user_id";
-                break;
-            default:
-                return res
-                    .status(400)
-                    .json({ success: false, error: "Invalid Role" });
-        }
-
-        const userInstance = await model.findOne({ [fieldName]: userId });
-        if (!userInstance) {
-            return res
-                .status(404)
-                .json({ success: false, error: `${role} Not Found ` });
-        }
-
-        const pastOrders = userInstance.pastOrders;
-
-        // Check if there are past orders before querying the Order model
-        if (!pastOrders || pastOrders.length === 0) {
-            return res.status(200).json({ success: true, data: [] });
-        }
-
-        const orders = await Order.find({ _id: { $in: pastOrders } });
-
-        return res.status(200).json({
-            success: true,
-            message: "Past Orders fetched Successfully",
-            data: orders,
-        });
-    } catch (error) {
-        return res
-            .status(500)
-            .json({ success: false, error: "Internal Server Error" });
-    }
-};
-
-// GET ROLE WISE CURRENT ORDERS
-const getCurrentOrders = async (req, res) => {
-    const role = req.user.role;
-    const userId = req.user._id;
-    try {
-        let model;
-        switch (role) {
-            case "Restaurant":
-                model = Restaurant;
-                break;
-            case "DeliveryMan":
-                model = DeliveryMan;
-                break;
-            case "Customer":
-                model = Customer;
-                break;
-            default:
-                return res
-                    .status(400)
-                    .json({ success: false, error: "Invalid Role" });
-        }
-
-        const userInstance = await model.findOne({ user_id: userId });
-
-        if (!userInstance) {
-            return res
-                .status(404)
-                .json({ success: false, error: `${role} Not Found ` });
-        }
-
-        const currentOrders = await Order.find({
-            _id: { $in: userInstance.currentOrders },
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: "Current Orders fetched Successfully",
-            data: currentOrders,
-        });
-    } catch (error) {
-        return res
-            .status(500)
-            .json({ success: false, error: "Internal Server Error" });
-    }
-};
-
-const getPreparedOrders = async (req, res) => {
-    try {
-        const preparedOrders = await Order.find({ orderStatus: "Prepared" });
-        return res.status(200).json({
-            success: true,
-            message: "Prepared Orders fetched Successfully",
-            data: preparedOrders,
-        });
-    } catch (error) {
-        return res
-            .status(500)
-            .json({ success: false, error: "Internal Server Error" });
-    }
-};
-
-const getOrderDistance = async (req, res) => {
-    const orderLocation = req.body.orderLocation;
-    const customerLocation = req.body.customerLocation;
-    const kms = calculateDistance(
-        orderLocation.latitude,
-        orderLocation.longitude,
-        customerLocation.latitude,
-        customerLocation.longitude
-    );
-    return res.status(200).json({ success: true, data: kms });
-};
-
-// get order by order id
-const getOrderById = async (req, res) => {
-    const orderId = req.params.id;
-    try {
-        const order = await Order.findById
-            (orderId);
-        if (!order) {
-            return res.status(404).json({ message: "Order not found" });
-        }
-        return res.status(200).json({
-            success: true,
-            message: "Order fetched successfully",
-            data: order,
-        });
-    } catch (error) {
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
-};
-
 
 // Handle successful payment and create database order
 async function handleSuccessfulPayment(req, res) {
     try {
         const customer = await Customer.findOne({ user_id: req.user.id });
-
         if (!customer) {
-            return res
-                .status(404)
-                .json({ success: false, error: "User not found" });
+            return res.status(404).json({ success: false, error: "User not found" });
         }
 
         const restaurantId = req.params.id;
         const restaurant = await Restaurant.findById(restaurantId);
-
         if (!restaurant) {
-            return res
-                .status(404)
-                .json({ success: false, message: "Restaurant not found!" });
+            return res.status(404).json({ success: false, message: "Restaurant not found!" });
         }
 
         const coordinates = await getCoordinates();
-
         const sessionId = req.query.sessionId;
-        // Retrieve relevant information from the session or request
         const { items } = req.body;
-        let orderTotal = 0;
-        items.forEach((item) => {
-            orderTotal += item.quantity * item.price;
-        });
-        // Fetch information related to the Stripe session
-        const stripeSession = await stripe.checkout.sessions.retrieve(
-            sessionId
-        );
-        // Check if payment was successful in the Stripe session
-        if (stripeSession.payment_status === "paid") {
-            // Continue with creating the database order
-            const restaurantId = req.params.id;
-            const restaurant = await Restaurant.findById(restaurantId);
 
+        let orderTotal = 0;
+        items.forEach((item) => { orderTotal += item.quantity * item.price; });
+
+        const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
+
+        if (stripeSession.payment_status === "paid") {
             const order = new Order({
                 customer: {
                     id: customer._id,
@@ -574,76 +313,149 @@ async function handleSuccessfulPayment(req, res) {
                 placedAt: new Date(),
             });
 
-            // Save the order to the database
             const savedOrder = await order.save();
 
-            // Update restaurant and customer with the new order
             await Restaurant.findByIdAndUpdate(restaurantId, {
                 $push: { currentOrders: savedOrder._id },
             });
-
             await Customer.findByIdAndUpdate(customer._id, {
                 $push: { currentOrders: savedOrder._id },
             });
 
-            // Emit orderPlaced
-            await io.emit("orderPlaced", {
-                userId: restaurant.user_id,
+            // Emit ONLY to the restaurant's room — not everyone
+            io.to(restaurant.user_id.toString()).emit("orderPlaced", {
                 newOrder: savedOrder,
             });
 
             res.status(201).json({
                 success: true,
-                data: {
-                    order: savedOrder,
-                },
+                data: { order: savedOrder },
                 message: "Order Placed Successfully",
             });
         } else {
-            // If payment was not successful, handle accordingly
-            return res.status(400).json({
-                success: false,
-                error: "Payment was not successful",
-            });
+            return res.status(400).json({ success: false, error: "Payment was not successful" });
         }
     } catch (error) {
         return res.status(500).json({ success: false, error: error.message });
     }
 }
 
+// GET ROLE WISE PAST ORDERS
+const getPastOrders = async (req, res) => {
+    const role = req.user.role;
+    const userId = req.user._id;
+    try {
+        let model, fieldName;
+        switch (role) {
+            case "Restaurant": model = Restaurant; fieldName = "user_id"; break;
+            case "DeliveryMan": model = DeliveryMan; fieldName = "user_id"; break;
+            case "Customer": model = Customer; fieldName = "user_id"; break;
+            default: return res.status(400).json({ success: false, error: "Invalid Role" });
+        }
+        const userInstance = await model.findOne({ [fieldName]: userId });
+        if (!userInstance) {
+            return res.status(404).json({ success: false, error: `${role} Not Found` });
+        }
+        const pastOrders = userInstance.pastOrders;
+        if (!pastOrders || pastOrders.length === 0) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+        const orders = await Order.find({ _id: { $in: pastOrders } });
+        return res.status(200).json({
+            success: true,
+            message: "Past Orders fetched Successfully",
+            data: orders,
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};
+
+// GET ROLE WISE CURRENT ORDERS
+const getCurrentOrders = async (req, res) => {
+    const role = req.user.role;
+    const userId = req.user._id;
+    try {
+        let model;
+        switch (role) {
+            case "Restaurant": model = Restaurant; break;
+            case "DeliveryMan": model = DeliveryMan; break;
+            case "Customer": model = Customer; break;
+            default: return res.status(400).json({ success: false, error: "Invalid Role" });
+        }
+        const userInstance = await model.findOne({ user_id: userId });
+        if (!userInstance) {
+            return res.status(404).json({ success: false, error: `${role} Not Found` });
+        }
+        const currentOrders = await Order.find({ _id: { $in: userInstance.currentOrders } });
+        return res.status(200).json({
+            success: true,
+            message: "Current Orders fetched Successfully",
+            data: currentOrders,
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};
+
+const getPreparedOrders = async (req, res) => {
+    try {
+        const preparedOrders = await Order.find({ orderStatus: "Prepared" });
+        return res.status(200).json({
+            success: true,
+            message: "Prepared Orders fetched Successfully",
+            data: preparedOrders,
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};
+
+const getOrderDistance = async (req, res) => {
+    const orderLocation = req.body.orderLocation;
+    const customerLocation = req.body.customerLocation;
+    const kms = calculateDistance(
+        orderLocation.latitude, orderLocation.longitude,
+        customerLocation.latitude, customerLocation.longitude
+    );
+    return res.status(200).json({ success: true, data: kms });
+};
+
+const getOrderById = async (req, res) => {
+    const orderId = req.params.id;
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) return res.status(404).json({ message: "Order not found" });
+        return res.status(200).json({
+            success: true,
+            message: "Order fetched successfully",
+            data: order,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
 async function getPreparedOrderByDeliverymanId(req, res) {
     const deliverymanId = req.params.id;
-    //   const deliverymanId = req.user._id;
-
     try {
-        const deliveryman = await DeliveryMan.findOne({
-            user_id: deliverymanId,
-        });
+        const deliveryman = await DeliveryMan.findOne({ user_id: deliverymanId });
         if (!deliveryman) {
             return res.status(404).json({ message: "Deliveryman not found" });
         }
         let prepredOrders = [];
-
-        // Iterate through each restaurant ID in the deliveryman's restaurant array
         for (const restaurantObj of deliveryman.restaurants) {
-            const restaurantId = restaurantObj.id;
-            const restaurant = await Restaurant.findById(restaurantId);
-            if (!restaurant) {
-                continue;
-            }
-
-            const orderIds = restaurant.currentOrders;
+            const restaurant = await Restaurant.findById(restaurantObj.id);
+            if (!restaurant) continue;
             const orders = await Order.find({
-                _id: { $in: orderIds },
+                _id: { $in: restaurant.currentOrders },
                 orderStatus: "Prepared",
             });
             prepredOrders = prepredOrders.concat(orders);
         }
-
         res.status(200).json({
-            succcess: true,
-            message:
-                "prepredOrders of delivery man fetched Fetched successfully",
+            success: true,
+            message: "prepredOrders of delivery man fetched successfully",
             data: prepredOrders,
         });
     } catch (error) {
@@ -663,4 +475,5 @@ module.exports = {
     getOrderDistance,
     handleSuccessfulPayment,
     getPreparedOrderByDeliverymanId,
+    getOrderById,
 };

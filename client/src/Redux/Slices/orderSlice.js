@@ -9,6 +9,7 @@ const initialState = {
   pastOrders: [],
   preparedOrders: [],
   AllPrepredOrders: [],
+  order: null
 };
 
 export const placeorder = createAsyncThunk(

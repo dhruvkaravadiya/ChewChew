@@ -134,21 +134,57 @@ async function getRestaurantById(req, res) {
 }
 
 async function updateRestaurantDetails(req, res) {
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
-        req.params.id,
-        { $set: req.body },
-        { new: true }
-    );
-    if (!updatedRestaurant) {
-        return res
-            .status(404)
-            .json({ success: false, error: "Restaurant not found" });
+    try {
+        const updateData = { ...req.body }
+
+        // Remove frontend-only fields
+        delete updateData.previewImage
+        delete updateData.photo // will be set below if new photo uploaded
+
+        // Handle cuisines — convert comma string to array if provided
+        if (updateData.cuisines && typeof updateData.cuisines === "string") {
+            updateData.cuisines = updateData.cuisines.split(",").map((c) => c.trim())
+        }
+
+        // Handle photo upload if a new one was provided
+        if (req.files && req.files.photo) {
+            const file = req.files.photo
+
+            // Delete old photo from cloudinary if exists
+            const existing = await Restaurant.findById(req.params.id)
+            if (existing?.photo?.id) {
+                await cloudinary.v2.uploader.destroy(existing.photo.id)
+            }
+
+            const result = await cloudinary.v2.uploader.upload(file.tempFilePath, {
+                folder: "FOA_Restaurants",
+                width: 150,
+                public_id: file.name,
+            })
+            updateData.photo = {
+                id: result.public_id,
+                photoUrl: result.secure_url,
+            }
+        }
+
+        const updatedRestaurant = await Restaurant.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateData },
+            { new: true }
+        )
+
+        if (!updatedRestaurant) {
+            return res.status(404).json({ success: false, error: "Restaurant not found" })
+        }
+
+        res.status(202).json({
+            success: true,
+            data: updatedRestaurant,
+            message: "Restaurant Updated Successfully",
+        })
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message })
     }
-    res.status(202).json({
-        success: true,
-        data: updatedRestaurant,
-        message: "Restaurant Update Successfully",
-    });
 }
 
 async function addMenuItem(req, res) {

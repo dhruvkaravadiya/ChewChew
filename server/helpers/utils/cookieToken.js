@@ -17,5 +17,6 @@ module.exports = async function cookieToken(user, res, message) {
         sameSite: "none",
         secure: true,
     });
-    await res.status(200).json({ success: true, token, user, message });
+    const { password, ...userWithoutPassword } = user._doc || user;
+    await res.status(200).json({ success: true, token, user: userWithoutPassword, message });
 };

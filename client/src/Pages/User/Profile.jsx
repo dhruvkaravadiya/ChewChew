@@ -1,78 +1,59 @@
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { BsPersonCircle } from "react-icons/bs";
-import { FaLock } from "react-icons/fa6";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { getProfile, updateProfile } from "../../Redux/Slices/authSlice";
-import AppLayout from "../../Layout/AppLayout";
-import { Input } from "@/Components/ui/input";
-import { Label } from "@/Components/ui/label";
-import { Button } from "@/Components/ui/button";
-import { FaImage } from "react-icons/fa";
+import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom"
+import { toast } from "react-hot-toast"
+import { User, Lock, Camera, Mail, ArrowLeft } from "lucide-react"
+import { getProfile, updateProfile } from "../../Redux/Slices/authSlice"
+import AppLayout from "../../Layout/AppLayout"
+import { Button } from "@/components/ui/button"
+import { Separator } from "../../Components/ui/separator"
+import { FormInput } from "../../Components/shared/FormInput"
+
 const Profile = () => {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const [changeInfo, setChangeInfo] = useState({
         nameChange: false,
         photoChange: false,
-    });
+    })
 
-    async function loadProfile() {
-        await dispatch(getProfile());
-    }
-
-    useEffect(() => {
-        loadProfile();
-    }, []);
-
-    const userData = useSelector((state) => state.auth.data);
+    const userData = useSelector((state) => state.auth.data)
 
     const [data, setData] = useState({
         previewImage: userData?.photo?.photoUrl || "",
-        name: userData?.name.trim() || "",
+        name: userData?.name?.trim() || "",
         photo: userData?.photo?.photoUrl || "",
-    });
+    })
+
+    useEffect(() => {
+        dispatch(getProfile())
+    }, [dispatch])
+
+    useEffect(() => {
+        setData({
+            previewImage: userData?.photo?.photoUrl || "",
+            name: userData?.name?.trim() || "",
+            photo: userData?.photo?.photoUrl || "",
+        })
+    }, [userData])
 
     function handleImageUpload(e) {
-        setChangeInfo({ ...changeInfo, photoChange: true });
-        e.preventDefault();
-        const uploadedImage = e.target.files[0];
+        setChangeInfo({ ...changeInfo, photoChange: true })
+        const uploadedImage = e.target.files[0]
         if (uploadedImage) {
-            const fileReader = new FileReader();
-            fileReader.readAsDataURL(uploadedImage);
+            const fileReader = new FileReader()
+            fileReader.readAsDataURL(uploadedImage)
             fileReader.addEventListener("load", function () {
-                setData({
-                    ...data,
-                    previewImage: this.result,
-                    photo: uploadedImage,
-                });
-            });
+                setData({ ...data, previewImage: this.result, photo: uploadedImage })
+            })
         }
     }
 
     function handleInputChange(e) {
-        const { name, value } = e.target;
-        setData({
-            ...data,
-            [name]: value,
-        });
-
-        if (
-            data.name.trim() !== userData.name.trim() ||
-            changeInfo.photoChange
-        ) {
-            setChangeInfo({
-                ...changeInfo,
-                nameChange: true,
-            });
-        } else {
-            setChangeInfo({
-                ...changeInfo,
-                nameChange: false,
-            });
-        }
+        const { name, value } = e.target
+        setData({ ...data, [name]: value })
+        setChangeInfo({ ...changeInfo, nameChange: value.trim() !== userData.name.trim() })
     }
 
     function handleCancel() {
@@ -80,147 +61,172 @@ const Profile = () => {
             previewImage: userData?.photo?.photoUrl || "",
             name: userData?.name.trim() || "",
             photo: userData?.photo?.photoUrl || "",
-        });
-        setChangeInfo({
-            nameChange: false,
-            photoChange: false,
-        });
+        })
+        setChangeInfo({ nameChange: false, photoChange: false })
     }
 
     async function onSubmit(e) {
-        e.preventDefault();
-
+        e.preventDefault()
         if (data.name.length < 5) {
-            toast.error("Name cannot be less than 5 characters");
-            return;
+            toast.error("Name cannot be less than 5 characters")
+            return
         }
-
-        const formData = new FormData();
-        formData.append("name", data.name);
-        formData.append("email", userData.email);
-        formData.append("photo", data.photo);
-
-        const response = await dispatch(updateProfile(formData));
-
+        const formData = new FormData()
+        formData.append("name", data.name)
+        formData.append("email", userData.email)
+        formData.append("photo", data.photo)
+        const response = await dispatch(updateProfile(formData))
         if (response?.payload?.success) {
-            const res = await dispatch(getProfile());
-            if (res?.payload?.success) {
-                navigate("/");
-            }
+            const res = await dispatch(getProfile())
+            if (res?.payload?.success) navigate("/")
         }
     }
 
+    const hasChanges = changeInfo.nameChange || changeInfo.photoChange
+
     return (
         <AppLayout>
-            <div className="pt-12 font-custom m-2">
-                <div className="bg-gray-50 border border-1 border-gray-200 p-6 max-w-md mx-auto rounded-lg overflow-hidden shadow-md">
-                    <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
-                        User Profile
-                    </h2>
+            <div className="min-h-screen bg-gray-50/50">
+                <main className="p-4 md:p-8 max-w-2xl mx-auto">
 
-                    <div className="flex flex-col gap-2">
-                        <div>
-                            <div className="flex flex-row items-center ms-2">
-                                {data?.previewImage ? (
-                                    <img
-                                        src={data.previewImage}
-                                        className="w-14 h-14 rounded-full border-4 border-white"
-                                        alt="Profile"
-                                    />
-                                ) : (
-                                    <BsPersonCircle className="w-28 h-28 rounded-full m-auto" />
-                                )}
-                                <div className="flex flex-row items-center justify-center">
-                                    <Button
+                    {/* Back */}
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6 group"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                        Back
+                    </button>
+
+                    <div className="mb-6">
+                        <h1 className="text-2xl font-bold text-gray-900">Your Profile</h1>
+                        <p className="text-sm text-gray-500 mt-0.5">Manage your account details</p>
+                    </div>
+
+                    <form onSubmit={onSubmit} className="space-y-4">
+
+                        {/* Avatar card */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                            <div className="flex items-center gap-6">
+                                {/* Avatar */}
+                                <div className="relative flex-shrink-0">
+                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gray-100 flex items-center justify-center">
+                                        {data.previewImage ? (
+                                            <img
+                                                src={data.previewImage}
+                                                alt="Profile"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <User className="w-10 h-10 text-gray-300" />
+                                        )}
+                                    </div>
+                                    {/* Camera overlay button */}
+                                    <button
                                         type="button"
-                                        className="flex items-center rounded-lg  text-gray-600 p-3 cursor-pointer"
-                                        onClick={() =>
-                                            document
-                                                .getElementById("fileInput")
-                                                .click()
-                                        }
+                                        onClick={() => document.getElementById("fileInput").click()}
+                                        className="absolute bottom-0 right-0 w-7 h-7 bg-custom-red-1 hover:bg-custom-red-2 rounded-full flex items-center justify-center shadow-md transition-colors"
                                     >
-                                        <FaImage className="mr-2 w-5 h-5 fill-gray-600 text-semibold" />
-                                        Select Image
-                                    </Button>
+                                        <Camera className="w-3.5 h-3.5 text-white" />
+                                    </button>
                                     <input
                                         id="fileInput"
                                         type="file"
                                         className="hidden"
                                         onChange={handleImageUpload}
-                                        accept=".jpg, .png, .svg, .jpeg"
+                                        accept=".jpg,.png,.svg,.jpeg"
                                     />
                                 </div>
+
+                                {/* Name + role */}
+                                <div>
+                                    <p className="text-lg font-bold text-gray-900">{userData?.name}</p>
+                                    <p className="text-sm text-gray-400 mt-0.5">{userData?.email}</p>
+                                    <span className="inline-flex items-center mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-custom-red-1/10 text-custom-red-1">
+                                        {userData?.role}
+                                    </span>
+                                </div>
                             </div>
+
+                            {changeInfo.photoChange && (
+                                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 mt-4">
+                                    New photo selected — save to apply changes.
+                                </p>
+                            )}
                         </div>
 
-                        <form
-                            onSubmit={onSubmit}
-                            className="flex flex-col gap-4 w-full max-w-sm mx-auto"
-                        >
-                            <div className="grid w-full max-w-sm items-center gap-1.5">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={userData.email}
-                                    disabled
-                                    className="bg-slate-200 cursor-not-allowed border-gray-600"
-                                />
+                        {/* Details card */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                Account Details
+                            </h2>
+
+                            {/* Email — read only */}
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                    <Mail className="w-3.5 h-3.5 text-gray-400" />
+                                    Email
+                                </label>
+                                <div className="h-11 px-3 flex items-center bg-gray-50 border border-gray-100 rounded-xl text-sm text-gray-400">
+                                    {userData?.email}
+                                </div>
+                                <p className="text-xs text-gray-400">Email cannot be changed</p>
                             </div>
 
-                            <div className="grid w-full max-w-sm items-center gap-1.5">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    type="text"
+                            {/* Name */}
+                            <div className="space-y-1.5">
+                                <label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                    <User className="w-3.5 h-3.5 text-gray-400" />
+                                    Full Name
+                                </label>
+                                <input
                                     id="name"
                                     name="name"
                                     value={data.name}
                                     onChange={handleInputChange}
-                                    className="border-gray-400"
+                                    className="w-full h-11 px-3 border border-gray-200 rounded-xl text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-custom-red-1/20 focus:border-custom-red-1 transition-colors"
                                 />
                             </div>
+                        </div>
 
-                            <div className="flex justify-between items-center w-full max-w-sm mt-2">
-                                <button
+                        {/* Actions card */}
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">
+                            <div className="flex gap-3">
+                                <Button
                                     type="submit"
-                                    disabled={
-                                        !changeInfo.nameChange &&
-                                        !changeInfo.photoChange
-                                    }
-                                    className={`p-2 px-3 rounded-lg ${
-                                        changeInfo.nameChange ||
-                                        changeInfo.photoChange
-                                            ? "bg-custom-green text-white cursor-pointer"
-                                            : "bg-gray-300 text-black cursor-not-allowed"
-                                    }`}
+                                    disabled={!hasChanges}
+                                    className="flex-1 h-11 bg-custom-red-1 hover:bg-custom-red-2 text-white rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                                 >
                                     Save Changes
-                                </button>
-
-                                <button
+                                </Button>
+                                <Button
                                     type="button"
+                                    variant="outline"
                                     onClick={handleCancel}
-                                    className="rounded-lg bg-red-500 text-white p-2 px-3 cursor-pointer"
+                                    disabled={!hasChanges}
+                                    className="flex-1 h-11 rounded-xl border-gray-200 disabled:opacity-40"
                                 >
                                     Cancel
-                                </button>
+                                </Button>
                             </div>
-                        </form>
 
-                        <Button
-                            type="button"
-                            onClick={() => navigate("/changePassword")}
-                            className="w-full rounded-lg max-w-sm text-sm font-medium hover:underline text-custom-red-2 p-0 flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                            Change Password
-                        </Button>
-                    </div>
-                </div>
+                            <Separator className="bg-gray-50" />
+
+                            <button
+                                type="button"
+                                onClick={() => navigate("/changePassword")}
+                                className="w-full flex items-center justify-center gap-2 h-11 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors"
+                            >
+                                <Lock className="w-4 h-4" />
+                                Change Password
+                            </button>
+                        </div>
+
+                    </form>
+                </main>
             </div>
         </AppLayout>
-    );
-};
+    )
+}
 
-export default Profile;
+export default Profile

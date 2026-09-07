@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import store from "./Redux/store.js";
 import { Toaster } from "react-hot-toast";
 import "react-loading-skeleton/dist/skeleton.css";
-
+import "leaflet/dist/leaflet.css";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <BrowserRouter>

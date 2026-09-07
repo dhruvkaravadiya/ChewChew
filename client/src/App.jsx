@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { getProfile } from "./Redux/Slices/authSlice.js";
 import HomePage from "./Pages/HomePage";
 import NotFoundPage from "./Pages/NotFoundPage";
 import SignUp from "./Pages/User/SignUp";
@@ -25,10 +26,23 @@ import OrderMapPage from "./Components/Order/OrderMapPage";
 import EditRestaurantDetails from "./Pages/Restaurant/EditRestaurantDetails";
 import RestaurantDetails from "./Pages/Restaurant/RestaurantDetails";
 
-export const socket = io("http://localhost:8080/");
+export const socket = io("http://localhost:8000");
 
 const App = () => {
+  const dispatch = useDispatch();
   const { isLoggedIn, data } = useSelector((state) => state.auth);
+
+  // Validate and sync user session on app mount
+  useEffect(() => {
+    const hasStoredAuth =
+      localStorage.getItem("isLoggedIn") === "true" ||
+      !!localStorage.getItem("__session") ||
+      !!sessionStorage.getItem("__session");
+
+    if (hasStoredAuth) {
+      dispatch(getProfile());
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     socket.on("connect", () => {

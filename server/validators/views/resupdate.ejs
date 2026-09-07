@@ -25,7 +25,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
     <script>
-        const socket = io("http://localhost:8080");
+        const socket = io("http://localhost:8000");
 
         function updateOrderStatus() {
             const orderId = document.getElementById("orderId").value;
@@ -34,7 +34,7 @@
             // Emit event to the server (for Socket.IO real-time update)
             socket.emit("orderStatusUpdate", { orderId, newStatus });
 
-            fetch(`http://localhost:8080/api/restaurants/order/update/${orderId}`, {
+            fetch(`http://localhost:8000/api/restaurants/order/update/${orderId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
